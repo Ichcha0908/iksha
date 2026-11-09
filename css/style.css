@@ -79,14 +79,12 @@ button { font: inherit; color: inherit; }
 .mandala svg {
   width: 100%;
   height: 100%;
-  animation: spin 240s linear infinite;
 }
 .mandala .m-line { fill: none; stroke: #c9a46c; stroke-opacity: .32; stroke-width: 1.2; }
 .mandala .m-fine { fill: none; stroke: #c9a46c; stroke-opacity: .22; stroke-width: .8; }
 .mandala .m-dot  { fill: #c9a46c; fill-opacity: .3; }
 .mandala .m-text { fill: #b48a52; fill-opacity: .35; font-family: var(--deva); font-size: 20px; letter-spacing: 3px; }
 
-@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ---------- ornamental frame ---------- */
 .frame {
@@ -140,7 +138,6 @@ button { font: inherit; color: inherit; }
   font-size: 1.15rem;
   color: var(--ink-soft);
   letter-spacing: .06em;
-  animation: rise .9s var(--ease-out) both;
 }
 h1 {
   margin: 0;
@@ -150,18 +147,15 @@ h1 {
   line-height: 1.05;
   letter-spacing: .01em;
   color: var(--ink);
-  animation: rise 1s .08s var(--ease-out) both;
 }
 .lede {
   margin: 12px auto 0;
   max-width: 640px;
   color: var(--ink-soft);
   font-size: 1.04rem;
-  animation: rise 1s .16s var(--ease-out) both;
 }
 .tree-name { font-family: var(--serif); color: var(--ink); font-size: 1.1em; }
 
-@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
 /* ---------- 3D stage ---------- */
 .stage {
@@ -199,16 +193,15 @@ h1 {
   background: rgba(255, 248, 234, 0.86);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
-  box-shadow: 0 4px 14px -8px rgba(90, 55, 20, .5);
+  box-shadow: rgba(90, 55, 20, .5) 0 4px 14px -8px;
   font-family: var(--serif);
   font-size: 0.95rem;
   white-space: nowrap;
   color: var(--ink);
   cursor: pointer;
   will-change: transform, opacity;
-  transition: background .25s, border-color .25s, box-shadow .25s;
 }
-.blabel:hover, .blabel.active {
+.blabel.active {
   background: #fffaf0;
   border-color: var(--c);
   box-shadow: 0 6px 18px -8px var(--c);
@@ -233,7 +226,7 @@ h1 {
   font-size: .9rem;
   line-height: 1.35;
   box-shadow: 0 10px 24px -12px rgba(40, 20, 5, .7);
-  transform: translate(14px, 14px);
+  transform-origin: top left;
 }
 .tooltip strong { display: block; font-family: var(--serif); font-weight: 400; font-size: 1.02rem; }
 .tooltip span { color: #e3c99c; font-size: .82rem; }
@@ -252,16 +245,12 @@ h1 {
   color: var(--ink-faint);
   letter-spacing: .02em;
   white-space: nowrap;
-  transition: opacity .8s;
   pointer-events: none;
 }
-.hint.faded { opacity: 0; }
 .hint-dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--gold);
-  animation: pulse 2s ease-in-out infinite;
 }
-@keyframes pulse { 0%,100% { transform: scale(1); opacity: .9 } 50% { transform: scale(1.7); opacity: .3 } }
 
 .no-webgl {
   position: absolute; inset: 0;
@@ -290,14 +279,13 @@ h1 {
   cursor: pointer;
   font-size: .95rem;
   color: var(--ink);
-  transition: transform .3s var(--ease-out), background .25s, border-color .25s, box-shadow .25s;
+  box-shadow: rgba(0, 0, 0, 0) 0 0 0 -10px;
 }
-.chip:hover { transform: translateY(-2px); border-color: var(--c); background: #fffaf0; }
 .chip[aria-pressed="true"] {
   background: var(--c);
   border-color: var(--c);
   color: #fff;
-  box-shadow: 0 8px 20px -10px var(--c);
+  box-shadow: var(--c) 0 8px 20px -10px;
 }
 .chip[aria-pressed="true"] .dot { background: #fff; box-shadow: none; }
 .chip .count {
@@ -314,7 +302,6 @@ h1 {
   margin: 26px auto 0;
   text-align: center;
 }
-.branch-info .bi-inner { animation: rise .6s var(--ease-out) both; }
 .branch-info .bi-sa { margin: 0; font-family: var(--deva); color: var(--c); font-size: 1.05rem; }
 .branch-info h2 {
   margin: 2px 0 6px;
@@ -344,9 +331,8 @@ h1 {
   cursor: pointer;
   text-align: left;
   line-height: 1.25;
-  transition: transform .3s var(--ease-out), border-color .25s, box-shadow .25s;
+  box-shadow: rgba(0, 0, 0, 0) 0 0 0 -14px;
 }
-.leaf-btn:hover { transform: translateY(-2px); border-color: var(--c); box-shadow: 0 10px 22px -14px var(--c); }
 .leaf-btn svg { width: 22px; height: 22px; color: var(--c); flex: none; }
 .leaf-btn b { display: block; font-weight: 500; font-size: .98rem; }
 .leaf-btn small { color: var(--ink-faint); font-size: .82rem; }
@@ -378,16 +364,8 @@ h1 {
     inset 0 0 0 6px var(--card),
     inset 0 0 0 7px rgba(176, 132, 70, 0.3),
     0 30px 60px -30px rgba(70, 40, 10, 0.55);
-  transform: translateX(calc(100% + 60px));
   opacity: 0;
   visibility: hidden;
-  transition: transform .6s var(--ease-out), opacity .4s, visibility 0s .6s;
-}
-.panel.open {
-  transform: none;
-  opacity: 1;
-  visibility: visible;
-  transition: transform .6s var(--ease-out), opacity .4s, visibility 0s;
 }
 .pcorner { width: 58px; height: 58px; top: 2px; }
 .pcorner.tl { left: 2px; }
@@ -402,10 +380,8 @@ h1 {
   border-radius: 50%;
   background: var(--card);
   cursor: pointer;
-  transition: transform .3s var(--ease-out), background .2s;
   z-index: 2;
 }
-.close:hover { transform: rotate(90deg); background: #fff; }
 .close svg { width: 16px; height: 16px; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; fill: none; }
 
 .panel-kicker {
@@ -444,15 +420,6 @@ h1 {
 .place { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); font-weight: 500; }
 .place svg { width: 18px; height: 18px; color: var(--c); }
 
-.panel.open .panel-kicker,
-.panel.open h2,
-.panel.open .panel-meta,
-.panel.open .map,
-.panel.open .siblings { animation: rise .7s var(--ease-out) both; }
-.panel.open h2 { animation-delay: .05s; }
-.panel.open .panel-meta { animation-delay: .1s; }
-.panel.open .map { animation-delay: .15s; }
-.panel.open .siblings { animation-delay: .2s; }
 
 .map {
   position: relative;
@@ -470,23 +437,13 @@ h1 {
   color: var(--ink-faint);
 }
 .st {
-  fill: #f6e2bf;
+  /* fill is set and animated from app.js */
   stroke: #c9a670;
   stroke-width: .7;
   stroke-linejoin: round;
-  transition: fill .6s, opacity .6s;
 }
-.st.on { fill: var(--c); stroke: color-mix(in srgb, var(--c) 70%, #000); }
-.st.on { animation: glow 2.4s ease-in-out infinite; }
-@keyframes glow { 0%,100% { opacity: 1 } 50% { opacity: .78 } }
+.st.on { stroke: color-mix(in srgb, var(--c) 70%, #000); }
 
-.pin-drop { animation: drop .9s var(--ease-out) both; }
-@keyframes drop {
-  0% { transform: translateY(-60px); opacity: 0; }
-  60% { transform: translateY(3px); opacity: 1; }
-  80% { transform: translateY(-4px); }
-  100% { transform: none; }
-}
 .pin-body { fill: var(--c); stroke: #fff; stroke-width: 2; filter: drop-shadow(0 3px 3px rgba(60,30,5,.35)); }
 .pin-eye { fill: #fff; }
 .pin-ring {
@@ -495,10 +452,8 @@ h1 {
   stroke-width: 2;
   transform-box: fill-box;
   transform-origin: center;
-  animation: ring 2s ease-out infinite;
+  opacity: 0;
 }
-.pin-ring.r2 { animation-delay: 1s; }
-@keyframes ring { from { transform: scale(.3); opacity: .9; } to { transform: scale(2.6); opacity: 0; } }
 .pin-label {
   font-family: var(--serif);
   font-size: 26px;
@@ -554,13 +509,18 @@ h1 {
     max-height: 86vh;
     padding: 30px 20px 22px;
     border-radius: 16px 16px 8px 8px;
-    transform: translateY(calc(100% + 40px));
   }
   .panel h2 { font-size: 1.6rem; padding-right: 36px; }
   .map svg { max-height: 40vh; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition-duration: .001s !important; }
-  .mandala svg { animation: none; }
-}
+
+/* ---------- starting state for Motion reveals ----------
+   <html> gets .motion from an inline script in the <head>; app.js removes
+   it again if Motion fails to load, so content never stays hidden. */
+.motion .hero > *,
+.motion .stage,
+.motion .chip,
+.motion .branch-info,
+.motion .foot > *,
+.motion .frame .orn { opacity: 0; }

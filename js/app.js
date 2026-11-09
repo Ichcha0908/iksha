@@ -11,6 +11,80 @@
   const $ = sel => document.querySelector(sel);
   const SVGNS = "http://www.w3.org/2000/svg";
 
+  /* ---------------------------------------------------------
+     Motion (the framework-agnostic build of Framer Motion)
+     drives every DOM, SVG and tweened 3D animation on the page.
+  --------------------------------------------------------- */
+  if (!window.Motion) {
+    // vendor/motion.js is missing: un-hide the content and stop here
+    document.documentElement.classList.remove("motion");
+    throw new Error("vendor/motion.js did not load");
+  }
+  const { animate, inView, stagger, hover, press } = window.Motion;
+  const EASE = [0.22, 1, 0.36, 1];
+  const INSTANT = { duration: 0 };
+  /** returns the given transition, or an instant one for reduced-motion users */
+  const tx = opts => (reduceMotion ? INSTANT : opts);
+  const SPRING = { type: "spring", stiffness: 320, damping: 24 };
+  const SOFT_SPRING = { type: "spring", stiffness: 170, damping: 26 };
+
+  /** the value a CSS property has when no inline style is applied */
+  function restingValue(el, prop) {
+    const cur = el.style[prop];
+    el.style[prop] = "";
+    const v = getComputedStyle(el)[prop];
+    el.style[prop] = cur;
+    return v;
+  }
+
+  /**
+   * Smooth hover + press feedback for an interactive element.
+   * opts.lift   – pixels to raise on hover (0 to skip transforms)
+   * opts.shadow – hover shadow geometry, coloured with the element's --c
+   * opts.border – animate the border towards --c
+   * opts.bg     – background to fade to on hover
+   */
+  function interactive(el, opts = {}) {
+    const { lift = -3, shadow = "0px 12px 24px -14px", border = true, bg = null, rotate = 0 } = opts;
+    const accent = () => getComputedStyle(el).getPropertyValue("--c").trim() || "#c09452";
+    const skipTransform = lift === 0 && rotate === 0;
+    let hovering = false;
+    hover(el, () => {
+      hovering = true;
+      const pressed = el.getAttribute("aria-pressed") === "true";
+      const to = {};
+      if (!skipTransform) { to.y = lift; if (rotate) to.rotate = rotate; }
+      if (shadow) to.boxShadow = `${accent()} ${shadow}`;
+      if (border && !pressed) to.borderColor = accent();
+      if (bg && !pressed) to.backgroundColor = bg;
+      animate(el, to, tx(SPRING));
+      return () => {
+        hovering = false;
+        const back = {};
+        if (!skipTransform) { back.y = 0; if (rotate) back.rotate = 0; }
+        if (shadow) back.boxShadow = restingValue(el, "boxShadow");
+        if (border) back.borderColor = restingValue(el, "borderColor");
+        if (bg) back.backgroundColor = restingValue(el, "backgroundColor");
+        animate(el, back, tx({ duration: 0.35, ease: EASE })).then(() => {
+          // hand the resting look back to the stylesheet (it changes with aria-pressed)
+          if (!hovering) ["boxShadow", "borderColor", "backgroundColor"].forEach(p => { el.style[p] = ""; });
+        });
+      };
+    });
+    if (!skipTransform) {
+      press(el, () => {
+        animate(el, { scale: 0.96 }, tx({ duration: 0.12 }));
+        return () => animate(el, { scale: 1 }, tx(SPRING));
+      });
+    }
+  }
+
+  /** staggered fade-and-rise for a group of elements */
+  function reveal(els, { delay = 0, gap = 0.07, y = 16, duration = 0.7 } = {}) {
+    return animate(els, { opacity: [0, 1], y: [y, 0] },
+      tx({ duration, ease: EASE, delay: stagger(gap, { startDelay: delay }) }));
+  }
+
   const state = {
     focused: null,        // focused branch index
     selected: null,       // { b, c } of the open centre
@@ -60,6 +134,7 @@
     const g = 452, d = 30;
     parts.push(`<path class="m-fine" d="M${-g} ${-g} H${-d} V${-g - 18} H${d} V${-g} H${g} V${-d} H${g + 18} V${d} H${g} V${g} H${d} V${g + 18} H${-d} V${g} H${-g} V${d} H${-g - 18} V${-d} H${-g} Z"/>`);
     svg.innerHTML = parts.join("");
+    if (!reduceMotion) animate(svg, { rotate: 360 }, { duration: 240, ease: "linear", repeat: Infinity });
   }
 
   /* ---------------------------------------------------------
@@ -76,6 +151,7 @@
       btn.innerHTML = `<span class="dot"></span>${b.name}<span class="count">${b.centres.length}</span>`;
       btn.addEventListener("click", () => focusBranch(state.focused === i ? null : i));
       nav.appendChild(btn);
+      interactive(btn, { shadow: "0px 10px 22px -12px", bg: "#fffaf0" });
     });
   }
 
@@ -84,6 +160,7 @@
     const i = state.focused;
     if (i === null) {
       box.innerHTML = `<p class="empty">Choose a branch to see its leaves, or click any glowing leaf on the tree.</p>`;
+      reveal(Array.from(box.children), { duration: 0.5 });
       return;
     }
     const b = BRANCHES[i];
@@ -100,8 +177,11 @@
             </button></li>`).join("")}
         </ul>
       </div>`;
-    box.querySelectorAll(".leaf-btn").forEach(btn =>
-      btn.addEventListener("click", () => openCentre(i, +btn.dataset.c)));
+    box.querySelectorAll(".leaf-btn").forEach(btn => {
+      btn.addEventListener("click", () => openCentre(i, +btn.dataset.c));
+      interactive(btn, { shadow: "0px 12px 24px -14px" });
+    });
+    reveal(box.querySelectorAll(".bi-sa, h2, .blurb, .leaf-list li"), { gap: 0.06 });
   }
 
   function syncChips() {
@@ -121,7 +201,8 @@
   /* ---------------------------------------------------------
      India map inside the panel
   --------------------------------------------------------- */
-  const map = { svg: null, paths: {}, pinLayer: null };
+  const map = { svg: null, paths: {}, pinLayer: null, current: null, loops: [] };
+  const STATE_FILL = "#f6e2bf";
 
   function buildMap() {
     const svg = $("#india");
@@ -132,6 +213,7 @@
       const p = document.createElementNS(SVGNS, "path");
       p.setAttribute("d", s.d);
       p.setAttribute("class", "st");
+      p.setAttribute("fill", STATE_FILL);
       p.dataset.id = s.id;
       g.appendChild(p);
       map.paths[s.id] = p;
@@ -142,13 +224,26 @@
     map.svg = svg;
   }
 
-  function showOnMap(stateId) {
-    Object.values(map.paths).forEach(p => p.classList.remove("on"));
+  function showOnMap(stateId, color) {
+    // stop the looping glow / ripple animations of the previous pin
+    map.loops.forEach(a => a.stop());
+    map.loops = [];
+    const prev = map.current;
     const path = map.paths[stateId];
+    if (prev && prev !== path) {
+      prev.classList.remove("on");
+      animate(prev, { fill: STATE_FILL, opacity: 1 }, tx({ duration: 0.5 }));
+    }
     if (path) {
       path.classList.add("on");
       path.parentNode.appendChild(path); // bring the outline to the top
+      animate(path, { fill: color, opacity: 1 }, tx({ duration: 0.6, ease: EASE }));
+      if (!reduceMotion) {
+        map.loops.push(animate(path, { opacity: [1, 0.74, 1] },
+          { duration: 2.4, ease: "easeInOut", repeat: Infinity, delay: 0.6 }));
+      }
     }
+    map.current = path;
     const [x, y] = ANCHORS[stateId] || [306, 348];
     const name = STATE_NAMES[stateId] || "";
     const right = x < 430;
@@ -162,6 +257,14 @@
           </g><text class="pin-label" x="${right ? 26 : -26}" y="-30" text-anchor="${right ? "start" : "end"}">${name}</text>
         </g>
       </g>`;
+    // the pin drops in on a bouncy spring, then ripples keep pulsing out
+    animate(map.pinLayer.querySelector(".pin-drop"), { y: [-70, 0], opacity: [0, 1] },
+      tx({ type: "spring", stiffness: 260, damping: 13, delay: 0.25 }));
+    map.pinLayer.querySelectorAll(".pin-ring").forEach((ring, k) => {
+      if (reduceMotion) return;
+      map.loops.push(animate(ring, { scale: [0.3, 2.6], opacity: [0.9, 0] },
+        { duration: 2, ease: "easeOut", repeat: Infinity, delay: 0.6 + k }));
+    });
   }
 
   /* ---------------------------------------------------------
@@ -174,7 +277,8 @@
     const b = BRANCHES[bi];
     const c = b.centres[ci];
     const panel = $("#panel");
-    if (!state.panelOpen) lastFocus = document.activeElement;
+    const firstOpen = !state.panelOpen;
+    if (firstOpen) lastFocus = document.activeElement;
     if (state.focused !== bi) focusBranch(bi);
     state.selected = { b: bi, c: ci };
     state.panelOpen = true;
@@ -185,7 +289,7 @@
     $("#panel-type").textContent = c.type;
     $("#panel-place").textContent = `${STATE_NAMES[c.state]}, India`;
     $("#map-caption").textContent = `${c.name} is located in ${STATE_NAMES[c.state]}.`;
-    showOnMap(c.state);
+    showOnMap(c.state, b.color);
 
     const list = $("#panel-siblings");
     list.innerHTML = b.centres.map((s, k) => `
@@ -193,17 +297,29 @@
         <svg aria-hidden="true"><use href="#leaf-icon"/></svg>
         <span><b>${s.name}</b><small>${s.type} · ${STATE_NAMES[s.state]}</small></span>
       </button></li>`).join("");
-    list.querySelectorAll(".leaf-btn").forEach(btn =>
-      btn.addEventListener("click", () => openCentre(bi, +btn.dataset.c)));
+    list.querySelectorAll(".leaf-btn").forEach(btn => {
+      btn.addEventListener("click", () => openCentre(bi, +btn.dataset.c));
+      interactive(btn, { lift: -2, shadow: "0px 10px 20px -14px" });
+    });
     list.parentElement.hidden = b.centres.length < 2;
 
-    // restart entrance animations when switching between centres
-    panel.classList.remove("open");
-    void panel.offsetWidth;
-    panel.classList.add("open");
+    if (firstOpen) {
+      // slide in from the right (desktop) or up from the bottom (phones)
+      panel.style.visibility = "visible";
+      const slide = mqMobile.matches ? { y: ["105%", "0%"], x: 0 } : { x: ["110%", "0%"], y: 0 };
+      panel.anim?.stop();
+      panel.anim = animate(panel, { ...slide, opacity: [0, 1] }, tx(SOFT_SPRING));
+      const scrim = $("#scrim");
+      if (mqMobile.matches) {
+        scrim.hidden = false;
+        animate(scrim, { opacity: [0, 1] }, tx({ duration: 0.3 }));
+      }
+    }
+    // staggered reveal of the panel contents (also when switching centres)
+    reveal(panel.querySelectorAll(".panel-kicker, h2, .panel-meta, .map, .siblings"),
+      { delay: firstOpen ? 0.12 : 0, gap: 0.06, duration: 0.55 });
     panel.setAttribute("aria-hidden", "false");
     panel.scrollTop = 0;
-    $("#scrim").hidden = !mqMobile.matches;
     $("#panel-title").focus({ preventScroll: true });
     if (tree) tree.select(bi, ci);
   }
@@ -213,14 +329,19 @@
     state.panelOpen = false;
     state.selected = null;
     const panel = $("#panel");
-    panel.classList.remove("open");
+    const slide = mqMobile.matches ? { y: "105%" } : { x: "110%" };
+    panel.anim?.stop();
+    panel.anim = animate(panel, { ...slide, opacity: 0 }, tx({ duration: 0.35, ease: [0.4, 0, 1, 1] }));
+    panel.anim.then(() => { if (!state.panelOpen) panel.style.visibility = "hidden"; });
     panel.setAttribute("aria-hidden", "true");
-    $("#scrim").hidden = true;
+    const scrim = $("#scrim");
+    if (!scrim.hidden) animate(scrim, { opacity: 0 }, tx({ duration: 0.3 })).then(() => { scrim.hidden = true; });
     if (tree) tree.select(null);
     if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
   }
 
   $("#panel-close").addEventListener("click", closePanel);
+  interactive($("#panel-close"), { lift: 0, rotate: 90, shadow: null, border: false, bg: "#ffffff" });
   $("#scrim").addEventListener("click", closePanel);
   document.addEventListener("keydown", e => { if (e.key === "Escape") closePanel(); });
 
@@ -532,9 +653,9 @@
         sway.add(group);
         const rec = {
           group, leaf, mat, halo, b: bi, c: ci,
-          base: color.clone(), dim: color.clone().lerp(new THREE.Color(0xeadbc0), 0.72),
-          phase: rand() * Math.PI * 2, appear: start + 0.75 + ci * 0.12,
-          scale: 0, hover: 0
+          base: color.clone(), dimColor: color.clone().lerp(new THREE.Color(0xeadbc0), 0.72),
+          phase: rand() * Math.PI * 2, appearDelay: start + 0.75 + ci * 0.12,
+          appear: 0, hover: 0, dim: 0, tHover: 0, tDim: 0
         };
         group.scale.setScalar(0);
         leaves.push(rec);
@@ -568,6 +689,7 @@
     decoMatrices.forEach((m, i) => { decoMesh.setMatrixAt(i, m); decoMesh.setColorAt(i, decoColors[i]); });
     decoMesh.scale.setScalar(0.001);
     sway.add(decoMesh);
+    const deco = { k: 0 };
 
     function decoMatrix(pos, dir, s, spin) {
       const q = new THREE.Quaternion().setFromUnitVectors(UP, dir);
@@ -602,11 +724,38 @@
       el.innerHTML = `<span class="dot"></span>${b.name}`;
       el.addEventListener("click", () => focusBranch(state.focused === i ? null : i));
       $("#labels").appendChild(el);
+      // the label's transform is driven by the 3D projection, so hover animates colour + shadow only
+      interactive(el, { lift: 0, shadow: "0px 6px 18px -8px", bg: "#fffaf0" });
       return el;
     });
 
+    const labelGrow = BRANCHES.map(() => ({ k: 0 }));
+
+    /* ---------- intro: Motion tweens the growth values the render loop reads ---------- */
+    growables.forEach(g => {
+      g.k = 0;
+      animate(g, { k: 1 }, tx({ duration: g.dur, delay: g.start, ease: EASE }));
+    });
+    animate(deco, { k: 1 }, tx({ duration: 1, delay: 1.6, ease: EASE }));
+    leaves.forEach(L => animate(L, { appear: 1 }, tx({ type: "spring", stiffness: 210, damping: 11, delay: L.appearDelay })));
+    labelGrow.forEach((lg, i) => animate(lg, { k: 1 }, tx({ duration: 0.6, delay: 1.6 + i * 0.12, ease: EASE })));
+
+    /* hover / selection / focus targets for the leaves, eased by Motion springs */
+    function refreshLeaves() {
+      const sel = state.selected;
+      leaves.forEach(L => {
+        const isHover = hovered && hovered.b === L.b && hovered.c === L.c;
+        const isSel = sel && sel.b === L.b && sel.c === L.c;
+        const h = isHover || isSel ? 1 : 0;
+        const d = state.focused !== null && state.focused !== L.b ? 1 : 0;
+        if (h !== L.tHover) { L.tHover = h; animate(L, { hover: h }, tx({ type: "spring", stiffness: 300, damping: 18 })); }
+        if (d !== L.tDim) { L.tDim = d; animate(L, { dim: d }, tx({ duration: 0.5, ease: EASE })); }
+      });
+    }
+
     /* ---------- sizing ---------- */
-    let W = 1, H = 1, viewShift = 0;
+    let W = 1, H = 1;
+    const view = { shift: 0 };
     function resize() {
       const r = stage.getBoundingClientRect();
       W = Math.max(1, r.width); H = Math.max(1, r.height);
@@ -626,7 +775,7 @@
     const raycaster = new THREE.Raycaster();
     const ndc = new THREE.Vector2();
     const tooltip = $("#tooltip");
-    let rot = 0.35, vel = 0, target = null;
+    let rot = 0.35, vel = 0, rotAnim = null, tweening = false, hintShown = true;
     let dragging = false, downX = 0, downY = 0, lastX = 0, moved = 0;
     let lastInteract = -1e9, hovered = null, pointerInside = false;
     const hint = $("#hint");
@@ -639,30 +788,54 @@
       return hits.length ? hits[0].object.userData : null;
     }
 
+    function hideTooltip() {
+      if (tooltip.hidden || tooltip.dataset.leaving) return;
+      tooltip.dataset.leaving = "1";
+      animate(tooltip, { opacity: 0, scale: 0.94 }, tx({ duration: 0.15 })).then(() => {
+        if (tooltip.dataset.leaving) { tooltip.hidden = true; delete tooltip.dataset.leaving; }
+      });
+    }
+
     function setHover(h, clientX, clientY) {
+      const changed = (h && h.b) !== (hovered && hovered.b) || (h && h.c) !== (hovered && hovered.c);
       hovered = h;
+      if (changed) refreshLeaves();
       canvas.classList.toggle("pointing", !!h && !dragging);
-      if (!h) { tooltip.hidden = true; return; }
+      if (!h) { hideTooltip(); return; }
       const b = BRANCHES[h.b], c = b.centres[h.c];
       tooltip.innerHTML = `<strong>${c.name}</strong><span>${c.type} · ${STATE_NAMES[c.state]}</span>`;
       tooltip.style.borderLeft = `4px solid ${b.color}`;
       const r = stage.getBoundingClientRect();
-      let x = clientX - r.left, y = clientY - r.top;
-      if (x > r.width - 280) x -= 300;
+      let x = clientX - r.left + 14, y = clientY - r.top + 14;
+      if (x > r.width - 280) x -= 320;
       tooltip.style.left = x + "px";
       tooltip.style.top = y + "px";
-      tooltip.hidden = false;
+      if (tooltip.hidden || tooltip.dataset.leaving || changed) {
+        delete tooltip.dataset.leaving;
+        tooltip.hidden = false;
+        animate(tooltip, { opacity: [0, 1], scale: [0.92, 1] }, tx({ type: "spring", stiffness: 420, damping: 28 }));
+      }
     }
 
     function noteInteraction() {
       lastInteract = performance.now();
-      hint.classList.add("faded");
+      if (hintShown) {
+        hintShown = false;
+        animate(hint, { opacity: 0 }, tx({ duration: 0.8 }));
+      }
     }
+    if (!reduceMotion) {
+      animate(hint.querySelector(".hint-dot"), { scale: [1, 1.7, 1], opacity: [0.9, 0.3, 0.9] },
+        { duration: 2, ease: "easeInOut", repeat: Infinity });
+    }
+
+    mqMobile.addEventListener("change", updateShift);
 
     canvas.addEventListener("pointerdown", e => {
       dragging = true; moved = 0;
       downX = lastX = e.clientX; downY = e.clientY;
-      vel = 0; target = null;
+      vel = 0;
+      rotAnim?.stop(); tweening = false;
       canvas.setPointerCapture(e.pointerId);
       noteInteraction();
     });
@@ -676,7 +849,7 @@
           canvas.classList.add("dragging");
           rot += dx * 0.0085;
           vel = dx * 0.0085;
-          tooltip.hidden = true;
+          hideTooltip();
         }
         noteInteraction();
       } else if (e.pointerType === "mouse") {
@@ -703,8 +876,20 @@
       const want = -branchData[i].angle;
       let delta = want - rot;
       delta = Math.atan2(Math.sin(delta), Math.cos(delta));
-      target = rot + delta;
       vel = 0;
+      rotAnim?.stop();
+      tweening = true;
+      rotAnim = animate(rot, rot + delta, {
+        ...tx({ type: "spring", stiffness: 55, damping: 15 }),
+        onUpdate: v => { rot = v; }
+      });
+      rotAnim.then(() => { tweening = false; });
+    }
+
+    /* slide the tree left when the side panel covers the right of the stage */
+    function updateShift() {
+      const want = state.panelOpen && !mqMobile.matches ? Math.min(W * 0.22, 230) : 0;
+      animate(view, { shift: want }, tx({ type: "spring", stiffness: 90, damping: 20 }));
     }
 
     /* ---------- animation loop ---------- */
@@ -713,15 +898,6 @@
     const tmpV = new THREE.Vector3();
     const XAXIS = new THREE.Vector3(1, 0, 0);
     let elapsed = 0;
-    const GROW_END = reduceMotion ? 0 : 2.6;
-    if (reduceMotion) elapsed = 10;
-
-    function easeOut(t) { return 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3); }
-    function easeBack(t) {
-      t = Math.min(Math.max(t, 0), 1);
-      const c1 = 1.70158, c3 = c1 + 1;
-      return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
-    }
 
     let visible = true;
     new IntersectionObserver(([en]) => { visible = en.isIntersecting; }, { threshold: 0 }).observe(stage);
@@ -733,22 +909,18 @@
       elapsed += dt;
       const t = elapsed;
 
-      // growth on load
-      if (t < GROW_END + 1.5) {
-        growables.forEach(g => {
-          const k = easeOut((t - g.start) / g.dur);
-          const count = g.mesh.userData.indexCount;
-          g.mesh.geometry.setDrawRange(0, Math.max(0, Math.floor((count * k) / 3) * 3));
-        });
-        decoMesh.scale.setScalar(Math.max(0.001, easeOut((t - 1.6) / 1.0)));
-      }
+      // growth on load (values tweened by Motion)
+      growables.forEach(g => {
+        if (g.done) return;
+        const count = g.mesh.userData.indexCount;
+        g.mesh.geometry.setDrawRange(0, Math.max(0, Math.floor((count * g.k) / 3) * 3));
+        if (g.k >= 1) g.done = true;
+      });
+      decoMesh.scale.setScalar(Math.max(0.001, deco.k));
 
-      // rotation: target > drag inertia > idle auto-rotation
+      // rotation: Motion spring > drag inertia > idle auto-rotation
       const idle = performance.now() - lastInteract > 3500;
-      if (target !== null) {
-        rot += (target - rot) * Math.min(1, dt * 3.2);
-        if (Math.abs(target - rot) < 0.002) target = null;
-      } else if (!dragging) {
+      if (!tweening && !dragging) {
         rot += vel;
         vel *= Math.pow(0.04, dt);
         if (idle && !state.panelOpen && !reduceMotion && state.focused === null) rot += dt * 0.12;
@@ -766,25 +938,19 @@
       binduGlow.material.opacity = 0.45 + Math.sin(t * 2) * 0.15;
       binduGlow.scale.setScalar(1.2 + Math.sin(t * 2) * 0.12);
 
-      // leaves
-      const sel = state.selected;
+      // leaves: appear / hover / dim are Motion-tweened values
       leaves.forEach(L => {
-        const appear = easeBack((t - L.appear) / 0.6);
-        const isHover = hovered && hovered.b === L.b && hovered.c === L.c;
-        const isSel = sel && sel.b === L.b && sel.c === L.c;
-        const dimmed = state.focused !== null && state.focused !== L.b;
-        L.hover += ((isHover || isSel ? 1 : 0) - L.hover) * Math.min(1, dt * 8);
-        const s = appear * (1 + L.hover * 0.28 - (dimmed ? 0.12 : 0));
-        L.scale += (s - L.scale) * Math.min(1, dt * 10);
-        L.group.scale.setScalar(Math.max(L.scale, 0.0001));
+        const s = L.appear * (1 + L.hover * 0.28 - L.dim * 0.12);
+        L.group.scale.setScalar(Math.max(s, 0.0001));
 
         const swing = reduceMotion ? 0 : Math.sin(t * 1.4 + L.phase) * 0.12 + Math.sin(t * 2.3 + L.phase * 2) * 0.04;
         L.group.quaternion.copy(L.group.userData.baseQuat).multiply(tmpQ.setFromAxisAngle(XAXIS, swing));
 
-        L.mat.color.lerp(dimmed ? L.dim : L.base, Math.min(1, dt * 5));
+        L.mat.color.copy(L.base).lerp(L.dimColor, L.dim);
         L.mat.emissiveIntensity = 0.08 + L.hover * 0.45;
         const pulse = 0.5 + 0.5 * Math.sin(t * 2.2 + L.phase);
-        L.halo.material.opacity = dimmed ? 0.08 : 0.28 + pulse * 0.22 + L.hover * 0.35;
+        const lit = 0.28 + pulse * 0.22 + L.hover * 0.35;
+        L.halo.material.opacity = lit + (0.08 - lit) * L.dim;
         L.halo.scale.setScalar(1.25 + pulse * 0.2 + L.hover * 0.4);
       });
 
@@ -800,9 +966,7 @@
       }
 
       // shift the view left when the side panel covers the right of the stage
-      const wantShift = state.panelOpen && !mqMobile.matches ? Math.min(W * 0.22, 230) : 0;
-      viewShift += (wantShift - viewShift) * Math.min(1, dt * 4);
-      if (Math.abs(viewShift) > 0.5) camera.setViewOffset(W, H, viewShift, 0, W, H);
+      if (Math.abs(view.shift) > 0.5) camera.setViewOffset(W, H, view.shift, 0, W, H);
       else camera.clearViewOffset();
 
       world.updateMatrixWorld(true);
@@ -816,7 +980,7 @@
         tmpV.project(camera);
         const x = (tmpV.x * 0.5 + 0.5) * W;
         const y = (-tmpV.y * 0.5 + 0.5) * H;
-        const grown = THREE.MathUtils.clamp((t - 1.6 - i * 0.12) / 0.6, 0, 1);
+        const grown = labelGrow[i].k;
         const el = labelEls[i];
         const focusBoost = state.focused === i ? 1 : 0;
         const vis = THREE.MathUtils.smoothstep(Math.max(depth, focusBoost), 0.28, 0.5);
@@ -832,8 +996,11 @@
     requestAnimationFrame(frame);
 
     return {
-      focus(i) { if (i !== null) faceBranch(i); noteInteraction(); },
-      select(b) { if (b !== null && b !== undefined) faceBranch(b); noteInteraction(); }
+      focus(i) { if (i !== null) faceBranch(i); refreshLeaves(); noteInteraction(); },
+      select(b) {
+        if (b !== null && b !== undefined) faceBranch(b);
+        refreshLeaves(); updateShift(); noteInteraction();
+      }
     };
   }
 
@@ -850,9 +1017,27 @@
   /* ---------------------------------------------------------
      boot
   --------------------------------------------------------- */
+  /* page-level entrance + scroll-triggered reveals */
+  function setupReveals() {
+    // frame ornaments fade in on load (opacity only: their transforms mirror them)
+    animate(".frame .orn", { opacity: [0, 1] }, tx({ duration: 1.2, delay: stagger(0.06, { startDelay: 0.1 }) }));
+    // hero: kicker, title, lede rise in one after another
+    reveal(".hero > *", { delay: 0.15, gap: 0.12, y: 22, duration: 0.9 });
+
+    const once = { amount: 0.2 };
+    inView(".stage", el => { animate(el, { opacity: [0, 1] }, tx({ duration: 1.2, ease: EASE })); }, { amount: 0.1 });
+    inView(".branches", el => {
+      animate(el.querySelectorAll(".chip"), { opacity: [0, 1], y: [18, 0], scale: [0.94, 1] },
+        tx({ type: "spring", stiffness: 260, damping: 22, delay: stagger(0.06, { startDelay: 0.1 }) }));
+    }, once);
+    inView(".branch-info", el => { reveal([el], { y: 24, duration: 0.8 }); }, once);
+    inView(".foot", el => { reveal(Array.from(el.children), { gap: 0.14, y: 14, duration: 0.9 }); }, { amount: 0.5 });
+  }
+
   buildMandala();
   buildChips();
   renderBranchInfo();
   buildMap();
+  setupReveals();
   tree = createTree();
 })();
