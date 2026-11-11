@@ -34,7 +34,7 @@ Use the CSS custom properties; never hard-code a new brown, gold or cream.
 | `--card` | `#fff7e8` | Panels, buttons, cards |
 | `--ink` | `#3f2414` | Headings, primary text |
 | `--ink-soft` | `#6e4c33` | Body copy, secondary text |
-| `--ink-faint` | `#9a7b5c` | Decorative or large text only (3.5:1, see §8) |
+| `--ink-faint` | `#7f6247` | Hints, captions, counts (lightest text colour allowed) |
 | `--gold` | `#c09452` | Ornaments, frame strokes, focus accents |
 | `--gold-soft` | `#dcc08e` | Soft fills inside ornaments |
 | `--gold-line` | `rgba(176,132,70,.55)` | Hairline borders |
@@ -173,11 +173,10 @@ Motion, exposed as `window.Motion`.
 - Check every change at **1440×900, 1280×800 and 390×844**. No horizontal
   scroll, no text under the frame ornaments, and the tree must be fully visible
   in the stage.
-- Text contrast must be ≥ 4.5:1 against paper/card. `--ink` (12.6:1) and
-  `--ink-soft` (6.8:1) pass. `--ink-faint` is only ~3.5:1, so new text that
-  people need to read uses `--ink-soft`. `--ink-faint` is for decorative or
-  large text only. (Existing hints, counts and captions still use it, which is
-  a known gap to fix if asked.)
+- Text contrast must be ≥ 4.5:1 against paper/card. `--ink` (12.6:1),
+  `--ink-soft` (6.8:1) and `--ink-faint` (5.0:1 on paper, 4.8:1 on the map
+  background) all pass. `--ink-faint` is the lightest text colour allowed:
+  never lighten it or set text in a lighter brown or gold.
 
 ## 9. Content
 

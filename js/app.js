@@ -49,14 +49,31 @@
     const accent = () => getComputedStyle(el).getPropertyValue("--c").trim() || "#c09452";
     const skipTransform = lift === 0 && rotate === 0;
     let hovering = false;
-    hover(el, () => {
-      hovering = true;
+    // colours for the hovered look; a pressed (selected) element keeps its stylesheet colours
+    const hoverColours = () => {
       const pressed = el.getAttribute("aria-pressed") === "true";
       const to = {};
+      if (border) to.borderColor = pressed ? restingValue(el, "borderColor") : accent();
+      if (bg) to.backgroundColor = pressed ? restingValue(el, "backgroundColor") : bg;
+      return to;
+    };
+    // clicking can toggle aria-pressed while the pointer is still over the element:
+    // move straight to the right colours instead of keeping the stale hover ones
+    if (el.hasAttribute("aria-pressed")) {
+      el.addEventListener("click", () => {
+        if (el.matches(":hover")) {
+          animate(el, hoverColours(), tx({ duration: 0.25, ease: EASE }));
+        } else {
+          // keyboard / touch: drop any leftover hover colours and use the stylesheet's
+          ["borderColor", "backgroundColor"].forEach(p => { el.style[p] = ""; });
+        }
+      });
+    }
+    hover(el, () => {
+      hovering = true;
+      const to = hoverColours();
       if (!skipTransform) { to.y = lift; if (rotate) to.rotate = rotate; }
       if (shadow) to.boxShadow = `${accent()} ${shadow}`;
-      if (border && !pressed) to.borderColor = accent();
-      if (bg && !pressed) to.backgroundColor = bg;
       animate(el, to, tx(SPRING));
       return () => {
         hovering = false;

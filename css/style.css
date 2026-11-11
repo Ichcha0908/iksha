@@ -6,7 +6,7 @@
   --card: #fff7e8;
   --ink: #3f2414;
   --ink-soft: #6e4c33;
-  --ink-faint: #9a7b5c;
+  --ink-faint: #7f6247;
   --gold: #c09452;
   --gold-soft: #dcc08e;
   --gold-line: rgba(176, 132, 70, 0.55);
@@ -341,7 +341,6 @@ h1 {
 .foot { margin-top: 56px; text-align: center; }
 .verse { margin: 0; font-family: var(--deva); font-size: 1.35rem; color: var(--ink-soft); }
 .verse-tr { margin: 4px 0 0; color: var(--ink-faint); font-size: .92rem; }
-.credit { margin: 22px auto 0; max-width: 560px; color: var(--ink-faint); font-size: .78rem; }
 
 /* ---------- detail panel ---------- */
 .panel {
