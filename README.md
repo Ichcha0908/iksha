@@ -25,6 +25,19 @@ near you* section list IKS centres, heritage sites, living traditions and
 - **Directions** opens Google Maps. From a typed city the route starts there;
   from "my location" Google uses the device's own location.
 
+Each result card shows **What they study** (for IKS Division centres, the
+full official project title) and three buttons: **Directions**, **Contact**
+and **Learn more**/**Website**. **Contact** opens:
+
+- **Person in charge** and their designation, with the source and its date.
+  For IKS Division centres this is the Principal Investigator named in the
+  official list; for the tree's centres, the head named in `js/data.js`.
+- **Office phone, office email and address**, only where an official source
+  lists them. The IKS Division doesn't publish PIs' phone numbers or e-mails,
+  so those cards say so and offer a web search for the PI instead. No
+  personal numbers are ever listed.
+- The centre's status and programme details, or the tree centre's activities.
+
 Location only works on `https://` (for example GitHub Pages) or `localhost`;
 some browsers block it for pages opened straight from disk, where typing a
 city still works.

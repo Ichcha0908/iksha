@@ -172,6 +172,12 @@ Motion, exposed as `window.Motion`.
 - Kind colours come from `IKS.placeKinds` in `js/data.js` and reuse the branch
   palette. A new kind gets an entry there, not a new hex in CSS.
 - Result cards are `.spot` (`.place` is taken by the panel's place line).
+- Each card's **Contact** section (`contactBlock` in `js/app.js`) shows the
+  person in charge with their designation and an `asOf` source, then only
+  institutional contacts, labelled "Office phone" and "Office email". Where a
+  source lists none, say so; never fill the gap with a guessed or personal
+  number. Entries with `ref` reuse the sourced details of that tree centre in
+  `js/data.js` rather than repeating them.
 - Location is used only in the browser. "Directions" sends no origin when the
   visitor used their location; only a typed city is sent as the origin.
 

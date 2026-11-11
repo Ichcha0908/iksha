@@ -461,6 +461,30 @@ h1 {
 .place-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 10px; }
 .place-actions .near-btn { padding: 8px 14px; font-size: .88rem; }
 
+.spot-label {
+  display: block; margin-bottom: 2px;
+  font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint);
+}
+.spot .place-about { color: var(--ink-soft); }
+.spot-contact {
+  overflow: hidden;
+  margin-top: 8px; padding: 12px 14px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--c) 7%, var(--card));
+  border: 1px solid rgba(176, 132, 70, 0.28);
+  font-size: .9rem;
+}
+.spot-contact > * + * { margin-top: 10px; }
+.sc-label { display: block; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 2px; }
+.sc-person b { display: block; font-weight: 500; color: var(--ink); }
+.sc-person span:not(.sc-label) { display: block; color: var(--ink-soft); }
+.sc-person small { display: block; margin-top: 2px; color: var(--ink-faint); font-size: .78rem; }
+.sc-none { margin: 0; color: var(--ink-soft); font-size: .86rem; }
+.sc-none a, .sc-source a, .spot-contact .pd-contact a { color: var(--ink); text-decoration-color: var(--c); }
+.sc-more .pd-list { font-size: .86rem; }
+.sc-source { margin: 0; color: var(--ink-faint); font-size: .78rem; }
+.spot-toggle[aria-expanded="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 10%, var(--card)); }
+
 .near-more-wrap { margin: 18px 0 0; }
 .near-note { margin: 26px auto 0; max-width: 680px; color: var(--ink-faint); font-size: .84rem; }
 

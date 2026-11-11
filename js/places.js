@@ -8,7 +8,12 @@
      with a physical site in India).
    - iksguru.in: heritage map, regional living traditions and AYUSH
      institutes (coordinates from the site).
-   - The tree's own centres (js/data.js), sourced there; shown at city level.
+   - The tree's own centres (js/data.js holds their sourced details;
+     `ref` links an entry to it). Shown at city level.
+   For iksindia.org centres, `lead` is the Principal Investigator named in
+   the IKS Division's list and `study` is the full official project title.
+   The IKS Division does not publish PIs' phone numbers or e-mails, so none
+   are given; `contact` appears only where an official page lists one.
    sanskritdocuments.org/sites could not be read (bot protection).
    Centres whose town could not be verified are left out.
 ------------------------------------------------------------------- */
@@ -23,6 +28,14 @@ window.IKS_PLACES = [
   "lng": 76.905,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Abhinavagupta Institute of Advanced Studies",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. R Ramanand",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -35,6 +48,14 @@ window.IKS_PLACES = [
   "lng": 85.82,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Advancing Tribal Community WellBeing through Sustainable Food and Healthcare Innovations",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Sanghamitra Pati",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -47,6 +68,14 @@ window.IKS_PLACES = [
   "lng": 76.491,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Amrita IKS Centre for Ayurveda, Vyakarana and Darshana",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Rammanohar P",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -59,6 +88,14 @@ window.IKS_PLACES = [
   "lng": 77.594,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "AnanthKumar Pratishthana",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "T S Gopal",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -71,6 +108,14 @@ window.IKS_PLACES = [
   "lng": 72.684,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Ancient Indian Technologies",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. V N Prabhakar",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -83,6 +128,14 @@ window.IKS_PLACES = [
   "lng": 95.326,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Establishment of Center for Indian Knowledge System in Indian Psychology",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Preeti Solanki",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -95,6 +148,14 @@ window.IKS_PLACES = [
   "lng": 87.311,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Archaeometallurgy and Heritage Materials Science for Interdisciplinary Research, Education and Dissemination at IIT Kharagpur",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Jayanta Das",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -107,6 +168,14 @@ window.IKS_PLACES = [
   "lng": 83.3,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Bharateeya Vidya Kendram Centre for Indian Knowledge System",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Perala Haripriya Varalakshmi",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -119,6 +188,14 @@ window.IKS_PLACES = [
   "lng": 79.327,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Bharatiya Gyan Sampada Kavikulaguru Kalidas Sanskrit University",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Kalapini Agasti",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -131,6 +208,14 @@ window.IKS_PLACES = [
   "lng": 77.58,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Center for ancient History and Culture",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. R.N. Iyengar",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -143,6 +228,14 @@ window.IKS_PLACES = [
   "lng": 77.594,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Center for Excellence in IKS-Chanakya University",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Vinayachandra Banavathy",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -155,6 +248,14 @@ window.IKS_PLACES = [
   "lng": 92.749,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Center for Indian Knowledge Systems- With Special Reference to North East Studies",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Gangabhushan",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -167,6 +268,14 @@ window.IKS_PLACES = [
   "lng": 77.594,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Center for Indian Psychology",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Vinayachandra Banavathy",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -179,6 +288,14 @@ window.IKS_PLACES = [
   "lng": 75.92,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Center for Indian Scientific Knowledge Systems (CISKS)",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Eswara Prasad Korimilli",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -191,6 +308,14 @@ window.IKS_PLACES = [
   "lng": 78.53,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Center For Studies in Indian Knowledge System(S), The English And Foreign Languages University (EFLU), Hyderabad",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Amith Kumar P V",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -203,6 +328,14 @@ window.IKS_PLACES = [
   "lng": 77.241,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Center for Studies on Himalayan Temple Architectural Heritage",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Dr. Virendra Kumar Paul",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -215,6 +348,14 @@ window.IKS_PLACES = [
   "lng": 83.37,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Center for Traditional Medicine",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Giridhar Vedantam",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -227,6 +368,14 @@ window.IKS_PLACES = [
   "lng": 77.54,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Center of excellence in Traditional Knowledge and Informatics in Ayurveda, Pharmacology of Medicinal Plants",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Subrahmanya Kumar K",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -239,6 +388,14 @@ window.IKS_PLACES = [
   "lng": 77.08,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "The course on mathematical logic and physical science as described by Nyaya Shastra",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Sudyumna Acharya",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -251,6 +408,14 @@ window.IKS_PLACES = [
   "lng": 74.78,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Centre for Himalayan Bharatiya Swasthya Paramparā: Śāstric and Oral Traditions of Ayurvedic Herbal Practices from Kashmir and TransHimalayan Regions",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Shahid Rasool",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -263,6 +428,14 @@ window.IKS_PLACES = [
   "lng": 72.58,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Centre for Indian Culinary and Performing Arts",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Ami Upadhyay",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -275,6 +448,14 @@ window.IKS_PLACES = [
   "lng": 77.21,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Centre for Indian Knowledge Systems & Applications (CIKSA)",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Ramanand Pandey",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -287,6 +468,14 @@ window.IKS_PLACES = [
   "lng": 77.41,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Centre for Indian Knowledge Systems of Town Planning (C-IKS-TP)",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Kshama Puntambekar",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -299,6 +488,14 @@ window.IKS_PLACES = [
   "lng": 79.89,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Centre for Research on Vishishtadvaitha Vedantha",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "R. Lakshminarasimhan",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -311,6 +508,14 @@ window.IKS_PLACES = [
   "lng": 79.49,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Centre for Vrikshayurved Research and Training",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Sunita T Pandey",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -323,6 +528,14 @@ window.IKS_PLACES = [
   "lng": 76.29,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Centre of Excellence for IKS-CKS Integration",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Ramesh Pattni",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -335,6 +548,14 @@ window.IKS_PLACES = [
   "lng": 76.29,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Unique Indian Knowledge Contributions of Kerala-Malayalam & Sanskrit",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof Sunitha Grandhee",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -347,6 +568,14 @@ window.IKS_PLACES = [
   "lng": 82.99,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Centre of Indian Knowledge System for the research on Vedic literature and its relation to modern sciences",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Upendra Kumar Tripathi",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -359,6 +588,14 @@ window.IKS_PLACES = [
   "lng": 82.99,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Courses on Indian Chemistry, Material Science and Metallurgy",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "V. Ramanathan",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -371,6 +608,14 @@ window.IKS_PLACES = [
   "lng": 77.41,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Dattopant Thengadi Institute of Cultural Studies",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Mukesh Kumar Mishra",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -383,6 +628,14 @@ window.IKS_PLACES = [
   "lng": 79.327,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Department of Bharatiya Darshan Kavikulaguru Kalidas Sanskrit University",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Kalapini Agasti",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -395,6 +648,14 @@ window.IKS_PLACES = [
   "lng": 77.21,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Sindhi Bhasha Kendra",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Ravi Prakash Tekchandani",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -407,6 +668,14 @@ window.IKS_PLACES = [
   "lng": 80.233,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Designing IKS Courses and Training Teachers on Computational Linguistics, Tarka and Science of Kal?",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Arnab Bhattacharya",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -419,6 +688,14 @@ window.IKS_PLACES = [
   "lng": 72.594,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Dharohar- Center for Indian Knowledge System",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Uday Vegad",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -431,6 +708,14 @@ window.IKS_PLACES = [
   "lng": 90.22,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Documentation and analysis of ethnic foods and food culture practices among the Garo tribes of Meghalaya",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Sheena Haorongbam",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -443,6 +728,14 @@ window.IKS_PLACES = [
   "lng": 81.63,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Documentation, Scientific Validation and Integration of Pharmacological Knowledge of Chhattisgarh Tribal Communities for Sustainable Healthcare and Survival",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Tanushree Chatterjee",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -455,6 +748,14 @@ window.IKS_PLACES = [
   "lng": 76.31,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Establishing an Indian Knowledge Systems(IKS) Research Centre for Mathematical, Physical, and Astronomical Sciences",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. K. Sreekanth",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -467,6 +768,14 @@ window.IKS_PLACES = [
   "lng": 85.31,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Establishment of IKS Centre for Scientific Documentation, training, and dissemination of India's (especially regional) Knowledge on Technological Heritage",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Kumar Amrendra",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -479,6 +788,14 @@ window.IKS_PLACES = [
   "lng": 77.594,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Exploring, Documenting and Interpreting ancient Dance Techniques and Traditions through a Multidisciplinary Lens for Contemporary Relevance: Emphasizing Āvantí Pravrtti- specified states of India. (8th -12th CE)",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Manorama B N",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -491,6 +808,14 @@ window.IKS_PLACES = [
   "lng": 77.75,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Indian Knowledge Systems (IKS) Center for Bhartiya Traditional Sports and Games at Shree Hanuman Vyayam Prasarak Mandal (HVPM), Amravati",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Madhuri Shrikant Chendke",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -503,6 +828,14 @@ window.IKS_PLACES = [
   "lng": 80.234,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IIT Madras Centre for Indian Knowledge Systems",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Aditya Kolachana",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -515,6 +848,14 @@ window.IKS_PLACES = [
   "lng": 82.99,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS at IITBHU Vararanasi",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. V Ramanathan",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -527,6 +868,14 @@ window.IKS_PLACES = [
   "lng": 92.83,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS Center",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Rupam Goswami",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -539,6 +888,14 @@ window.IKS_PLACES = [
   "lng": 94.47,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS Center for Evaluating the Indigenous Knowledge of water-managed systems in agriculture and culinary among the tribal community of Nagaland",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Chitrasen Lairenjam",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -551,6 +908,14 @@ window.IKS_PLACES = [
   "lng": 79.59,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS center for Kalamkari art, natural farming, and food preservation at IIT Tirupati",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. KSMS Raghavarao",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -563,6 +928,14 @@ window.IKS_PLACES = [
   "lng": 79.59,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS center for Natural farming using biomaterials based on ancient Indian practices of Vrikshayurveda at IIT Tirupati",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. KSMS Raghavarao",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -575,6 +948,14 @@ window.IKS_PLACES = [
   "lng": 76.94,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS Center For Kalaripayattu & Siddhar Traditions Training",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Arun Surendran",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -587,6 +968,14 @@ window.IKS_PLACES = [
   "lng": 75.871,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Iks Center in Jaina Mathematics, Critical Edition of Trishatika",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Anupam Jain",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -599,6 +988,14 @@ window.IKS_PLACES = [
   "lng": 77.63,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS Centre for Vedic Wellness Practices",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "N Sridhar",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -611,6 +1008,14 @@ window.IKS_PLACES = [
   "lng": 75.934,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS Centre, Nitc: Indian Knowledge Systems Approach To Deep Ecology: Integrating Sacred Geography And Sustainability",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Anjana Bhagyanathan",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -623,6 +1028,14 @@ window.IKS_PLACES = [
   "lng": 77.594,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS Learning Resources for School Education",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Sanjeev Sirnoorkar",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -635,6 +1048,14 @@ window.IKS_PLACES = [
   "lng": 77.21,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS Research Centre for Philosophical and Cognitive Sciences",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Jyotiranjan Beuria",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -647,6 +1068,14 @@ window.IKS_PLACES = [
   "lng": 77.811,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS Research Centre for Political, Economic, Social, historical and Civilizational Studies through Sanskrit Literary Traditions",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Mahabala Rao M G",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -659,6 +1088,14 @@ window.IKS_PLACES = [
   "lng": 85.83,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS Research Center on Vedic Cognitive Sciences and Speech Traditions",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Jitendra Kumar Rayaguru",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -671,6 +1108,14 @@ window.IKS_PLACES = [
   "lng": 77.164,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "IKS shikshaka prashikshana kendram for Ancient Indian Mathematics and Astronomy",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Priti Jagwani",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -683,6 +1128,14 @@ window.IKS_PLACES = [
   "lng": 76.99,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Indian Knowledge System and Mental Health Application Center",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Varun Dutt",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -695,6 +1148,14 @@ window.IKS_PLACES = [
   "lng": 72.899,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Indian Knowledge System Centre at Somaiya Vidyavihar University",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Chhaya Goswami",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -707,6 +1168,14 @@ window.IKS_PLACES = [
   "lng": 77.02,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Indic Center for Computational Thinking: An IKS Centre on Technology, Policy and Society",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Kanchi Gopinath",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -719,6 +1188,14 @@ window.IKS_PLACES = [
   "lng": 72.46,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Indic Cultural and Social Studies",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Ritendra (Ram) Sharma",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -731,6 +1208,14 @@ window.IKS_PLACES = [
   "lng": 79.088,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "JSDIVSR – IKS Shikshaka-Prashikshana Kendram",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Acharya Shreyas C. Kurhekar",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -743,6 +1228,14 @@ window.IKS_PLACES = [
   "lng": 88.37,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Living Memories in Built Heritage: Digital Archiving of Indian Knowledge Systems through Oral Narratives Surrounding Temples, Ghats and Heritage Mansions in BaranagarCossipore Area",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Sreyasi Chatterjee",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -755,6 +1248,14 @@ window.IKS_PLACES = [
   "lng": 79.156,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Manas Swasthya Kendram: An IKS Centre for Holistic Student Mental Wellbeing",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Ganesh N",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -767,6 +1268,14 @@ window.IKS_PLACES = [
   "lng": 77.21,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Maritimity Center",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Vice Admiral Pradeep Chauhan",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -779,6 +1288,14 @@ window.IKS_PLACES = [
   "lng": 74.02,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "MITSOA Center for Teacher Training in IKS",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Ashwini Pethe",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -791,6 +1308,14 @@ window.IKS_PLACES = [
   "lng": 77.199,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "National Resource Center of Indian Knowledge Systems for School Education",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Jyotsna Tiwari",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -803,6 +1328,14 @@ window.IKS_PLACES = [
   "lng": 79.42,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "National Sanskrit University, Tirupati",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Shivaram Ramakrishna Bhat",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -815,6 +1348,14 @@ window.IKS_PLACES = [
   "lng": 76.527,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "NEENV — IKS Centre for Vernacular Architecture & Socio-Cultural Heritage of Himachal Pradesh",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Chander Prakash",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -827,6 +1368,14 @@ window.IKS_PLACES = [
   "lng": 78.487,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Neuroprotective potential of Medhya Rasayana Drugs: An Integrative study of Ayurvedic texts and contemporary neuroscience",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Bandaru Nagaraju",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -839,6 +1388,14 @@ window.IKS_PLACES = [
   "lng": 77.15,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Parampara to practice: Ayush based assessment of deśaj āhāra and it’s nutritional resilience among lahaul–spiti and kinnaura tribal communities of Himachal Pradesh",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Joginder Singh Dhiman",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -851,6 +1408,14 @@ window.IKS_PLACES = [
   "lng": 77.596,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Pragna",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Ravindra PN",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -863,6 +1428,14 @@ window.IKS_PLACES = [
   "lng": 79.5,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Recovery and Refinement of Metals Using Traditional Indian Chemical Processes and Modern Metallurgical Validation",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Ashwini Prashant Dhonge",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -875,6 +1448,14 @@ window.IKS_PLACES = [
   "lng": 79.39,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "S.V. Vedic University - IKS Centre",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. A. Venkata Radhe Shyam",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -887,6 +1468,14 @@ window.IKS_PLACES = [
   "lng": 82.99,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Sampurnanand Sanskrit University IKS Center",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Gyanendra Sapkota",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -899,6 +1488,14 @@ window.IKS_PLACES = [
   "lng": 78.487,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Samskrita Bharati Telangana-IKS Research Center",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. A.V Narasimha Rao",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -911,6 +1508,14 @@ window.IKS_PLACES = [
   "lng": 79.02,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "SASTRA - IKS center for Ayurgenomics",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Prakash Shankaran",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -923,6 +1528,14 @@ window.IKS_PLACES = [
   "lng": 79.02,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "SASTRA - INSTITUTE OF Theoretical RESEARCH IN ?YURVEDA",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. S.Venugopalan",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -935,6 +1548,14 @@ window.IKS_PLACES = [
   "lng": 74.76,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "SDM College of Ayurveda and Hospital Kuthpady Udupi Karnataka",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Ravi K V",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -947,6 +1568,14 @@ window.IKS_PLACES = [
   "lng": 80.27,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Siddhanta IKS Training Centre",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Vaishnavi Nishankar",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -959,6 +1588,14 @@ window.IKS_PLACES = [
   "lng": 85.8,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "SOA IKS Bhasa Kendra",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Nachieketa Khamari Sharma",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -971,6 +1608,14 @@ window.IKS_PLACES = [
   "lng": 85.8,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "SOA IKS Research Centre for Jyotiryantras",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Nachieketa Khamari Sharma",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -983,6 +1628,14 @@ window.IKS_PLACES = [
   "lng": 76.69,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Vastuvidyagurukulam",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Suresh V",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -995,6 +1648,14 @@ window.IKS_PLACES = [
   "lng": 77.594,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Vyoma Indigenous Knowledge centre for holistic Accounting, Law, Political science & Administration (VIKALPA)",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Viswanathan Panchukrishnan",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -1007,6 +1668,14 @@ window.IKS_PLACES = [
   "lng": 73.712,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "Vāstu, Kala, and Darshan: Indigenous Knowledge Frameworks in the Art and Architecture of Mewar & it's surround Sun Temples",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Deepak Salvi",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -1019,6 +1688,14 @@ window.IKS_PLACES = [
   "lng": 75.62,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "भारतीय मानव्य प्राच्यविद्या अध्ययन केंद्र",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Prof. Ramchandra Pandurang Bhavsar",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -1031,6 +1708,14 @@ window.IKS_PLACES = [
   "lng": 79.73,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "युक्तिप्रसारणकेन्द्रं-SCSVMV ( Yukti Prasarana Kendram-SCSVMV)",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. K Srinivasa Rao",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -1043,6 +1728,14 @@ window.IKS_PLACES = [
   "lng": 75.78,
   "approx": true,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "संस्कृतशिक्षणप्रशिक्षणज्ञानविज्ञानसम्बर्धनकेन्द्र, महर्षि पाणिनि संस्कृत एवं वैदिक विश्वविद्यालय, देवास मार्ग, उज्जैन",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Dr. Akhilesh Kumar Dwived",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -1055,6 +1748,14 @@ window.IKS_PLACES = [
   "lng": 74.846,
   "approx": false,
   "about": "An IKS Centre funded by the IKS Division, Ministry of Education, for research, education and outreach.",
+  "study": "‘Paramparā in Practice’: Role of Traditional Communities of Tuluṇāḍu in Psychological Stress Release and Social Harmony through Ritual Practices",
+  "status": "In Progress",
+  "pillars": "Every IKS centre works on three pillars set by the IKS Division: research, education and mentoring, and outreach.",
+  "lead": {
+   "name": "Chandra Shekhara Shetty T",
+   "role": "Principal Investigator (PI), IKS Centre",
+   "asOf": "IKS Division list of IKS centres (iksindia.org), Nov 2026"
+  },
   "source": "iksindia"
  },
  {
@@ -1094,7 +1795,8 @@ window.IKS_PLACES = [
   "approx": false,
   "about": "IIT Kharagpur's centre for teaching and research in Indian Knowledge Systems.",
   "url": "https://www.ciks.iitkgp.ac.in/",
-  "source": "uem"
+  "source": "uem",
+  "ref": "Centre of Excellence for Indian Knowledge Systems, IIT Kharagpur"
  },
  {
   "name": "Samskrita Bharati",
@@ -1120,7 +1822,12 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "UEM Kolkata's IKS centre: courses, events, a student chapter and the Jñāna Pravāha magazine.",
   "url": "https://iks.uem.edu.in/",
-  "source": "uem"
+  "source": "uem",
+  "contact": {
+   "email": "iks@uem.edu.in",
+   "address": "University of Engineering and Management, University Area, Plot No. III-B/5, New Town, Action Area III, Kolkata 700156",
+   "source": "iks.uem.edu.in"
+  }
  },
  {
   "name": "Indian Knowledge Systems Division",
@@ -1133,7 +1840,12 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "The Ministry of Education division that funds IKS centres, research projects and internships.",
   "url": "https://iksindia.org/",
-  "source": "iksindia"
+  "source": "iksindia",
+  "contact": {
+   "email": "contactiks@iksindia.org",
+   "address": "301, 3rd Floor, J-Block, World Trade Center, New Delhi 110029",
+   "source": "iksindia.org"
+  }
  },
  {
   "name": "Nālandā Mahāvihāra",
@@ -1642,7 +2354,8 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "State Sanskrit university teaching the darśanas, Vyākaraṇa and manuscriptology.",
   "url": "https://ksu.ac.in/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "Karnataka Samskrit University"
  },
  {
   "name": "Maharshi Sandipani Rashtriya Veda Vidya Pratishthan",
@@ -1655,7 +2368,8 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "National body for the oral tradition of the Vedas; funds pathaśālās and runs Vedic schools.",
   "url": "https://msrvvp.ac.in/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "Maharshi Sandipani Rashtriya Veda Vidya Pratishthan"
  },
  {
   "name": "Gurukula Kangri (Deemed to be University)",
@@ -1668,7 +2382,8 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "Gurukula university founded in 1902 by Swami Shraddhanand; Vedic literature and Indian philosophy.",
   "url": "https://www.gkv.ac.in/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "Gurukula Kangri (Deemed to be University)"
  },
  {
   "name": "Central Institute of Classical Tamil",
@@ -1681,7 +2396,8 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "Research on classical Tamil and translations of the Tirukkuṟaḷ.",
   "url": "https://www.cict.in/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "Central Institute of Classical Tamil"
  },
  {
   "name": "Sahitya Akademi",
@@ -1694,7 +2410,22 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "National academy of letters: publications, awards and a multilingual library.",
   "url": "https://sahitya-akademi.gov.in/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "Sahitya Akademi"
+ },
+ {
+  "name": "Maharshi Panini Sanskrit Evam Vedic Vishwavidyalaya",
+  "kind": "institution",
+  "host": "Dewas Road",
+  "city": "Ujjain",
+  "state": "Madhya Pradesh",
+  "lat": 23.18,
+  "lng": 75.79,
+  "approx": true,
+  "about": "Sanskrit and Vedic university with a free spoken-Sanskrit programme.",
+  "url": "https://mpsvv.ac.in/",
+  "source": "tree",
+  "ref": "Maharshi Panini Sanskrit Evam Vedic Vishwavidyalaya"
  },
  {
   "name": "The Asiatic Society",
@@ -1707,7 +2438,8 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "Founded 1784; library, manuscripts, museum and the Bibliotheca Indica series.",
   "url": "https://asiaticsocietykolkata.org/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "The Asiatic Society"
  },
  {
   "name": "Kerala Kalamandalam",
@@ -1720,7 +2452,8 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "Deemed university for Kathakali, Kūṭiyāṭṭam, Mohiniyāṭṭam and other classical arts.",
   "url": "https://kalamandalam.ac.in/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "Kerala Kalamandalam"
  },
  {
   "name": "Kala Bhoomi – Odisha Crafts Museum",
@@ -1733,7 +2466,8 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "State crafts museum with live craft demonstrations and workshops.",
   "url": "https://www.odishacraftsmuseum.com/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "Kala Bhoomi – Odisha Crafts Museum"
  },
  {
   "name": "Arya Vaidya Sala",
@@ -1746,7 +2480,8 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "Ayurveda hospitals, research and classical medicines since 1902.",
   "url": "https://aryavaidyasala.com/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "Arya Vaidya Sala, Kottakkal"
  },
  {
   "name": "Kaivalyadhama Yoga Institute",
@@ -1759,7 +2494,8 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "Yoga research and training institute founded in 1924.",
   "url": "https://kdham.com/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "Kaivalyadhama Yoga Institute"
  },
  {
   "name": "Central Sanskrit University, Jaipur Campus",
@@ -1772,7 +2508,8 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "Jyotiṣa and other śāstra departments.",
   "url": "https://csu-jaipur.edu.in/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "Central Sanskrit University, Jaipur Campus"
  },
  {
   "name": "Krishna Kanta Handiqui Library",
@@ -1785,7 +2522,8 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "Manuscript Conservation Centre with about 4,500 manuscripts.",
   "url": "https://gauhati.ac.in/library/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "Krishna Kanta Handiqui Library, Gauhati University"
  },
  {
   "name": "Oriental Research Institute, Sri Venkateswara University",
@@ -1798,6 +2536,7 @@ window.IKS_PLACES = [
   "approx": true,
   "about": "16,948 manuscripts; critical editions and the Oriental Journal.",
   "url": "https://svuori.com/",
-  "source": "tree"
+  "source": "tree",
+  "ref": "Oriental Research Institute, Sri Venkateswara University"
  }
 ];

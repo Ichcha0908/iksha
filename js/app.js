@@ -293,6 +293,22 @@
 
   const esc = v => String(v).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 
+  /** tel: link for the first number in a phone string such as "080 2670 1303 (University) · …" */
+  function telLink(phone) {
+    const first = String(phone).split(/[·/(]/)[0].replace(/[^\d+]/g, "");
+    if (first.length < 8) return esc(phone);
+    const href = first.startsWith("+") ? first : "+91" + first.replace(/^0/, "");
+    return `<a href="tel:${href}">${esc(phone)}</a>`;
+  }
+  /** mailto: link for the first address in an e-mail string such as "x@y.in (Registrar)" */
+  function mailLink(email) {
+    const addr = String(email).split(" ")[0];
+    const rest = String(email).slice(addr.length).trim();
+    return `<a href="mailto:${esc(addr)}">${esc(addr)}</a>${rest ? " " + esc(rest) : ""}`;
+  }
+  /** the tree's centres by name, so other features can reuse their sourced details */
+  const CENTRE_BY_NAME = Object.fromEntries(BRANCHES.flatMap(b => b.centres.map(c => [c.name, c])));
+
   /** structured detail sections for a centre's panel */
   function centreDetails(c) {
     const out = [];
@@ -308,14 +324,8 @@
     const k = c.contact || {};
     const rows = [];
     if (k.address) rows.push(["Address", `<a href="https://www.google.com/maps/search/?${new URLSearchParams({ api: "1", query: `${c.name}, ${k.address}` })}" target="_blank" rel="noopener">${esc(k.address)}</a>`]);
-    if (k.phone) {
-      const first = k.phone.split(/[·/(]/)[0].replace(/[^\d+]/g, "");
-      rows.push(["Phone", first.length >= 8 ? `<a href="tel:${first.startsWith("+") ? first : "+91" + first.replace(/^0/, "")}">${esc(k.phone)}</a>` : esc(k.phone)]);
-    }
-    if (k.email) {
-      const addr = k.email.split(" ")[0];
-      rows.push(["Email", `<a href="mailto:${esc(addr)}">${esc(addr)}</a>${k.email.length > addr.length ? " " + esc(k.email.slice(addr.length).trim()) : ""}`]);
-    }
+    if (k.phone) rows.push(["Phone", telLink(k.phone)]);
+    if (k.email) rows.push(["Email", mailLink(k.email)]);
     if (k.hours) rows.push(["Hours", esc(k.hours)]);
     if (k.website) rows.push(["Website", `<a href="${esc(k.website)}" target="_blank" rel="noopener">${esc(k.website.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</a>`]);
     if (rows.length) {
@@ -1159,11 +1169,79 @@
     $("#near-cities").innerHTML = CITIES.map(c => `<option value="${esc(c.name)}">${esc(c.state)}</option>`).join("");
 
     /* ---- rendering ---- */
+    /* what the place studies or does, shown on the card */
+    function studyText(p) {
+      const c = p.ref && CENTRE_BY_NAME[p.ref];
+      if (c) return c.summary;
+      if (p.study) return p.study;
+      return p.about || "";
+    }
+
+    /* the expandable "Contact" component: person in charge, phone, e-mail, address, details */
+    function contactBlock(p, id) {
+      const c = p.ref && CENTRE_BY_NAME[p.ref];
+      const rows = [];
+      const lead = c ? (c.people || [])[0] : p.lead;
+      const contact = c ? (c.contact || {}) : (p.contact || {});
+      let html = "";
+
+      // person in charge
+      if (lead) {
+        html += `<div class="sc-person"><span class="sc-label">Person in charge</span>
+          <b>${esc(lead.name)}</b><span>${esc(lead.role)}</span>
+          ${lead.asOf ? `<small>As listed in: ${esc(lead.asOf)}</small>` : ""}</div>`;
+      } else if (p.kind === "heritage" || p.kind === "tradition") {
+        html += `<p class="sc-none">${p.kind === "heritage"
+          ? "A public heritage site, not an institution, so no single person is in charge. Visitor details are on the site's official page."
+          : "A living tradition carried by a community, not an institution, so no single person is in charge."}</p>`;
+      } else {
+        html += `<p class="sc-none">The source doesn't name a person in charge.</p>`;
+      }
+
+      // phone / e-mail / address (only what a source lists)
+      // every listed contact is an institutional one, so say so (it is not the person's own line)
+      if (contact.phone) rows.push(["Office phone", telLink(contact.phone)]);
+      if (contact.email) rows.push(["Office email", mailLink(contact.email)]);
+      if (contact.address) rows.push(["Address", esc(contact.address)]);
+      if (contact.hours) rows.push(["Hours", esc(contact.hours)]);
+      if (rows.length) {
+        html += `<dl class="pd-contact">${rows.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join("")}</dl>`;
+      }
+      if (!contact.phone && !contact.email && p.kind !== "heritage" && p.kind !== "tradition") {
+        const who = lead ? lead.name.replace(/^(Dr|Prof)\.?\s*/i, "") : p.name;
+        const q = new URLSearchParams({ q: `${who} ${p.host || p.name} contact email` }).toString();
+        html += `<p class="sc-none">${p.source === "iksindia"
+          ? "The IKS Division doesn't publish phone numbers or e-mails for its centres."
+          : "The source doesn't list a phone number or e-mail."}
+          <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">Search for ${lead ? esc(lead.name) + "'s" : "their"} contact</a>.</p>`;
+      }
+
+      // more about the work
+      if (c && c.activities && c.activities.length) {
+        html += `<div class="sc-more"><span class="sc-label">What happens here</span>
+          <ul class="pd-list">${c.activities.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>`;
+      } else if (p.source === "iksindia" && p.status) {
+        html += `<div class="sc-more"><span class="sc-label">About this centre</span>
+          <ul class="pd-list"><li>Status: ${esc(p.status.toLowerCase())}</li><li>${esc(p.pillars || "")}</li><li>Funded by the IKS Division, Ministry of Education</li></ul></div>`;
+      }
+
+      const src = c ? (c.sources || [])[0] : null;
+      const srcLine = src ? `<a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.label)}</a> and the leaf's full source list`
+        : p.source === "iksindia" ? `<a href="https://iksindia.org/search_site_centers/index.php" target="_blank" rel="noopener">IKS Division list of centres</a>`
+        : p.source === "uem" ? `<a href="https://iks.uem.edu.in/iks-centres/" target="_blank" rel="noopener">iks.uem.edu.in</a>`
+        : `<a href="https://iksguru.in/" target="_blank" rel="noopener">iksguru.in</a>`;
+      html += `<p class="sc-source">Source: ${srcLine}.</p>`;
+      return `<div class="spot-contact" id="${id}" hidden>${html}</div>`;
+    }
+
+    let cardSeq = 0;
     function card(p) {
       const k = kindOf(p.kind);
       const where = [p.host && p.kind !== "tradition" ? esc(p.host) : null, `${esc(p.city)}, ${esc(p.state)}`]
         .filter(Boolean).join(" · ");
       const info = p.url ? "Website" : "Learn more";
+      const study = studyText(p);
+      const id = `spot-contact-${++cardSeq}`;
       return `
         <li class="spot" style="--c:${k.color}">
           <div class="place-top">
@@ -1172,15 +1250,37 @@
           </div>
           <h3>${esc(p.name)}</h3>
           <p class="place-host">${where}${p.approx ? '<span class="approx" title="Shown at the city centre: the source gives no street address">approx.</span>' : ""}</p>
-          ${p.about ? `<p class="place-about">${esc(p.about)}</p>` : ""}
+          ${study ? `<p class="place-about"><span class="spot-label">${p.kind === "heritage" || p.kind === "tradition" ? "What it is" : "What they study"}</span>${esc(study)}</p>` : ""}
+          ${contactBlock(p, id)}
           <div class="place-actions">
             <a class="near-btn primary" style="--c:${k.color}" href="${esc(directionsUrl(p))}" target="_blank" rel="noopener">
               <svg aria-hidden="true"><use href="#pin-icon"/></svg>Directions
             </a>
+            <button type="button" class="near-btn spot-toggle" style="--c:${k.color}" aria-expanded="false" aria-controls="${id}">Contact</button>
             <a class="near-btn" style="--c:${k.color}" href="${esc(infoUrl(p))}" target="_blank" rel="noopener">${info}</a>
           </div>
         </li>`;
     }
+
+    // open / close a card's contact section (one listener for the whole list)
+    list.addEventListener("click", e => {
+      const btn = e.target.closest(".spot-toggle");
+      if (!btn) return;
+      const panel = document.getElementById(btn.getAttribute("aria-controls"));
+      const open = btn.getAttribute("aria-expanded") !== "true";
+      btn.setAttribute("aria-expanded", String(open));
+      btn.textContent = open ? "Hide contact" : "Contact";
+      panel.anim?.stop();
+      if (open) {
+        panel.hidden = false;
+        const h = panel.scrollHeight;
+        panel.anim = animate(panel, { height: [0, h], opacity: [0, 1] }, tx({ duration: 0.35, ease: EASE }));
+        panel.anim.then(() => { panel.style.height = ""; });
+      } else {
+        panel.anim = animate(panel, { height: [panel.offsetHeight, 0], opacity: [1, 0] }, tx({ duration: 0.25, ease: EASE }));
+        panel.anim.then(() => { if (btn.getAttribute("aria-expanded") === "false") { panel.hidden = true; panel.style.height = ""; } });
+      }
+    });
 
     function render(animateIn) {
       if (!near.origin) return;
