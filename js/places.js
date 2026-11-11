@@ -8,6 +8,7 @@
      with a physical site in India).
    - iksguru.in: heritage map, regional living traditions and AYUSH
      institutes (coordinates from the site).
+   - The tree's own centres (js/data.js), sourced there; shown at city level.
    sanskritdocuments.org/sites could not be read (bot protection).
    Centres whose town could not be verified are left out.
 ------------------------------------------------------------------- */
@@ -1629,5 +1630,174 @@ window.IKS_PLACES = [
   "about": "National institute for yoga education, therapy and research.",
   "url": "https://yogamdniy.nic.in",
   "source": "iksguru"
+ },
+ {
+  "name": "Karnataka Samskrit University",
+  "kind": "institution",
+  "host": "Pampa Mahakavi Road, Chamarajpet",
+  "city": "Bengaluru",
+  "state": "Karnataka",
+  "lat": 12.962,
+  "lng": 77.568,
+  "approx": true,
+  "about": "State Sanskrit university teaching the darśanas, Vyākaraṇa and manuscriptology.",
+  "url": "https://ksu.ac.in/",
+  "source": "tree"
+ },
+ {
+  "name": "Maharshi Sandipani Rashtriya Veda Vidya Pratishthan",
+  "kind": "institution",
+  "host": "Ministry of Education",
+  "city": "Ujjain",
+  "state": "Madhya Pradesh",
+  "lat": 23.18,
+  "lng": 75.78,
+  "approx": true,
+  "about": "National body for the oral tradition of the Vedas; funds pathaśālās and runs Vedic schools.",
+  "url": "https://msrvvp.ac.in/",
+  "source": "tree"
+ },
+ {
+  "name": "Gurukula Kangri (Deemed to be University)",
+  "kind": "institution",
+  "host": "Kankhal",
+  "city": "Haridwar",
+  "state": "Uttarakhand",
+  "lat": 29.92,
+  "lng": 78.12,
+  "approx": true,
+  "about": "Gurukula university founded in 1902 by Swami Shraddhanand; Vedic literature and Indian philosophy.",
+  "url": "https://www.gkv.ac.in/",
+  "source": "tree"
+ },
+ {
+  "name": "Central Institute of Classical Tamil",
+  "kind": "institution",
+  "host": "Perumbakkam",
+  "city": "Chennai",
+  "state": "Tamil Nadu",
+  "lat": 12.89,
+  "lng": 80.2,
+  "approx": true,
+  "about": "Research on classical Tamil and translations of the Tirukkuṟaḷ.",
+  "url": "https://www.cict.in/",
+  "source": "tree"
+ },
+ {
+  "name": "Sahitya Akademi",
+  "kind": "institution",
+  "host": "Rabindra Bhavan, Ferozeshah Road",
+  "city": "New Delhi",
+  "state": "Delhi",
+  "lat": 28.62,
+  "lng": 77.23,
+  "approx": true,
+  "about": "National academy of letters: publications, awards and a multilingual library.",
+  "url": "https://sahitya-akademi.gov.in/",
+  "source": "tree"
+ },
+ {
+  "name": "The Asiatic Society",
+  "kind": "institution",
+  "host": "1 Park Street",
+  "city": "Kolkata",
+  "state": "West Bengal",
+  "lat": 22.553,
+  "lng": 88.352,
+  "approx": true,
+  "about": "Founded 1784; library, manuscripts, museum and the Bibliotheca Indica series.",
+  "url": "https://asiaticsocietykolkata.org/",
+  "source": "tree"
+ },
+ {
+  "name": "Kerala Kalamandalam",
+  "kind": "institution",
+  "host": "Vallathol Nagar",
+  "city": "Cheruthuruthy, Thrissur",
+  "state": "Kerala",
+  "lat": 10.74,
+  "lng": 76.28,
+  "approx": true,
+  "about": "Deemed university for Kathakali, Kūṭiyāṭṭam, Mohiniyāṭṭam and other classical arts.",
+  "url": "https://kalamandalam.ac.in/",
+  "source": "tree"
+ },
+ {
+  "name": "Kala Bhoomi – Odisha Crafts Museum",
+  "kind": "institution",
+  "host": "Shilpi Vihar, Pokhariput",
+  "city": "Bhubaneswar",
+  "state": "Odisha",
+  "lat": 20.27,
+  "lng": 85.8,
+  "approx": true,
+  "about": "State crafts museum with live craft demonstrations and workshops.",
+  "url": "https://www.odishacraftsmuseum.com/",
+  "source": "tree"
+ },
+ {
+  "name": "Arya Vaidya Sala",
+  "kind": "ayush",
+  "host": "Kottakkal",
+  "city": "Kottakkal, Malappuram",
+  "state": "Kerala",
+  "lat": 11.0,
+  "lng": 76.0,
+  "approx": true,
+  "about": "Ayurveda hospitals, research and classical medicines since 1902.",
+  "url": "https://aryavaidyasala.com/",
+  "source": "tree"
+ },
+ {
+  "name": "Kaivalyadhama Yoga Institute",
+  "kind": "ayush",
+  "host": "Swami Kuvalayananda Marg",
+  "city": "Lonavala",
+  "state": "Maharashtra",
+  "lat": 18.75,
+  "lng": 73.41,
+  "approx": true,
+  "about": "Yoga research and training institute founded in 1924.",
+  "url": "https://kdham.com/",
+  "source": "tree"
+ },
+ {
+  "name": "Central Sanskrit University, Jaipur Campus",
+  "kind": "institution",
+  "host": "Gopalpura Bypass, Triveni Nagar",
+  "city": "Jaipur",
+  "state": "Rajasthan",
+  "lat": 26.87,
+  "lng": 75.77,
+  "approx": true,
+  "about": "Jyotiṣa and other śāstra departments.",
+  "url": "https://csu-jaipur.edu.in/",
+  "source": "tree"
+ },
+ {
+  "name": "Krishna Kanta Handiqui Library",
+  "kind": "institution",
+  "host": "Gauhati University",
+  "city": "Guwahati",
+  "state": "Assam",
+  "lat": 26.15,
+  "lng": 91.66,
+  "approx": true,
+  "about": "Manuscript Conservation Centre with about 4,500 manuscripts.",
+  "url": "https://gauhati.ac.in/library/",
+  "source": "tree"
+ },
+ {
+  "name": "Oriental Research Institute, Sri Venkateswara University",
+  "kind": "institution",
+  "host": "Sri Venkateswara University",
+  "city": "Tirupati",
+  "state": "Andhra Pradesh",
+  "lat": 13.63,
+  "lng": 79.42,
+  "approx": true,
+  "about": "16,948 manuscripts; critical editions and the Oriental Journal.",
+  "url": "https://svuori.com/",
+  "source": "tree"
  }
 ];

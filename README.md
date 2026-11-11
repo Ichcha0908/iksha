@@ -75,10 +75,49 @@ transitions.
 - Visitors who turn on "reduce motion" in their system settings get every
   change instantly.
 
+## The centres on the tree
+
+Each leaf is a real organisation. Its panel shows a summary, the India map,
+*What happens here*, *People*, *Visit & contact* (address opens Google Maps;
+phone and e-mail are tappable) and *Sources*. Facts were checked in
+November 2026 against official pages wherever those could be read
+(prospectuses, annual reports, RTI handbooks, university and institute
+websites), otherwise against government or news sources, all linked in the
+panel. People are named only where a source names them, with that source's
+date; only institutional contacts are listed.
+
+The original 15 leaf names (for example "Darshana Research Centre" or
+"Pandulipi Bhandar") could not be found as real organisations, so each was
+replaced with a real centre in the same branch, keeping the state wherever
+a real counterpart existed:
+
+| Placeholder | Real centre |
+| --- | --- |
+| Darshana Research Centre (KA) | Karnataka Samskrit University, Bengaluru |
+| Vedavidya Pratishthan (UP) | Maharshi Sandipani Rashtriya Veda Vidya Pratishthan, Ujjain (MP) |
+| Himalaya Jnana Peeth (UK) | Gurukula Kangri (Deemed to be University), Haridwar |
+| Bhasha Bharati Institute (TN) | Central Institute of Classical Tamil, Chennai |
+| Sampreshana Studio (DL) | Sahitya Akademi, New Delhi |
+| Sambhashana Sangha (MP) | Maharshi Panini Sanskrit Evam Vedic Vishwavidyalaya, Ujjain |
+| Kavya Sadan (WB) | The Asiatic Society, Kolkata |
+| Natyashala Trust (KL) | Kerala Kalamandalam, Cheruthuruthy |
+| Shilpa Kala Mandir (OR) | Kala Bhoomi – Odisha Crafts Museum, Bhubaneswar |
+| Ayu Sutra Foundation (KL) | Arya Vaidya Sala, Kottakkal |
+| Yoga Vidya Kendra (MH) | Kaivalyadhama Yoga Institute, Lonavala |
+| Ganita Jyotisha Parishad (RJ) | Central Sanskrit University, Jaipur Campus (Jyotiṣa) |
+| Vastu Shilpa Sansthan (TG) | Centre of Excellence for IKS, IIT Kharagpur (WB) |
+| Pandulipi Bhandar (AS) | Krishna Kanta Handiqui Library, Gauhati University |
+| Granthalaya Trust (AP) | Oriental Research Institute, Sri Venkateswara University, Tirupati |
+
+Each entry in `js/data.js` keeps the placeholder it replaced in `was`.
+
 ## Editing content
 
-All branches and centres live in `js/data.js`. Add a centre by appending
-`{ name, type, state }` to a branch's `centres` list. `state` is a two-letter
+All branches and centres live in `js/data.js`. Add a centre by appending an
+object to a branch's `centres` list: at least `{ name, type, state, city,
+summary, sources }`, plus optional `founded`, `activities`, `people`
+(`{ name, role, asOf }`) and `contact` (`address`, `phone`, `email`,
+`hours`, `website`). `state` is a two-letter
 id such as `ka` (Karnataka) or `dl` (Delhi); the full list is in
 `STATE_ANCHORS` in the same file.
 

@@ -164,6 +164,7 @@ h1 {
   margin: 4px -24px 0;
   touch-action: pan-y;
   user-select: none;
+  isolation: isolate; /* keep label z-indexes inside the stage, below the panel */
   -webkit-user-select: none;
 }
 .stage canvas {
@@ -476,7 +477,7 @@ h1 {
   top: calc(var(--frame-inset) + 22px);
   right: calc(var(--frame-inset) + 22px);
   bottom: calc(var(--frame-inset) + 22px);
-  width: min(430px, calc(100vw - 48px));
+  width: min(470px, calc(100vw - 48px));
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 34px 30px 28px;
@@ -588,6 +589,42 @@ h1 {
   stroke-width: 7px;
   stroke-linejoin: round;
 }
+
+.panel-summary { margin: 14px 0 0; color: var(--ink-soft); font-size: .96rem; line-height: 1.55; }
+.panel-summary .founded { color: var(--ink); font-weight: 500; }
+
+.panel-details { margin-top: 6px; }
+.pd-section { margin-top: 20px; }
+.pd-section h3 {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 0 8px;
+  font-family: var(--serif); font-weight: 400; font-size: 1.08rem; color: var(--ink);
+}
+.pd-section h3::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--c); flex: none;
+}
+.pd-list { margin: 0; padding: 0 0 0 18px; color: var(--ink-soft); font-size: .92rem; line-height: 1.5; }
+.pd-list li + li { margin-top: 4px; }
+.pd-list li::marker { color: var(--c); }
+.pd-people { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pd-people li {
+  padding: 9px 12px; border-radius: 10px;
+  background: color-mix(in srgb, var(--c) 7%, var(--card));
+  border: 1px solid rgba(176, 132, 70, 0.25);
+  font-size: .92rem; line-height: 1.35;
+}
+.pd-people b { display: block; font-weight: 500; color: var(--ink); }
+.pd-people span { color: var(--ink-soft); }
+.pd-people small { display: block; margin-top: 2px; color: var(--ink-faint); font-size: .78rem; }
+.pd-empty { margin: 0; color: var(--ink-faint); font-size: .9rem; font-style: italic; }
+.pd-contact { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: .92rem; }
+.pd-contact dt { color: var(--ink-faint); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; padding-top: 2px; }
+.pd-contact dd { margin: 0; color: var(--ink); line-height: 1.45; overflow-wrap: anywhere; }
+.pd-contact a, .pd-sources a { color: var(--ink); text-decoration-color: var(--c); }
+.pd-sources { margin: 0; padding: 0 0 0 18px; font-size: .84rem; line-height: 1.45; color: var(--ink-soft); }
+.pd-sources li + li { margin-top: 3px; }
+.pd-checked { margin: 8px 0 0; color: var(--ink-faint); font-size: .8rem; }
 
 .siblings { margin-top: 22px; }
 .siblings h3 {

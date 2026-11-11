@@ -291,6 +291,45 @@
   let lastFocus = null;
   const mqMobile = window.matchMedia("(max-width: 720px)");
 
+  const esc = v => String(v).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+
+  /** structured detail sections for a centre's panel */
+  function centreDetails(c) {
+    const out = [];
+    if (c.activities && c.activities.length) {
+      out.push(`<section class="pd-section"><h3>What happens here</h3>
+        <ul class="pd-list">${c.activities.map(a => `<li>${esc(a)}</li>`).join("")}</ul></section>`);
+    }
+    out.push(`<section class="pd-section"><h3>People</h3>${
+      c.people && c.people.length
+        ? `<ul class="pd-people">${c.people.map(p => `<li><b>${esc(p.name)}</b><span>${esc(p.role)}</span>${p.asOf ? `<small>As listed in: ${esc(p.asOf)}</small>` : ""}</li>`).join("")}</ul>`
+        : `<p class="pd-empty">The sources don't name the people who run it. Contact the institution below.</p>`
+    }</section>`);
+    const k = c.contact || {};
+    const rows = [];
+    if (k.address) rows.push(["Address", `<a href="https://www.google.com/maps/search/?${new URLSearchParams({ api: "1", query: `${c.name}, ${k.address}` })}" target="_blank" rel="noopener">${esc(k.address)}</a>`]);
+    if (k.phone) {
+      const first = k.phone.split(/[·/(]/)[0].replace(/[^\d+]/g, "");
+      rows.push(["Phone", first.length >= 8 ? `<a href="tel:${first.startsWith("+") ? first : "+91" + first.replace(/^0/, "")}">${esc(k.phone)}</a>` : esc(k.phone)]);
+    }
+    if (k.email) {
+      const addr = k.email.split(" ")[0];
+      rows.push(["Email", `<a href="mailto:${esc(addr)}">${esc(addr)}</a>${k.email.length > addr.length ? " " + esc(k.email.slice(addr.length).trim()) : ""}`]);
+    }
+    if (k.hours) rows.push(["Hours", esc(k.hours)]);
+    if (k.website) rows.push(["Website", `<a href="${esc(k.website)}" target="_blank" rel="noopener">${esc(k.website.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</a>`]);
+    if (rows.length) {
+      out.push(`<section class="pd-section"><h3>Visit &amp; contact</h3>
+        <dl class="pd-contact">${rows.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join("")}</dl></section>`);
+    }
+    if (c.sources && c.sources.length) {
+      out.push(`<section class="pd-section"><h3>Sources</h3>
+        <ol class="pd-sources">${c.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></li>`).join("")}</ol>
+        <p class="pd-checked">Checked November 2026. Office-holders change, so confirm with the institution before visiting.</p></section>`);
+    }
+    return out.join("");
+  }
+
   function openCentre(bi, ci) {
     const b = BRANCHES[bi];
     const c = b.centres[ci];
@@ -305,9 +344,11 @@
     $("#panel-kicker").innerHTML = `<span class="dot"></span>${b.name} · Leaf ${ci + 1} of ${b.centres.length}`;
     $("#panel-title").textContent = c.name;
     $("#panel-type").textContent = c.type;
-    $("#panel-place").textContent = `${STATE_NAMES[c.state]}, India`;
-    $("#map-caption").textContent = `${c.name} is located in ${STATE_NAMES[c.state]}.`;
+    $("#panel-place").textContent = [c.city, STATE_NAMES[c.state]].filter(Boolean).join(", ");
+    $("#panel-summary").innerHTML = (c.founded ? `<span class="founded">Founded ${esc(c.founded)}.</span> ` : "") + esc(c.summary || "");
+    $("#map-caption").textContent = `${c.name} is in ${c.city ? c.city + ", " : ""}${STATE_NAMES[c.state]}.`;
     showOnMap(c.state, b.color);
+    $("#panel-details").innerHTML = centreDetails(c);
 
     const list = $("#panel-siblings");
     list.innerHTML = b.centres.map((s, k) => `
@@ -334,7 +375,7 @@
       }
     }
     // staggered reveal of the panel contents (also when switching centres)
-    reveal(panel.querySelectorAll(".panel-kicker, h2, .panel-meta, .map, .siblings"),
+    reveal(panel.querySelectorAll(".panel-kicker, h2, .panel-meta, .panel-summary, .map, .pd-section, .siblings"),
       { delay: firstOpen ? 0.12 : 0, gap: 0.06, duration: 0.55 });
     panel.setAttribute("aria-hidden", "false");
     panel.scrollTop = 0;

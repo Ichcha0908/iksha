@@ -154,7 +154,8 @@ Motion, exposed as `window.Motion`.
 ## 7. Centre panel and map
 
 - Panel order: kicker (branch dot + name + "Leaf n of m") → name (serif) →
-  type badge + place → India map → other leaves on this branch.
+  type badge + place → summary → India map → What happens here → People →
+  Visit & contact → Sources → other leaves on this branch.
 - The map uses `js/india-map.js` (CC BY 4.0, credit kept in the README and the
   file header). The state fill animates to the branch colour; the pin goes
   at `STATE_ANCHORS[state]`. Pins mark the **state**. If exact locations are
@@ -192,8 +193,19 @@ Motion, exposed as `window.Motion`.
 
 ## 9. Content
 
-- Branches and centres live only in `js/data.js`:
-  `{ name, type, state }`, where `state` is a key of `STATE_ANCHORS`.
+- Branches and centres live only in `js/data.js`. A centre is
+  `{ name, type, state, city, founded, summary, activities[], people[],
+  contact{}, sources[] }`, where `state` is a key of `STATE_ANCHORS`.
+- **Every centre must be a real, verifiable organisation.** Never write
+  placeholder or invented centres, people, phone numbers or addresses. If a
+  requested name can't be found, say so and propose a real counterpart.
+- Prefer official sources (the institution's site, annual reports,
+  prospectuses, government pages) and link each one in `sources`. Name a
+  person only if a source names them, and record that source in `asOf`,
+  because office-holders change.
+- List institutional contacts only (office lines, role e-mails, websites),
+  never personal mobile numbers or personal e-mail addresses, even when a
+  source prints them.
 - Keep the user's spelling of centre names and types. Flag obvious duplicates
   or typos to the user instead of silently changing them.
 - Branch blurbs are one sentence, factual, with IAST terms where natural.
