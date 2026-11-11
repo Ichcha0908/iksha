@@ -10,6 +10,38 @@ An interactive 3D "Tree of Knowledge" for Indian Knowledge Systems (IKS).
 - Drag to turn the tree. The branch buttons under the tree also turn it and
   list each branch's centres (keyboard friendly, and they work without WebGL).
 
+## Find IKS places near me
+
+The **Find IKS places near me** button (top of the page) and the *IKS places
+near you* section list IKS centres, heritage sites, living traditions and
+Āyurveda/Yoga institutes near the visitor:
+
+- **Use my location** asks the browser for the visitor's position. It stays in
+  the browser and is only used to measure distances.
+- **Type a city** (for example "Chandigarh") to see what is near a place you
+  are visiting. The city list is in `js/cities.js`.
+- Choose a distance (50, 100, 200 or 300 km; 100 km by default) and which kinds
+  of place to show. If nothing is in range, the nearest places are shown.
+- **Directions** opens Google Maps. From a typed city the route starts there;
+  from "my location" Google uses the device's own location.
+
+Location only works on `https://` (for example GitHub Pages) or `localhost`;
+some browsers block it for pages opened straight from disk, where typing a
+city still works.
+
+Places live in `js/places.js`, generated from:
+
+| Source | What was used |
+| --- | --- |
+| [iksindia.org](https://iksindia.org/) | The IKS Division's list of IKS centres (89 after removing duplicates). The list gives institute and state but no address, so each centre is placed at its campus, or at its city when marked *approx.* Seven centres whose town couldn't be verified are left out. |
+| [iks.uem.edu.in](https://iks.uem.edu.in/iks-centres/) | "IKS Centres across the World": the six with a physical site in India. |
+| [iksguru.in](https://iksguru.in/) | Heritage map (ancient universities, observatories, temples, seats of learning), regional living traditions and AYUSH institutes, with the site's coordinates. Places outside India are left out. |
+| [sanskritdocuments.org](https://sanskritdocuments.org/sites/) | Not used: the site blocks automated access. |
+
+None of the sources lists dated, located events (the IKS Division's
+"Upcoming events" page was empty), so the section lists places rather than
+activities.
+
 ## Run it
 
 It is a static site with no build step. Open `index.html` in a browser, or
@@ -57,7 +89,9 @@ id such as `ka` (Karnataka) or `dl` (Delhi); the full list is in
 | `index.html` | Page structure and the ornamental frame (SVG symbols) |
 | `css/style.css` | Styling, colours, frame and panel |
 | `js/app.js` | 3D tree (three.js), interaction, map and panel |
-| `js/data.js` | Branches, centres and map pin positions |
+| `js/data.js` | Branches, centres, map pin positions and place-kind colours |
+| `js/places.js` | Places for "Find IKS places near me" (with sources) |
+| `js/cities.js` | Cities a visitor can search from |
 | `js/india-map.js` | State outlines of India |
 | `vendor/three.min.js` | three.js r160 (MIT) |
 | `vendor/motion.js` | Motion 12.23.12, the plain-JS build of Framer Motion (MIT) |

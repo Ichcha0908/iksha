@@ -108,6 +108,11 @@
         <span class="tree-name">Jñāna Vṛkṣa</span>, the Tree of Knowledge. Six branches grow from one root,
         and each leaf is a centre that keeps a tradition alive. Turn the tree and pick a leaf.
       </p>
+      <p class="hero-cta">
+        <button type="button" class="near-btn primary" id="hero-near">
+          <svg aria-hidden="true"><use href="#pin-icon"/></svg>Find IKS places near me
+        </button>
+      </p>
     </header>
 
     <section class="stage" id="stage" aria-label="Interactive 3D tree of knowledge">
@@ -126,6 +131,51 @@
     <nav class="branches" id="branches" aria-label="Branches of knowledge"></nav>
 
     <section class="branch-info" id="branch-info" aria-live="polite"></section>
+
+    <section class="nearby" id="nearby" aria-labelledby="nearby-title">
+      <p class="nearby-sa" lang="sa">समीपे</p>
+      <h2 id="nearby-title">IKS places near you</h2>
+      <p class="nearby-lede">
+        IKS centres, heritage sites and living traditions around you, each one a click away from directions in Google Maps.
+      </p>
+
+      <div class="near-controls">
+        <button type="button" class="near-btn primary" id="near-locate">
+          <svg aria-hidden="true"><use href="#pin-icon"/></svg>Use my location
+        </button>
+        <span class="near-or">or</span>
+        <form class="near-city" id="near-city-form" role="search">
+          <label class="sr-only" for="near-city">Search near a city</label>
+          <input id="near-city" name="city" list="near-cities" autocomplete="off"
+                 placeholder="Type a city, e.g. Chandigarh">
+          <datalist id="near-cities"></datalist>
+          <button type="submit" class="near-btn">Search</button>
+        </form>
+      </div>
+
+      <div class="near-options">
+        <div class="near-group" role="group" aria-label="Distance">
+          <span class="near-label">Within</span>
+          <span id="near-radius"></span>
+        </div>
+        <div class="near-group" role="group" aria-label="Kinds of place">
+          <span class="near-label">Show</span>
+          <span id="near-kinds"></span>
+        </div>
+      </div>
+
+      <p class="near-status" id="near-status" aria-live="polite"></p>
+      <ul class="near-results" id="near-results"></ul>
+      <p class="near-more-wrap"><button type="button" class="near-btn" id="near-more" hidden></button></p>
+
+      <p class="near-note">
+        Your location stays in this browser and is only used to measure distances. Distances are in a straight line.
+        Places marked <em>approx.</em> are shown at their city, since the source gives no address.
+        Sources: <a href="https://iksindia.org/" target="_blank" rel="noopener">iksindia.org</a>,
+        <a href="https://iks.uem.edu.in/iks-centres/" target="_blank" rel="noopener">iks.uem.edu.in</a> and
+        <a href="https://iksguru.in/" target="_blank" rel="noopener">iksguru.in</a>.
+      </p>
+    </section>
 
     <footer class="foot">
       <p class="verse" lang="sa">एकं सद् विप्रा बहुधा वदन्ति</p>
@@ -161,6 +211,8 @@
   <script src="vendor/motion.js"></script>
   <script src="js/india-map.js"></script>
   <script src="js/data.js"></script>
+  <script src="js/places.js"></script>
+  <script src="js/cities.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

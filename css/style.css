@@ -178,7 +178,7 @@ h1 {
 .stage canvas.dragging { cursor: grabbing; }
 .stage canvas.pointing { cursor: pointer; }
 
-.labels { position: absolute; inset: 0; pointer-events: none; }
+.labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .blabel {
   position: absolute;
   left: 0;
@@ -337,7 +337,133 @@ h1 {
 .leaf-btn b { display: block; font-weight: 500; font-size: .98rem; }
 .leaf-btn small { color: var(--ink-faint); font-size: .82rem; }
 
-/* ---------- footer ---------- */
+/* ---------- find IKS places near me ---------- */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.hero-cta { margin: 20px 0 0; }
+
+.near-btn {
+  --c: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid rgba(176, 132, 70, 0.45);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: .95rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0) 0 0 0 -12px;
+}
+.near-btn svg { width: 18px; height: 18px; color: var(--c); flex: none; }
+.near-btn.primary { background: var(--c); border-color: var(--c); color: #fff; }
+.near-btn.primary svg { color: #fff; }
+.near-btn[disabled] { opacity: .6; cursor: progress; }
+
+.nearby {
+  max-width: 1080px;
+  margin: 72px auto 0;
+  padding-top: 40px;
+  border-top: 1px solid var(--gold-line);
+  text-align: center;
+  scroll-margin-top: 40px;
+}
+.nearby-sa { margin: 0; font-family: var(--deva); color: var(--ink-soft); font-size: 1.05rem; }
+.nearby h2 {
+  margin: 2px 0 6px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+.nearby-lede { margin: 0 auto; max-width: 620px; color: var(--ink-soft); }
+
+.near-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px 14px;
+  margin-top: 24px;
+}
+.near-or { color: var(--ink-faint); font-style: italic; }
+.near-city { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.near-city input {
+  width: min(280px, 70vw);
+  padding: 10px 16px;
+  border: 1px solid rgba(176, 132, 70, 0.45);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: .95rem;
+}
+.near-city input::placeholder { color: var(--ink-faint); }
+.near-city input:focus-visible { outline: 2px solid var(--ink-soft); outline-offset: 2px; }
+
+.near-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 28px;
+  margin-top: 20px;
+}
+.near-group { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.near-group > span:not(.near-label) { display: contents; }
+.near-label { color: var(--ink-faint); font-size: .85rem; letter-spacing: .12em; text-transform: uppercase; }
+.near-group .chip { padding: 6px 13px 6px 10px; font-size: .88rem; }
+
+.near-status { min-height: 1.5em; margin: 22px auto 0; max-width: 680px; color: var(--ink-soft); }
+.near-status strong { color: var(--ink); font-weight: 500; }
+
+.near-results {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
+  text-align: left;
+}
+.spot {
+  --c: var(--accent);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px 16px;
+  border: 1px solid rgba(176, 132, 70, 0.35);
+  border-top: 3px solid var(--c);
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: rgba(70, 40, 10, .18) 0 14px 28px -24px;
+}
+.place-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.place-kind {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft);
+}
+.place-kind .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
+.place-dist { font-family: var(--serif); font-size: 1.05rem; color: var(--ink); white-space: nowrap; }
+.spot h3 { margin: 2px 0 0; font-family: var(--serif); font-weight: 400; font-size: 1.18rem; line-height: 1.25; }
+.place-host { margin: 0; color: var(--ink-soft); font-size: .9rem; line-height: 1.4; }
+.place-host .approx {
+  margin-left: 4px; padding: 1px 7px; border-radius: 999px;
+  background: rgba(176, 132, 70, .14); color: var(--ink-soft); font-size: .76rem; font-style: italic;
+}
+.place-about { margin: 2px 0 0; color: var(--ink-faint); font-size: .88rem; line-height: 1.45; }
+.place-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 10px; }
+.place-actions .near-btn { padding: 8px 14px; font-size: .88rem; }
+
+.near-more-wrap { margin: 18px 0 0; }
+.near-note { margin: 26px auto 0; max-width: 680px; color: var(--ink-faint); font-size: .84rem; }
+
+
 .foot { margin-top: 56px; text-align: center; }
 .verse { margin: 0; font-family: var(--deva); font-size: 1.35rem; color: var(--ink-soft); }
 .verse-tr { margin: 4px 0 0; color: var(--ink-faint); font-size: .92rem; }
@@ -519,7 +645,8 @@ h1 {
    it again if Motion fails to load, so content never stays hidden. */
 .motion .hero > *,
 .motion .stage,
-.motion .chip,
+.motion .branches .chip,
 .motion .branch-info,
+.motion .nearby,
 .motion .foot > *,
 .motion .frame .orn { opacity: 0; }

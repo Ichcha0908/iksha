@@ -43,9 +43,10 @@
    * opts.shadow – hover shadow geometry, coloured with the element's --c
    * opts.border – animate the border towards --c
    * opts.bg     – background to fade to on hover
+   * opts.press  – false to skip the press squish (e.g. cards that contain links)
    */
   function interactive(el, opts = {}) {
-    const { lift = -3, shadow = "0px 12px 24px -14px", border = true, bg = null, rotate = 0 } = opts;
+    const { lift = -3, shadow = "0px 12px 24px -14px", border = true, bg = null, rotate = 0, press: squish = true } = opts;
     const accent = () => getComputedStyle(el).getPropertyValue("--c").trim() || "#c09452";
     const skipTransform = lift === 0 && rotate === 0;
     let hovering = false;
@@ -88,7 +89,7 @@
         });
       };
     });
-    if (!skipTransform) {
+    if (!skipTransform && squish) {
       press(el, () => {
         animate(el, { scale: 0.96 }, tx({ duration: 0.12 }));
         return () => animate(el, { scale: 1 }, tx(SPRING));
@@ -1032,6 +1033,222 @@
   }
 
   /* ---------------------------------------------------------
+     Find IKS places near me
+  --------------------------------------------------------- */
+  function setupNearby() {
+    const PLACES = window.IKS_PLACES || [];
+    const CITIES = window.IKS_CITIES || [];
+    const KINDS = window.IKS.placeKinds;
+    const RADII = [50, 100, 200, 300];
+    const PAGE = 12;
+    const kindOf = k => KINDS.find(g => g.kinds.includes(k)) || KINDS[0];
+    const near = {
+      origin: null,          // { lat, lng, label, city? } – city is set when typed, not geolocated
+      radius: 100,
+      kinds: new Set(KINDS.map(k => k.id)),
+      shown: PAGE
+    };
+    const status = $("#near-status");
+    const list = $("#near-results");
+    const more = $("#near-more");
+    const locateBtn = $("#near-locate");
+    const input = $("#near-city");
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    // straight-line distance in km (haversine)
+    function km(a, b) {
+      const r = Math.PI / 180;
+      const dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r;
+      const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
+      return 2 * 6371 * Math.asin(Math.sqrt(h));
+    }
+    const fmtKm = d => (d < 10 ? d.toFixed(1) : Math.round(d)) + " km";
+
+    // Google Maps: with a typed city the route starts there; with "my location"
+    // no origin is sent, so Google uses the device's own location.
+    function directionsUrl(p) {
+      const dest = p.kind === "centre" || p.kind === "institution" || p.kind === "ayush"
+        ? `${p.host}, ${p.city}, ${p.state}`
+        : `${p.name}, ${p.city}, ${p.state}`;
+      const q = new URLSearchParams({ api: "1", destination: dest });
+      if (near.origin && near.origin.city) q.set("origin", `${near.origin.city}, India`);
+      return "https://www.google.com/maps/dir/?" + q.toString();
+    }
+    function infoUrl(p) {
+      if (p.url) return p.url;
+      return "https://www.google.com/search?" + new URLSearchParams({ q: `${p.name} ${p.host || ""} ${p.city}` }).toString();
+    }
+
+    /* ---- controls: radius + kind filter chips ---- */
+    function chip(label, pressed, color) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.style.setProperty("--c", color);
+      b.setAttribute("aria-pressed", String(pressed));
+      b.innerHTML = `<span class="dot"></span>${label}`;
+      return b;
+    }
+    const radiusChips = RADII.map(r => {
+      const b = chip(`${r} km`, r === near.radius, "#8b6a3e");
+      b.addEventListener("click", () => {
+        near.radius = r;
+        radiusChips.forEach((c, i) => c.setAttribute("aria-pressed", String(RADII[i] === r)));
+        near.shown = PAGE;
+        render(true);
+      });
+      $("#near-radius").appendChild(b);
+      interactive(b, { lift: -2, shadow: "0px 8px 18px -12px", bg: "#fffaf0" });
+      return b;
+    });
+    KINDS.forEach(k => {
+      const b = chip(k.label, true, k.color);
+      b.addEventListener("click", () => {
+        if (near.kinds.has(k.id) && near.kinds.size > 1) near.kinds.delete(k.id);
+        else near.kinds.add(k.id);
+        b.setAttribute("aria-pressed", String(near.kinds.has(k.id)));
+        near.shown = PAGE;
+        render(true);
+      });
+      $("#near-kinds").appendChild(b);
+      interactive(b, { lift: -2, shadow: "0px 8px 18px -12px", bg: "#fffaf0" });
+    });
+
+    // city suggestions
+    $("#near-cities").innerHTML = CITIES.map(c => `<option value="${esc(c.name)}">${esc(c.state)}</option>`).join("");
+
+    /* ---- rendering ---- */
+    function card(p) {
+      const k = kindOf(p.kind);
+      const where = [p.host && p.kind !== "tradition" ? esc(p.host) : null, `${esc(p.city)}, ${esc(p.state)}`]
+        .filter(Boolean).join(" · ");
+      const info = p.url ? "Website" : "Learn more";
+      return `
+        <li class="spot" style="--c:${k.color}">
+          <div class="place-top">
+            <span class="place-kind"><span class="dot"></span>${esc(k.label.replace(/s$/, ""))}</span>
+            <span class="place-dist">${fmtKm(p.d)}</span>
+          </div>
+          <h3>${esc(p.name)}</h3>
+          <p class="place-host">${where}${p.approx ? '<span class="approx" title="Shown at the city centre: the source gives no street address">approx.</span>' : ""}</p>
+          ${p.about ? `<p class="place-about">${esc(p.about)}</p>` : ""}
+          <div class="place-actions">
+            <a class="near-btn primary" style="--c:${k.color}" href="${esc(directionsUrl(p))}" target="_blank" rel="noopener">
+              <svg aria-hidden="true"><use href="#pin-icon"/></svg>Directions
+            </a>
+            <a class="near-btn" style="--c:${k.color}" href="${esc(infoUrl(p))}" target="_blank" rel="noopener">${info}</a>
+          </div>
+        </li>`;
+    }
+
+    function render(animateIn) {
+      if (!near.origin) return;
+      const pool = PLACES
+        .filter(p => near.kinds.has(kindOf(p.kind).id))
+        .map(p => ({ ...p, d: km(near.origin, p) }))
+        .sort((a, b) => a.d - b.d);
+      const inside = pool.filter(p => p.d <= near.radius);
+      const where = `<strong>${esc(near.origin.label)}</strong>`;
+      let items;
+      if (inside.length) {
+        status.innerHTML = `${inside.length} IKS ${inside.length === 1 ? "place" : "places"} within ${near.radius} km of ${where}.`;
+        items = inside;
+      } else {
+        const next = pool.slice(0, 3);
+        status.innerHTML = `Nothing within ${near.radius} km of ${where}. ` +
+          (next.length ? `The nearest ${next.length === 1 ? "place is" : "places are"} below; try a wider distance.` : "");
+        items = next;
+      }
+      const visible = items.slice(0, near.shown);
+      list.innerHTML = visible.map(card).join("");
+      list.querySelectorAll(".near-btn").forEach(a => interactive(a, { lift: -2, shadow: "0px 8px 18px -12px" }));
+      list.querySelectorAll(".spot").forEach(li => interactive(li, { lift: -3, shadow: "0px 18px 30px -22px", border: false, press: false }));
+      const rest = items.length - visible.length;
+      more.hidden = rest <= 0;
+      more.textContent = `Show ${rest} more`;
+      if (animateIn) reveal(Array.from(list.children), { gap: 0.05, y: 14, duration: 0.55 });
+      else if (visible.length) {
+        const fresh = Array.from(list.children).slice(near.shown - PAGE);
+        reveal(fresh, { gap: 0.05, y: 14, duration: 0.55 });
+      }
+    }
+    more.addEventListener("click", () => { near.shown += PAGE; render(false); });
+    interactive(more, { lift: -2, shadow: "0px 8px 18px -12px" });
+
+    let scrollAfterResults = false;
+    const scrollToSection = () =>
+      $("#nearby").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+
+    function setOrigin(origin) {
+      near.origin = origin;
+      near.shown = PAGE;
+      render(true);
+      // the hero button scrolls before the results exist; settle on the section once they do
+      if (scrollAfterResults) { scrollAfterResults = false; scrollToSection(); }
+    }
+
+    /* ---- typed city ---- */
+    function findCity(q) {
+      const s = q.trim().toLowerCase();
+      if (!s) return null;
+      const names = c => [c.name, ...(c.aka || [])].map(n => n.toLowerCase());
+      return CITIES.find(c => names(c).includes(s)) ||
+             CITIES.find(c => names(c).some(n => n.startsWith(s))) || null;
+    }
+    $("#near-city-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const c = findCity(input.value);
+      if (!c) {
+        status.innerHTML = input.value.trim()
+          ? `“${esc(input.value.trim())}” isn't in the city list yet. Try a nearby larger city, or use your location.`
+          : "Type a city name, or use your location.";
+        list.innerHTML = ""; more.hidden = true;
+        return;
+      }
+      input.value = c.name;
+      setOrigin({ lat: c.lat, lng: c.lng, label: c.name, city: c.name });
+    });
+    input.addEventListener("change", () => { if (findCity(input.value)) $("#near-city-form").requestSubmit(); });
+
+    /* ---- browser location ---- */
+    function locate() {
+      if (!("geolocation" in navigator)) {
+        status.textContent = "This browser can't share its location. Type a city instead.";
+        input.focus();
+        return;
+      }
+      locateBtn.disabled = true;
+      status.textContent = "Finding your location…";
+      navigator.geolocation.getCurrentPosition(pos => {
+        locateBtn.disabled = false;
+        const here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        const closest = CITIES.reduce((best, c) => (km(here, c) < km(here, best) ? c : best), CITIES[0]);
+        const label = closest && km(here, closest) < 40 ? `your location (near ${closest.name})` : "your location";
+        setOrigin({ ...here, label });
+      }, err => {
+        locateBtn.disabled = false;
+        scrollAfterResults = false;
+        status.textContent = err.code === err.PERMISSION_DENIED
+          ? "Location access was blocked. Type a city instead, or allow location for this site in your browser."
+          : "Couldn't get your location just now. Type a city instead.";
+        input.focus();
+      }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 10 * 60 * 1000 });
+    }
+    locateBtn.addEventListener("click", locate);
+    interactive(locateBtn, { shadow: "0px 10px 22px -12px" });
+
+    const heroBtn = $("#hero-near");
+    heroBtn.addEventListener("click", () => {
+      scrollAfterResults = true;
+      scrollToSection();
+      locate();
+    });
+    interactive(heroBtn, { shadow: "0px 10px 22px -12px" });
+
+    status.textContent = "Use your location or type a city to see what's nearby.";
+  }
+
+  /* ---------------------------------------------------------
      boot
   --------------------------------------------------------- */
   /* page-level entrance + scroll-triggered reveals */
@@ -1048,6 +1265,7 @@
         tx({ type: "spring", stiffness: 260, damping: 22, delay: stagger(0.06, { startDelay: 0.1 }) }));
     }, once);
     inView(".branch-info", el => { reveal([el], { y: 24, duration: 0.8 }); }, once);
+    inView(".nearby", el => { reveal([el], { y: 24, duration: 0.8 }); }, { amount: 0.1 });
     inView(".foot", el => { reveal(Array.from(el.children), { gap: 0.14, y: 14, duration: 0.9 }); }, { amount: 0.5 });
   }
 
@@ -1055,6 +1273,7 @@
   buildChips();
   renderBranchInfo();
   buildMap();
+  setupNearby();
   setupReveals();
   tree = createTree();
 })();

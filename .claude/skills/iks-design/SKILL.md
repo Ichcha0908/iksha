@@ -20,7 +20,7 @@ anything new.
 - Plain HTML, CSS and JavaScript. **No React, no bundler, no ES module
   imports.** Scripts are classic `<script>` tags that load in order:
   `vendor/three.min.js` → `vendor/motion.js` → `js/india-map.js` →
-  `js/data.js` → `js/app.js`.
+  `js/data.js` → `js/places.js` → `js/cities.js` → `js/app.js`.
 - New libraries go into `vendor/` with their licence file, never a CDN link.
   Google Fonts is the only allowed remote resource.
 
@@ -161,6 +161,18 @@ Motion, exposed as `window.Motion`.
   ever supplied, add coordinates to the data rather than guessing.
 - Desktop: right-hand drawer, and the tree shifts left. ≤720px: bottom sheet
   with a scrim.
+
+## 7b. Find IKS places near me
+
+- Place data lives in `js/places.js` (`{ name, kind, host, city, state, lat,
+  lng, approx, about, url?, source }`). Every entry needs a real source; set
+  `approx: true` when it is placed at a city rather than its campus. Never
+  invent a location: leave a place out if its town can't be verified.
+- Kind colours come from `IKS.placeKinds` in `js/data.js` and reuse the branch
+  palette. A new kind gets an entry there, not a new hex in CSS.
+- Result cards are `.spot` (`.place` is taken by the panel's place line).
+- Location is used only in the browser. "Directions" sends no origin when the
+  visitor used their location; only a typed city is sent as the origin.
 
 ## 8. Accessibility and responsiveness (non-negotiable)
 
