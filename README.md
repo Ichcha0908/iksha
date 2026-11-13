@@ -46,14 +46,42 @@ Places live in `js/places.js`, generated from:
 
 | Source | What was used |
 | --- | --- |
+| [aaryasamaj.com](https://www.aaryasamaj.com/gurukuls-list) and [vediconcepts.org](https://vediconcepts.org/gurukul-list/) | 556 gurukuls and Veda pāṭhaśālās, merged and de-duplicated: map positions from aaryasamaj.com, websites and contact persons from vediconcepts.org, and the phone numbers each directory lists. 99 have no location in either directory; they appear in the chatbot (by state) but not in "near me". |
+| [Hindupedia](https://www.hindupedia.com/en/Oriental_Research_Institutes_of_India) | 14 Oriental Research Institutes (e.g. BORI, Sarasvati Mahal Library, Adyar Library), with descriptions from the article. |
+| [HMML](https://hmml.org/collections/repositories/india/) | 9 institutional manuscript repositories in India. Private, family and church collections are left out. |
 | [iksindia.org](https://iksindia.org/) | The IKS Division's list of IKS centres (89 after removing duplicates). The list gives institute and state but no address, so each centre is placed at its campus, or at its city when marked *approx.* Seven centres whose town couldn't be verified are left out. |
 | [iks.uem.edu.in](https://iks.uem.edu.in/iks-centres/) | "IKS Centres across the World": the six with a physical site in India. |
 | [iksguru.in](https://iksguru.in/) | Heritage map (ancient universities, observatories, temples, seats of learning), regional living traditions and AYUSH institutes, with the site's coordinates. Places outside India are left out. |
-| [sanskritdocuments.org](https://sanskritdocuments.org/sites/) | Not used: the site blocks automated access. |
+| [sanskritdocuments.org](https://sanskritdocuments.org/sites/), [Scribd](https://www.scribd.com/) lists | Not used: these sites block automated access (Scribd requires a signed-in browser). |
 
 None of the sources lists dated, located events (the IKS Division's
 "Upcoming events" page was empty), so the section lists places rather than
 activities.
+
+## Chatbot: Jñāna Sahāyaka
+
+The **Ask about IKS** button (bottom right) opens a chatbot that answers from
+the site's own data: the tree's centres, and the places, institutes and
+gurukuls in "near me". It answers questions like:
+
+- "Gurukuls near Varanasi" or "IKS places near Chandigarh within 150 km"
+- "Who heads Sahitya Akademi?" or "Phone number of Arya Vaidya Sala"
+- "Āyurveda centres in Kerala" or "Manuscript libraries in Tamil Nadu"
+- "How many gurukuls are in Haryana?"
+- "What is Veda & Darshana about?" or "Tell me about BORI"
+
+Answers carry buttons to open the leaf on the tree, get directions, visit the
+website, or show everything nearby. If something isn't in the site's data,
+the chatbot says so rather than guessing.
+
+There are two modes:
+
+- **Built-in (default):** runs in the browser, free and offline
+  (`js/chat.js`).
+- **AI (optional):** deploy the Cloudflare Worker in `server/` and put its
+  address in `js/chat-config.js`. Claude then writes the answers, still only
+  from the site's records. See [`server/README.md`](server/README.md) for
+  setup and costs.
 
 ## Run it
 
@@ -144,6 +172,9 @@ id such as `ka` (Karnataka) or `dl` (Delhi); the full list is in
 | `js/data.js` | Branches, centres, map pin positions and place-kind colours |
 | `js/places.js` | Places for "Find IKS places near me" (with sources) |
 | `js/cities.js` | Cities a visitor can search from |
+| `js/chat.js` | The chatbot (built-in answers; optional AI mode) |
+| `js/chat-config.js` | Chatbot setting: the AI Worker's address, if any |
+| `server/` | Optional Cloudflare Worker that adds Claude answers |
 | `js/india-map.js` | State outlines of India |
 | `vendor/three.min.js` | three.js r160 (MIT) |
 | `vendor/motion.js` | Motion 12.23.12, the plain-JS build of Framer Motion (MIT) |

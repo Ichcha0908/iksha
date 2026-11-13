@@ -473,7 +473,8 @@ window.IKS.placeKinds = [
   { id: "centres", label: "IKS centres", color: "#d97b29", kinds: ["centre", "institution"] },
   { id: "heritage", label: "Heritage sites", color: "#4b5aa8", kinds: ["heritage"] },
   { id: "traditions", label: "Living traditions", color: "#c4517f", kinds: ["tradition"] },
-  { id: "ayush", label: "Āyurveda & Yoga", color: "#4f8a4a", kinds: ["ayush"] }
+  { id: "ayush", label: "Āyurveda & Yoga", color: "#4f8a4a", kinds: ["ayush"] },
+  { id: "gurukuls", label: "Gurukuls", color: "#8a5a2b", kinds: ["gurukul"] }
 ];
 
 /* A point well inside each state, in the map's 612 × 696 viewBox

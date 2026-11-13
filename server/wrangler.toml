@@ -1,0 +1,11 @@
+name = "iks-chat"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# The website origins allowed to call this Worker (comma-separated).
+# Change this to where your site is published, e.g. GitHub Pages:
+ALLOWED_ORIGINS = "https://ichcha0908.github.io"
+# Optional: a different Claude model, e.g. "claude-haiku-5-5" for lower cost.
+# MODEL = "claude-opus-5-5"

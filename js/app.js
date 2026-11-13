@@ -1174,7 +1174,7 @@
       const c = p.ref && CENTRE_BY_NAME[p.ref];
       if (c) return c.summary;
       if (p.study) return p.study;
-      return p.about || "";
+      return (p.founded ? `Founded ${p.founded}. ` : "") + (p.about || "");
     }
 
     /* the expandable "Contact" component: person in charge, phone, e-mail, address, details */
@@ -1199,9 +1199,10 @@
       }
 
       // phone / e-mail / address (only what a source lists)
-      // every listed contact is an institutional one, so say so (it is not the person's own line)
-      if (contact.phone) rows.push(["Office phone", telLink(contact.phone)]);
-      if (contact.email) rows.push(["Office email", mailLink(contact.email)]);
+      // institutional contacts are labelled as office lines; directory listings say who listed them
+      const listed = !!contact.listedBy;
+      if (contact.phone) rows.push([listed ? "Listed phone" : "Office phone", telLink(contact.phone)]);
+      if (contact.email) rows.push([listed ? "Listed email" : "Office email", mailLink(contact.email)]);
       if (contact.address) rows.push(["Address", esc(contact.address)]);
       if (contact.hours) rows.push(["Hours", esc(contact.hours)]);
       if (rows.length) {
@@ -1212,6 +1213,7 @@
         const q = new URLSearchParams({ q: `${who} ${p.host || p.name} contact email` }).toString();
         html += `<p class="sc-none">${p.source === "iksindia"
           ? "The IKS Division doesn't publish phone numbers or e-mails for its centres."
+          : p.source === "gurukul" ? "The gurukul directories don't list a phone number for it."
           : "The source doesn't list a phone number or e-mail."}
           <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">Search for ${lead ? esc(lead.name) + "'s" : "their"} contact</a>.</p>`;
       }
@@ -1229,6 +1231,11 @@
       const srcLine = src ? `<a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.label)}</a> and the leaf's full source list`
         : p.source === "iksindia" ? `<a href="https://iksindia.org/search_site_centers/index.php" target="_blank" rel="noopener">IKS Division list of centres</a>`
         : p.source === "uem" ? `<a href="https://iks.uem.edu.in/iks-centres/" target="_blank" rel="noopener">iks.uem.edu.in</a>`
+        : p.source === "gurukul" ? [["aaryasamaj.com", "https://www.aaryasamaj.com/gurukuls-list"], ["vediconcepts.org", "https://vediconcepts.org/gurukul-list/"]]
+            .filter(([n]) => (contact.listedBy || "").includes(n))
+            .map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${n}</a>`).join(" and ") + " (directory listings may be out of date; confirm before visiting)"
+        : p.source === "hindupedia" ? `<a href="https://www.hindupedia.com/en/Oriental_Research_Institutes_of_India" target="_blank" rel="noopener">Hindupedia: Oriental Research Institutes of India</a>`
+        : p.source === "hmml" ? `<a href="https://hmml.org/collections/repositories/india/" target="_blank" rel="noopener">HMML repository list</a>`
         : `<a href="https://iksguru.in/" target="_blank" rel="noopener">iksguru.in</a>`;
       html += `<p class="sc-source">Source: ${srcLine}.</p>`;
       return `<div class="spot-contact" id="${id}" hidden>${html}</div>`;
@@ -1285,7 +1292,7 @@
     function render(animateIn) {
       if (!near.origin) return;
       const pool = PLACES
-        .filter(p => near.kinds.has(kindOf(p.kind).id))
+        .filter(p => !p.noMap && near.kinds.has(kindOf(p.kind).id))
         .map(p => ({ ...p, d: km(near.origin, p) }))
         .sort((a, b) => a.d - b.d);
       const inside = pool.filter(p => p.d <= near.radius);
@@ -1387,6 +1394,19 @@
     interactive(heroBtn, { shadow: "0px 10px 22px -12px" });
 
     status.textContent = "Use your location or type a city to see what's nearby.";
+
+    // let other features (the chatbot) show "near me" results for a city
+    return {
+      nearCity(cityName) {
+        const c = findCity(cityName);
+        if (!c) return false;
+        input.value = c.name;
+        scrollAfterResults = true;
+        setOrigin({ lat: c.lat, lng: c.lng, label: c.name, city: c.name });
+        return true;
+      },
+      km, kindOf, findCity, directionsUrl
+    };
   }
 
   /* ---------------------------------------------------------
@@ -1414,7 +1434,17 @@
   buildChips();
   renderBranchInfo();
   buildMap();
-  setupNearby();
+  const nearby = setupNearby();
   setupReveals();
   tree = createTree();
+
+  /* shared with js/chat.js */
+  window.IKSApp = {
+    animate, inView, stagger, tx, EASE, SPRING, SOFT_SPRING, reduceMotion,
+    interactive, reveal, esc, telLink, mailLink,
+    CENTRE_BY_NAME, STATE_NAMES,
+    openCentre, focusBranch,
+    nearCity: name => nearby.nearCity(name),
+    km: nearby.km, kindOf: nearby.kindOf, findCity: nearby.findCity, directionsUrl: nearby.directionsUrl
+  };
 })();
