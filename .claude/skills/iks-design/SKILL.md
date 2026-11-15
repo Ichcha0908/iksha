@@ -20,7 +20,8 @@ anything new.
 - Plain HTML, CSS and JavaScript. **No React, no bundler, no ES module
   imports.** Scripts are classic `<script>` tags that load in order:
   `vendor/three.min.js` → `vendor/motion.js` → `js/india-map.js` →
-  `js/data.js` → `js/places.js` → `js/cities.js` → `js/app.js`.
+  `js/data.js` → `js/tree-centres.js` → `js/places.js` → `js/cities.js` →
+  `js/app.js` → `js/chat-config.js` → `js/chat.js`.
 - New libraries go into `vendor/` with their licence file, never a CDN link.
   Google Fonts is the only allowed remote resource.
 
@@ -141,9 +142,14 @@ Motion, exposed as `window.Motion`.
 - **One clickable peepal leaf per centre**, coloured with its branch colour,
   with a soft halo. Decorative foliage stays small and in muted sage/olive/gold
   (`decoPalette`). Never make decorative leaves look clickable.
-- New branches and centres come from `js/data.js` only; the geometry adapts.
-  Keep the tree readable: if a branch would exceed ~5 leaves, discuss with
-  the user before adding.
+- Leaves come from `js/data.js` (15 curated centres) and
+  `js/tree-centres.js` (every other IKS centre in the database, generated with
+  `js/places.js`; don't edit it by hand). Every IKS centre must be a leaf
+  exactly once: merge official entries for the same centre (same institution
+  and same PI or title), and give each leaf a branch and a `state`.
+- The geometry adapts: up to 4 leaves sit left/right on a branch; more spiral
+  round it at the golden angle and shrink (`size`), with smaller halos and
+  click targets. Long sibling lists in the panel show 6 plus "Show all".
 - Lighting stays warm (hemisphere `0xfff4e2`/`0xc9a26b` + white key + amber
   rim). Background is transparent so the paper shows through; no skyboxes or
   post-processing.

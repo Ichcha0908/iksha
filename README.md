@@ -119,7 +119,35 @@ transitions.
 - Visitors who turn on "reduce motion" in their system settings get every
   change instantly.
 
-## The centres on the tree
+## Every IKS centre is a leaf
+
+The tree has **105 leaves**: the 15 curated centres below, plus every IKS
+centre in the database (`js/tree-centres.js`, generated with `js/places.js`):
+
+- all the IKS Division's centres from its official list
+  ([iksindia.org](https://iksindia.org/search_site_centers/index.php); the
+  older copy at old.iksindia.org has the same 124 entries), including 7 whose
+  town couldn't be verified (their leaf shows the state from the list);
+- UEM Kolkata's Centre of Excellence for IKS.
+
+No centre appears twice. Entries in the official list for the same centre
+(same institution and the same Principal Investigator or title) are merged
+into one leaf that keeps all their titles and PIs, and the Sanskrit centre at
+Maharshi Panini University is part of that university's leaf. Each centre sits
+on the branch that fits its official title; this is the site's own
+classification, and the leaf panel says so. Every IKS centre in "near me"
+links to its leaf, so the chatbot never lists one twice.
+
+| Branch | Leaves |
+| --- | --- |
+| Veda & Darshana | 23 |
+| Language & Literature | 19 |
+| Arts & Aesthetics | 7 |
+| Health & Wellbeing | 19 |
+| Science & Technology | 25 |
+| Heritage & Manuscripts | 12 |
+
+## The curated centres on the tree
 
 Each leaf is a real organisation. Its panel shows a summary, the India map,
 *What happens here*, *People*, *Visit & contact* (address opens Google Maps;
@@ -174,6 +202,7 @@ id such as `ka` (Karnataka) or `dl` (Delhi); the full list is in
 | `js/app.js` | 3D tree (three.js), interaction, map and panel |
 | `js/data.js` | Branches, centres, map pin positions and place-kind colours |
 | `js/places.js` | Places for "Find IKS places near me" (with sources) |
+| `js/tree-centres.js` | Leaves for every IKS centre in the database (generated) |
 | `js/cities.js` | Cities a visitor can search from |
 | `js/chat.js` | The chatbot (built-in answers; optional AI mode) |
 | `js/chat-config.js` | Chatbot setting: the AI Worker's address, if any |

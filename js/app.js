@@ -331,6 +331,13 @@
     if (rows.length) {
       out.push(`<section class="pd-section"><h3>Visit &amp; contact</h3>
         <dl class="pd-contact">${rows.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join("")}</dl></section>`);
+    } else {
+      // e.g. IKS Division centres: the official list gives no address, phone or e-mail
+      const host = ((c.activities || []).find(a => a.startsWith("Host institution: ")) || "").replace("Host institution: ", "");
+      const q = new URLSearchParams({ q: `${c.name} ${host.startsWith("not named") ? "" : host} ${c.city || ""} contact` }).toString();
+      out.push(`<section class="pd-section"><h3>Visit &amp; contact</h3>
+        <p class="pd-empty">The official list doesn't give an address, phone or e-mail for this centre.
+        <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">Search for its contact details</a>.</p></section>`);
     }
     if (c.sources && c.sources.length) {
       out.push(`<section class="pd-section"><h3>Sources</h3>
@@ -361,11 +368,25 @@
     $("#panel-details").innerHTML = centreDetails(c);
 
     const list = $("#panel-siblings");
+    // long branches: show the first six (and the open leaf), the rest behind "Show all"
+    const SHOW = 6;
+    const shown = k => b.centres.length <= SHOW + 2 || k < SHOW || k === ci;
     list.innerHTML = b.centres.map((s, k) => `
-      <li><button type="button" class="leaf-btn" data-c="${k}" style="--c:${b.color}" ${k === ci ? 'aria-current="true"' : ""}>
+      <li${shown(k) ? "" : " hidden"}><button type="button" class="leaf-btn" data-c="${k}" style="--c:${b.color}" ${k === ci ? 'aria-current="true"' : ""}>
         <svg aria-hidden="true"><use href="#leaf-icon"/></svg>
-        <span><b>${s.name}</b><small>${s.type} · ${STATE_NAMES[s.state]}</small></span>
-      </button></li>`).join("");
+        <span><b>${esc(s.name)}</b><small>${esc(s.type)} · ${esc([s.city, STATE_NAMES[s.state]].filter(Boolean).join(", "))}</small></span>
+      </button></li>`).join("") + (b.centres.some((_, k) => !shown(k))
+        ? `<li class="sib-more"><button type="button" class="near-btn">Show all ${b.centres.length} leaves</button></li>` : "");
+    const moreBtn = list.querySelector(".sib-more button");
+    if (moreBtn) {
+      moreBtn.addEventListener("click", () => {
+        const hiddenItems = [...list.querySelectorAll("li[hidden]")];
+        hiddenItems.forEach(li => { li.hidden = false; });
+        moreBtn.parentElement.remove();
+        reveal(hiddenItems, { gap: 0.03, y: 10, duration: 0.4 });
+      });
+      interactive(moreBtn, { lift: -2, shadow: "0px 8px 16px -12px" });
+    }
     list.querySelectorAll(".leaf-btn").forEach(btn => {
       btn.addEventListener("click", () => openCentre(bi, +btn.dataset.c));
       interactive(btn, { lift: -2, shadow: "0px 10px 20px -14px" });
@@ -671,17 +692,27 @@
       branchData.push({ angle: a, curve, tip, color, D, P });
 
       // clickable leaves along the branch
+      // Branches can carry many leaves: they spiral round the branch (golden angle)
+      // and get smaller as the branch fills up, so they don't pile on each other.
       const n = b.centres.length;
+      const size = n <= 4 ? 1 : Math.max(0.42, Math.sqrt(4 / n));
       b.centres.forEach((centre, ci) => {
         const isTip = ci === n - 1;
-        const t = isTip ? 1 : 0.42 + (0.5 * (ci + 0.5)) / Math.max(n - 1, 1);
+        const t = isTip ? 1 : (n <= 4 ? 0.42 + (0.5 * (ci + 0.5)) / Math.max(n - 1, 1) : 0.26 + (0.7 * (ci + 0.5)) / (n - 1));
         const at = curve.getPointAt(t);
-        const side = ci % 2 ? 1 : -1;
-        const dir = isTip
-          ? D.clone().multiplyScalar(0.75).addScaledVector(UP, 0.65)
-          : P.clone().multiplyScalar(side * 0.85).addScaledVector(D, 0.35).addScaledVector(UP, 0.7);
+        let dir;
+        if (isTip) dir = D.clone().multiplyScalar(0.75).addScaledVector(UP, 0.65);
+        else if (n <= 4) dir = P.clone().multiplyScalar((ci % 2 ? 1 : -1) * 0.85).addScaledVector(D, 0.35).addScaledVector(UP, 0.7);
+        else {
+          const T = curve.getTangentAt(t);
+          const N2 = new THREE.Vector3().crossVectors(T, P).normalize();
+          const th = ci * 2.39996;
+          dir = P.clone().multiplyScalar(Math.cos(th)).addScaledVector(N2, Math.sin(th));
+          if (dir.y < 0) dir.y *= 0.3; // keep leaves from hanging straight down
+          dir.addScaledVector(UP, 0.5).addScaledVector(D, 0.2);
+        }
         dir.normalize();
-        const twigLen = isTip ? 0.22 : 0.42;
+        const twigLen = isTip ? 0.22 : n <= 4 ? 0.42 : 0.2 + 0.2 * size + rand() * 0.08;
         const end = at.clone().addScaledVector(dir, twigLen);
         if (!isTip) {
           const tw = taperedTube(new THREE.CatmullRomCurve3([at, at.clone().lerp(end, 0.5).addScaledVector(UP, 0.05), end]), 8, 6, 0.045, 0.02, twigMat);
@@ -704,17 +735,18 @@
           roughness: 0.55, metalness: 0.05, emissive: color.clone(), emissiveIntensity: 0.08
         });
         const leaf = new THREE.Mesh(LEAF_GEO, mat);
-        leaf.scale.setScalar(0.66);
+        leaf.scale.setScalar(0.66 * size);
         group.add(leaf);
 
         const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: color.clone().lerp(new THREE.Color(0xffe2a8), 0.35), transparent: true, opacity: 0.45, depthWrite: false }));
-        halo.position.set(0, 0.5, 0.05);
-        halo.scale.setScalar(1.35);
+        halo.position.set(0, 0.5 * size, 0.05);
+        halo.scale.setScalar(1.35 * size);
+        halo.userData.size = size;
         halo.renderOrder = -1;
         group.add(halo);
 
-        const hit = new THREE.Mesh(new THREE.SphereGeometry(0.48, 10, 8), new THREE.MeshBasicMaterial({ visible: false }));
-        hit.position.set(0, 0.5, 0);
+        const hit = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.26, 0.48 * size), 10, 8), new THREE.MeshBasicMaterial({ visible: false }));
+        hit.position.set(0, 0.5 * size, 0);
         hit.userData = { b: bi, c: ci };
         group.add(hit);
         hitTargets.push(hit);
@@ -723,7 +755,7 @@
         const rec = {
           group, leaf, mat, halo, b: bi, c: ci,
           base: color.clone(), dimColor: color.clone().lerp(new THREE.Color(0xeadbc0), 0.72),
-          phase: rand() * Math.PI * 2, appearDelay: start + 0.75 + ci * 0.12,
+          phase: rand() * Math.PI * 2, appearDelay: start + 0.75 + ci * Math.min(0.12, 1.2 / n), size,
           appear: 0, hover: 0, dim: 0, tHover: 0, tDim: 0
         };
         group.scale.setScalar(0);
@@ -731,7 +763,7 @@
       });
 
       // decorative foliage along the branch
-      for (let k = 0; k < 16; k++) {
+      for (let k = 0, deco = Math.max(6, 16 - Math.round(n / 2)); k < deco; k++) {
         const t = 0.3 + rand() * 0.72;
         const p = curve.getPointAt(Math.min(t, 1));
         const dir = new THREE.Vector3(rand() - 0.5, rand() * 0.9 + 0.2, rand() - 0.5).addScaledVector(D, 0.4).normalize();
@@ -1020,7 +1052,7 @@
         const pulse = 0.5 + 0.5 * Math.sin(t * 2.2 + L.phase);
         const lit = 0.28 + pulse * 0.22 + L.hover * 0.35;
         L.halo.material.opacity = lit + (0.08 - lit) * L.dim;
-        L.halo.scale.setScalar(1.25 + pulse * 0.2 + L.hover * 0.4);
+        L.halo.scale.setScalar((1.25 + pulse * 0.2 + L.hover * 0.4) * L.size);
       });
 
       // pollen drift

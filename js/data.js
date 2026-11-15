@@ -186,7 +186,8 @@ window.IKS = {
           ],
           people: [
             { name: "Prof. Shiv Shankar Mishra", role: "Vice-Chancellor", asOf: "University homepage; Governor's office, Aug 2026" },
-            { name: "Dr. Dilip Soni", role: "Registrar", asOf: "University homepage" }
+            { name: "Dr. Dilip Soni", role: "Registrar", asOf: "University homepage" },
+            { name: "Dr. Akhilesh Kumar Dwived", role: "Principal Investigator (PI), Sanskrit teaching and knowledge centre (IKS Division–funded)", asOf: "IKS Division list of IKS centres, Nov 2026" }
           ],
           contact: {
             address: "Dewas Road, Ujjain 456010, Madhya Pradesh",

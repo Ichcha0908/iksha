@@ -113,12 +113,12 @@
     { re: /manuscript|library|libraries|archive|oriental/, kinds: ["institution"], text: /manuscript|library|oriental/, branch: "heritage", label: "manuscript libraries and oriental institutes" },
     { re: /temple|heritage site|observatory|monument|ancient universit|nalanda/, kinds: ["heritage"], label: "heritage sites" },
     { re: /tradition|craft|tribal|stepwell/, kinds: ["tradition"], label: "living traditions" },
-    { re: /iks cent|iks division|research cent|iit|universit/, kinds: ["centre", "institution"], label: "IKS centres and institutions" }
+    { re: /iks cent|iks division|research cent|iit|universit/, kinds: ["centre", "institution"], leaves: true, label: "IKS centres and institutions" }
   ];
   const kindIn = q => KIND_WORDS.find(k => k.re.test(fold(q))) || null;
   const matchesKind = (d, k) => {
     if (!k) return true;
-    if (d.type === "leaf") return !!k.branch && d.b.id === k.branch;
+    if (d.type === "leaf") return !!k.leaves || (!!k.branch && d.b.id === k.branch) || (!!k.alsoText && k.alsoText.test(fold(d.text)));
     if (k.alsoKinds && k.alsoKinds.includes(d.p.kind) && k.alsoText.test(fold(d.text))) return true;
     if (!k.kinds.includes(d.p.kind)) return false;
     return !k.text || k.text.test(fold(d.text));
@@ -228,6 +228,11 @@
   ];
   const webSearch = q => ({ label: "Search Google", href: "https://www.google.com/search?" + new URLSearchParams({ q }).toString() });
 
+  // words that say what is wanted, not which place: ignored when judging a name match
+  const ASK_WORDS = new Set(("contact phone number numbers call email mail address reach visit timing timings hours " +
+    "who runs run running head heads headed lead leads charge incharge director principal chancellor vice secretary president acharya get").split(" "));
+  const coreTerms = q => terms(q).filter(t => !ASK_WORDS.has(t));
+
   function builtIn(q) {
     const f = fold(q).trim();
     const ex = EXPLAIN.find(e => e.re.test(f));
@@ -249,6 +254,15 @@
         (pool.length ? `<p class="cb-dim">Ask "${esc(kind ? kind.label : "places")} in ${esc(state || "a state")}" to see them.</p>` : "") };
     }
 
+    // 2a. who runs / contact for a named centre (before "near a city": "IIT Madras" is a centre, not a city question)
+    const wantsPerson = /\bwho\b|head|in charge|incharge|director|principal|vice.?chancellor|secretary|president|acharya|run(s|ning)?\b|lead/.test(f);
+    if ((wantsPerson || wantsContact) && !/\bnear|around|close to|within|\bkm\b/.test(f)) {
+      const hit = search(q, { limit: 1, needName: true })[0];
+      if (hit && hit.nameHits >= Math.max(1, Math.min(2, coreTerms(q).length, terms(hit.d.name).length))) {
+        return describe(hit.d, { focus: wantsContact ? "contact" : "person" });
+      }
+    }
+
     // 2. near a city
     if (city && (/near|around|close to|within|nearby|km/.test(f) || !state || fold(city.name) !== fold(state))) {
       const r = radius || 60;
@@ -265,15 +279,6 @@
       const res = listAnswer(`${all.length} ${esc(kind ? kind.label : "IKS places")} within ${r} km of <b>${esc(city.name)}</b>${all.length > 6 ? ", nearest first" : ""}:`, top);
       res.actions = [{ label: `See all near ${city.name}`, run: () => A.nearCity(city.name) }];
       return res;
-    }
-
-    // 3. who runs / contact for a named centre
-    const wantsPerson = /\bwho\b|head|in charge|incharge|director|principal|vice.?chancellor|secretary|president|acharya|run(s|ning)?\b|lead/.test(f);
-    if (wantsPerson || wantsContact) {
-      const hit = search(q, { limit: 1, needName: true })[0];
-      if (hit && hit.nameHits >= Math.min(2, terms(hit.d.name).length)) {
-        return describe(hit.d, { focus: wantsContact ? "contact" : "person" });
-      }
     }
 
     // 4. listing by state (and kind)
@@ -293,14 +298,15 @@
       const leaves = DOCS.filter(d => d.type === "leaf" && d.bi === bi);
       return {
         html: `<p><b>${esc(b.name)}</b> <span class="cb-dim">(${esc(b.sanskrit)})</span>: ${esc(b.blurb)}</p>
-               <p>Centres on this branch of the tree:</p><ul class="cb-list">${leaves.map(d => `<li>${itemLine(d)}</li>`).join("")}</ul>`,
+               <p>${leaves.length} centres on this branch of the tree${leaves.length > 10 ? ", including" : ""}:</p><ul class="cb-list">${leaves.slice(0, 10).map(d => `<li>${itemLine(d)}</li>`).join("")}</ul>
+               ${leaves.length > 10 ? `<p class="cb-dim">…and ${leaves.length - 10} more. Open the branch to see them all.</p>` : ""}`,
         picks: leaves, actions: [{ label: `Show the ${b.name} branch`, run: () => { A.focusBranch(bi); $("#stage").scrollIntoView({ behavior: "smooth" }); } }]
       };
     }
 
     // 6. a named centre or place
     const hits = search(q, { limit: 5 });
-    const qn = terms(q).length;
+    const qn = coreTerms(q).length;
     if (hits.length && hits[0].nameHits >= Math.max(1, Math.min(2, qn)) && (hits.length === 1 || hits[0].s > hits[1].s * 1.15)) {
       return describe(hits[0].d);
     }
