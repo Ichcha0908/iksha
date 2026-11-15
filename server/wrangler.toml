@@ -9,3 +9,6 @@ compatibility_flags = ["nodejs_compat"]
 ALLOWED_ORIGINS = "https://ichcha0908.github.io"
 # Optional: a different Claude model, e.g. "claude-haiku-5-5" for lower cost.
 # MODEL = "claude-opus-5-5"
+# Optional: "off" stops Claude from searching the web (answers then come from
+# the site's data and Claude's own knowledge only).
+# WEB_SEARCH = "off"

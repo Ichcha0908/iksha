@@ -196,6 +196,7 @@
      the built-in answerer
   --------------------------------------------------------- */
   const SUGGEST = [
+    "What is IKS?",
     "Gurukuls near Varanasi",
     "Who heads Sahitya Akademi?",
     "Āyurveda centres in Kerala",
@@ -203,11 +204,34 @@
     "Manuscript libraries in Tamil Nadu",
     "What is Veda & Darshana about?"
   ];
-  const HELP = `<p>Namaste. I answer from the information on this website: the centres on the tree, ${PLACES.length} IKS places and gurukuls, their people, contacts and sources.</p>
-    <p>Try asking about a place near a city, centres in a state, who runs a centre, how to contact one, or what a branch of knowledge covers.</p>`;
+  const HELP = ENDPOINT
+    ? `<p>Namaste. Ask me anything about Indian Knowledge Systems. I use this website's information on ${PLACES.length} centres, institutes and gurukuls first, and search the web when I need to, showing my sources.</p>`
+    : `<p>Namaste. I answer from the information on this website: the centres on the tree, ${PLACES.length} IKS places and gurukuls, their people, contacts and sources.</p>
+    <p>Try asking what IKS is, about a place near a city, centres in a state, who runs a centre, or how to contact one.</p>`;
+
+  /* short explainers for common general questions, quoted from the site's sources */
+  const EXPLAIN = [
+    {
+      re: /what (is|are) (the )?(iks|indian knowledge system)|meaning of (iks|indian knowledge)|define (iks|indian knowledge)|about iks\b/,
+      html: `<p><b>Indian Knowledge Systems (IKS)</b> are the knowledge traditions developed in India over thousands of years, in philosophy, language and literature, the arts, health, mathematics, astronomy, architecture, agriculture and more. In the IKS Division's words, they "are nurtured in all languages of India such as Tamil, Sanskrit, Pali, Prakrit, Arabic, Persian, Kannada, Malayalam, Telugu, Odia, Bengali" and "have been preserved in many textual, oral traditions and kula paramparas that are practiced."</p>
+        <p>The Ministry of Education's <b>IKS Division</b> (set up in 2020) aims "to rejuvenate and mainstream Indian Knowledge Systems for the contemporary world", funding IKS centres, research projects, internships and textbooks.</p>
+        <p class="cb-dim">Sources: iksindia.org (About; IKS Centres).</p>`,
+      actions: [{ label: "iksindia.org", href: "https://iksindia.org/" }]
+    },
+    {
+      re: /what (is|are) (a |the )?(gurukul|gurukula|gurukulam|pathashala|veda pathashala)/,
+      html: `<p>A <b>gurukula</b> (gurukulam) is "a type of residential educational institution, in which a student lives with the acharya or guru." Traditional gurukuls teach the Vedas, Vedāṅgas, Darśanas, Sanskrit grammar and, in some, Āyurveda and Yoga; many today follow a hybrid pattern alongside a school board.</p>
+        <p>This site lists ${PLACES.filter(p => p.kind === "gurukul").length} gurukuls and Veda pāṭhaśālās. Ask "gurukuls near <i>your city</i>" to find one.</p>
+        <p class="cb-dim">Source: vediconcepts.org (Gurukul list).</p>`,
+      actions: [{ label: "vediconcepts.org", href: "https://vediconcepts.org/gurukul-list/" }]
+    }
+  ];
+  const webSearch = q => ({ label: "Search Google", href: "https://www.google.com/search?" + new URLSearchParams({ q }).toString() });
 
   function builtIn(q) {
     const f = fold(q).trim();
+    const ex = EXPLAIN.find(e => e.re.test(f));
+    if (ex) return { html: ex.html, actions: ex.actions };
     if (!f || /^(hi|hello|hey|namaste|namaskar|pranam)\b|what can you do|^help\b|how do you work/.test(f)) {
       return { html: HELP, suggest: SUGGEST };
     }
@@ -280,11 +304,16 @@
     if (hits.length && hits[0].nameHits >= Math.max(1, Math.min(2, qn)) && (hits.length === 1 || hits[0].s > hits[1].s * 1.15)) {
       return describe(hits[0].d);
     }
-    if (hits.length) {
-      return listAnswer("Here's what I found on the site that best matches your question:", hits.slice(0, 5),
-        `<p class="cb-dim">Ask about one of them by name for its details and contacts.</p>`);
+    if (hits.length && hits[0].nameHits > 0) {
+      const res = listAnswer("Here's what I found on the site that best matches your question:", hits.slice(0, 5),
+        `<p class="cb-dim">Ask about one of them by name for its details and contacts, or search the web for more.</p>`);
+      res.actions = [webSearch(q)];
+      return res;
     }
-    return { html: `<p>I couldn't find that in this site's information. I only know the IKS centres, institutes, gurukuls and heritage places listed here.</p>`, suggest: SUGGEST };
+    return {
+      html: `<p>That isn't in this site's information. I can tell you about IKS centres, institutes, gurukuls, manuscript libraries and heritage places listed here, or you can search the web for it.</p>`,
+      actions: [webSearch(q)], suggest: SUGGEST.slice(0, 3)
+    };
   }
 
   /* ---------------------------------------------------------
@@ -324,7 +353,7 @@
       if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       if (!data.answer) throw new Error("empty answer");
-      return data.answer;
+      return data;
     } finally { clearTimeout(timer); }
   }
   // the server returns plain text with light markdown: paragraphs, "- " bullets, **bold**
@@ -352,7 +381,7 @@
       <header class="cb-head">
         <div>
           <p class="cb-title">Jñāna Sahāyaka</p>
-          <p class="cb-sub">${ENDPOINT ? "AI answers from this site's data" : "Answers from this site's data"}</p>
+          <p class="cb-sub">${ENDPOINT ? "AI answers from this site and the web" : "Answers from this site's data"}</p>
         </div>
         <button type="button" class="cb-close" aria-label="Close chat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </header>
@@ -362,7 +391,7 @@
         <input id="cb-input" autocomplete="off" maxlength="400" placeholder="Ask about centres, gurukuls, people…">
         <button type="submit" class="cb-send" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2-6z"/></svg></button>
       </form>
-      <p class="cb-note">${ENDPOINT ? "AI can make mistakes; check the linked sources." : "Built-in assistant; it only knows what is on this site."}</p>
+      <p class="cb-note">${ENDPOINT ? "AI can make mistakes; check the linked sources." : "Built-in assistant: it knows this site's data and can send you to a web search."}</p>
     </section>`;
   document.body.appendChild(root);
   const fab = root.querySelector(".cb-fab"), panel = root.querySelector(".cb-panel"), log = root.querySelector(".cb-log");
@@ -416,9 +445,13 @@
       const dots = A.reduceMotion ? null : animate(wait.querySelectorAll(".cb-typing i"), { opacity: [0.3, 1, 0.3], y: [0, -3, 0] },
         { duration: 0.9, repeat: Infinity, delay: A.stagger(0.15) });
       try {
-        const answer = await askAI(q, local);
+        const { answer, sources } = await askAI(q, local);
         dots?.stop(); wait.remove();
-        addMsg("bot", renderAI(answer), { actions: local.actions || (local.picks && local.picks.length === 1 ? actionsFor(local.picks[0]) : []) });
+        const srcHtml = Array.isArray(sources) && sources.length
+          ? `<p class="cb-sources"><span class="cb-label">Sources</span>${sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join("")}</p>` : "";
+        // site buttons only when the answer is about one record from the site
+        const acts = local.picks && local.picks.length === 1 ? actionsFor(local.picks[0]) : (local.actions || []).filter(a => !/Search Google/.test(a.label));
+        addMsg("bot", renderAI(answer) + srcHtml, { actions: acts });
         history.push({ role: "user", content: q }, { role: "assistant", content: answer });
       } catch (err) {
         dots?.stop(); wait.remove();

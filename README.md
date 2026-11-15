@@ -77,11 +77,14 @@ the chatbot says so rather than guessing.
 There are two modes:
 
 - **Built-in (default):** runs in the browser, free and offline
-  (`js/chat.js`).
+  (`js/chat.js`). It also explains "What is IKS?" and "What is a gurukul?"
+  (quoting iksindia.org and vediconcepts.org), and for anything else it
+  can't answer it offers a **Search Google** button for that question.
 - **AI (optional):** deploy the Cloudflare Worker in `server/` and put its
-  address in `js/chat-config.js`. Claude then writes the answers, still only
-  from the site's records. See [`server/README.md`](server/README.md) for
-  setup and costs.
+  address in `js/chat-config.js`. Claude then answers any question: from the
+  site's records for its centres, people and contacts; from its own knowledge
+  for general questions; and with web search for current facts, listing its
+  sources. See [`server/README.md`](server/README.md) for setup and costs.
 
 ## Run it
 

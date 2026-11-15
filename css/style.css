@@ -743,6 +743,8 @@ h1 {
 .cb-dim { color: var(--ink-faint); font-size: .86em; }
 .cb-label { display: block; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
 .cb-actions, .cb-suggest { display: flex; flex-wrap: wrap; gap: 6px; }
+.cb-sources { margin-top: 8px !important; padding-top: 7px; border-top: 1px dashed var(--gold-line); font-size: .82rem; }
+.cb-sources a { display: block; margin-top: 2px; }
 .cb-act, .cb-chip {
   padding: 6px 12px; border-radius: 999px; font: .82rem var(--sans); cursor: pointer; text-decoration: none;
   border: 1px solid rgba(176, 132, 70, .45); background: var(--card); color: var(--ink);

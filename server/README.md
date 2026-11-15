@@ -2,9 +2,16 @@
 
 The website's chatbot works without this: by default it runs in the browser
 and answers from the site's own data. This folder adds **AI answers from
-Claude**. It's a small Cloudflare Worker that keeps your Anthropic API key
-secret and passes each question, with the site records relevant to it, to
-Claude. Claude is told to answer only from those records.
+Claude**, so visitors can ask anything. It's a small Cloudflare Worker that
+keeps your Anthropic API key secret and passes each question, with the site
+records relevant to it, to Claude, which answers:
+
+1. from the **site's records** for anything about its centres, people and
+   contacts (it never invents a name or number),
+2. from **its own knowledge** for general questions such as "What is IKS?",
+3. with **web search** (up to 3 searches per question) when it needs current or
+   specific facts it doesn't have. The chat window lists the pages it used
+   under the answer.
 
 ## What it costs
 
@@ -15,6 +22,9 @@ Claude. Claude is told to answer only from those records.
   roughly **2 to 4 US cents per question**. For about a tenth of that, set
   `MODEL = "claude-haiku-5-5"` in `wrangler.toml` (answers are a little less
   polished).
+- **Web search** adds about 1 US cent per search (Anthropic's price is
+  $10 per 1,000 searches), plus the tokens of the pages read. Most questions
+  need none; set `WEB_SEARCH = "off"` in `wrangler.toml` to turn it off.
 - Set a monthly **spend limit** in the Anthropic Console
   (console.anthropic.com → Settings → Limits) so costs can't run away.
 
@@ -76,7 +86,9 @@ built-in answer instead, so the site keeps working.
 - `worker.js` calls Claude through the official Anthropic SDK with a system
   prompt that confines answers to those records, treats the records as data
   rather than instructions, and asks for short answers with roles and sources
-  for any person named. It uses `low` effort (quick, inexpensive chat
+  for any person named. General questions are answered from Claude's own
+  knowledge, and Anthropic's server-side web search tool is available for
+  anything current; the Worker returns the cited pages as `sources`. It uses `low` effort (quick, inexpensive chat
   answers) and server-side refusal fallbacks (if a request is declined, the API
   retries it on a fallback model in the same call).
 - Built-in limits: questions up to 500 characters, the last three exchanges as
