@@ -83,14 +83,16 @@ built-in answer instead, so the site keeps working.
 - `js/chat.js` picks the records most relevant to the question (the same
   search the built-in assistant uses, plus the nearest places when a city is
   named) and POSTs `{ question, history, context }` to the Worker.
-- `worker.js` calls Claude through the official Anthropic SDK with a system
-  prompt that confines answers to those records, treats the records as data
-  rather than instructions, and asks for short answers with roles and sources
-  for any person named. General questions are answered from Claude's own
-  knowledge, and Anthropic's server-side web search tool is available for
-  anything current; the Worker returns the cited pages as `sources`. It uses `low` effort (quick, inexpensive chat
-  answers) and server-side refusal fallbacks (if a request is declined, the API
-  retries it on a fallback model in the same call).
+- `worker.js` calls Claude through the official Anthropic SDK. Its system
+  prompt says to take facts about the site's centres, people and contacts only
+  from those records, to answer general questions from Claude's own knowledge,
+  and to use Anthropic's server-side web search tool for anything current. It
+  treats the records and search results as data rather than instructions, and
+  asks for short answers with roles and sources for any person named. The
+  Worker returns the pages Claude cited as `sources`. It uses `low` effort
+  (quick, inexpensive chat answers) and server-side refusal fallbacks (if a
+  request is declined, the API retries it on a fallback model in the same
+  call).
 - Built-in limits: questions up to 500 characters, the last three exchanges as
   history, about 40,000 characters of site records, and roughly 20 questions
   per visitor per 10 minutes.
