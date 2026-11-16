@@ -155,6 +155,8 @@ Motion, exposed as `window.Motion`.
   post-processing.
 - Interaction: drag to rotate (horizontal only, inertia), click or tap a leaf to
   open the panel, branch labels and chips rotate the tree to face that branch.
+  On phones (≤720px), selecting a branch also scrolls the branch details
+  (`#branch-info`) into view, since they sit below the tree; deselecting doesn't.
   Keep `touch-action: pan-y` on the stage so phones can still scroll.
 
 ## 7. Centre panel and map

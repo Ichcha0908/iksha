@@ -298,6 +298,7 @@ h1 {
 
 /* ---------- branch info ---------- */
 .branch-info {
+  scroll-margin-top: 28px; /* room above the heading when scrolled into view */
   max-width: 760px;
   min-height: 150px;
   margin: 26px auto 0;

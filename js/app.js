@@ -167,7 +167,7 @@
       btn.style.setProperty("--c", b.color);
       btn.setAttribute("aria-pressed", "false");
       btn.innerHTML = `<span class="dot"></span>${b.name}<span class="count">${b.centres.length}</span>`;
-      btn.addEventListener("click", () => focusBranch(state.focused === i ? null : i));
+      btn.addEventListener("click", () => focusBranch(state.focused === i ? null : i, { reveal: true }));
       nav.appendChild(btn);
       interactive(btn, { shadow: "0px 10px 22px -12px", bg: "#fffaf0" });
     });
@@ -209,11 +209,24 @@
       l.classList.toggle("active", state.focused === i));
   }
 
-  function focusBranch(i) {
+  const mqMobile = window.matchMedia("(max-width: 720px)");
+
+  function focusBranch(i, { reveal = false } = {}) {
     state.focused = i;
     syncChips();
     renderBranchInfo();
     if (tree) tree.focus(i);
+    // On phones the branch details sit below the tree, out of sight: bring them into view
+    // so it's clear new content appeared (a short pause lets the tree start turning first).
+    if (reveal && i !== null && mqMobile.matches) {
+      setTimeout(() => {
+        const box = $("#branch-info");
+        const r = box.getBoundingClientRect();
+        if (r.top > window.innerHeight * 0.6 || r.top < 0) {
+          box.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+        }
+      }, reduceMotion ? 0 : 350);
+    }
   }
 
   /* ---------------------------------------------------------
@@ -289,7 +302,6 @@
      Detail panel
   --------------------------------------------------------- */
   let lastFocus = null;
-  const mqMobile = window.matchMedia("(max-width: 720px)");
 
   const esc = v => String(v).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 
@@ -823,7 +835,7 @@
       el.className = "blabel";
       el.style.setProperty("--c", b.color);
       el.innerHTML = `<span class="dot"></span>${b.name}`;
-      el.addEventListener("click", () => focusBranch(state.focused === i ? null : i));
+      el.addEventListener("click", () => focusBranch(state.focused === i ? null : i, { reveal: true }));
       $("#labels").appendChild(el);
       // the label's transform is driven by the 3D projection, so hover animates colour + shadow only
       interactive(el, { lift: 0, shadow: "0px 6px 18px -8px", bg: "#fffaf0" });
