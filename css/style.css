@@ -339,6 +339,48 @@ h1 {
 .leaf-btn b { display: block; font-weight: 500; font-size: .98rem; }
 .leaf-btn small { color: var(--ink-faint); font-size: .82rem; }
 
+/* ---------- leaf finder (search every leaf of a branch or of the tree) ---------- */
+.branch-info .bi-stats { margin: 10px auto 0; max-width: 620px; color: var(--ink-faint); font-size: .9rem; }
+.finder { margin-top: 20px; }
+.lf-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.lf-search {
+  position: relative;
+  flex: 1 1 320px;
+  max-width: 460px;
+}
+.lf-search svg {
+  position: absolute; left: 14px; top: 50%;
+  width: 18px; height: 18px; margin-top: -9px;
+  fill: none; stroke: var(--ink-faint); stroke-width: 2; stroke-linecap: round;
+  pointer-events: none;
+}
+.lf-search input, .lf-state select {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border: 1px solid rgba(176, 132, 70, 0.45);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: .95rem;
+}
+.lf-state select { padding: 10px 14px; cursor: pointer; max-width: 230px; }
+.lf-search input::placeholder { color: var(--ink-faint); }
+.lf-search input:focus-visible, .lf-state select:focus-visible { outline: 2px solid var(--ink-soft); outline-offset: 2px; }
+.lf-groups { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 14px; }
+.lf-groups .chip { padding: 6px 13px 6px 10px; font-size: .86rem; }
+.lf-count { min-height: 1.3em; margin: 14px 0 0; color: var(--ink-faint); font-size: .88rem; }
+.lf-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  margin-top: 10px;
+  text-align: left;
+}
+.lf-list .leaf-btn { width: 100%; height: 100%; }
+.leaf-btn.small svg { width: 16px; height: 16px; margin: 0 3px; color: color-mix(in srgb, var(--c) 60%, var(--g)); }
+.lf-more { margin-top: 16px; width: auto; }
+.branch-info:has(.finder) { max-width: 920px; }
+
 /* ---------- find IKS places near me ---------- */
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;

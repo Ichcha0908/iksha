@@ -4,11 +4,17 @@ An interactive 3D "Tree of Knowledge" for Indian Knowledge Systems (IKS).
 
 - Six branches: Veda & Darshana, Language & Literature, Arts & Aesthetics,
   Health & Wellbeing, Science & Technology, Heritage & Manuscripts.
-- Each glowing leaf is a research centre. Clicking it opens a panel with the
-  centre's name, type and state, plus a map of India with that state
-  highlighted and pinned.
-- Drag to turn the tree. The branch buttons under the tree also turn it and
-  list each branch's centres (keyboard friendly, and they work without WebGL).
+- **Every IKS place on the site is a leaf (728 leaves).** The large glowing
+  leaves are IKS centres; gurukuls, oriental institutes and libraries,
+  heritage sites, living traditions and Āyurveda & Yoga institutes are
+  smaller leaves clustered on twigs by kind (the 555 gurukuls on six regional
+  twigs). Clicking any leaf opens a panel with its details, contacts, sources
+  and a map of India with its state highlighted and pinned.
+- Drag to turn the tree. The branch buttons under the tree also turn it,
+  zoom in on that branch, and open its **leaf finder**: search by name, town
+  or person, filter by kind and state, 24 at a time. Hovering an entry lights
+  its leaf up on the tree. With no branch chosen, the finder searches all 728
+  leaves. It is keyboard friendly and works without WebGL.
 
 ## Find IKS places near me
 
@@ -119,9 +125,50 @@ transitions.
 - Visitors who turn on "reduce motion" in their system settings get every
   change instantly.
 
+## Every IKS place is a leaf
+
+`js/tree-places.js` adds every entry of `js/places.js` that isn't already an
+IKS-centre leaf to its branch as a small leaf (623 leaves), so nothing has to
+be found through "near me" alone. Gurukuls, the Kerala Vedic and Tantric
+maṭhas and the seats of Nyāya and Vedānta (Navadvīpa, Mithilā, Śṛṅgeri) go on
+Veda & Darshana; Sanskrit colleges and bodies and the IKS Division on
+Language; temples, bronze casting, IGNCA and Majuli on Arts; Āyurveda & Yoga
+institutes and Adivasi healing traditions on Health; observatories, the Kerala
+School and the water and ecology traditions on Science; ancient universities,
+Kāśī, Kāñcīpuram and the oriental research institutes and manuscript
+libraries on Heritage. This is the site's own classification. Places are
+matched to existing leaves by name only against the IKS centres (different
+gurukuls can share a name), so nothing appears twice: the one gurukul-list
+entry for Maharshi Sandipani Rashtriya Veda Vidya Pratishthan is part of its
+centre leaf.
+
+How the many leaves stay easy to use:
+
+- Small leaves are drawn as one instanced mesh per branch, around a foliage
+  core at the end of each twig, so the page stays fast.
+- They're picked by screen distance (13 px with a mouse, 22 px with a finger),
+  front-facing leaves and the focused branch first, so they're easy to hit.
+- Choosing a branch turns it to the front and zooms in. On touch screens, the
+  first tap on another branch's small leaf brings that branch forward; the
+  next tap opens a leaf.
+- The leaf finder lists every leaf. "Near me" cards and chatbot answers have
+  an **On the tree** button that opens the place's leaf.
+- The panel lists the other leaves on the same twig, nearest first (same
+  state), with "Show more" and a link to search the whole branch.
+
+| Branch | IKS centres | Other leaves | All leaves |
+| --- | --- | --- | --- |
+| Veda & Darshana | 23 | 561 | 584 |
+| Language & Literature | 19 | 9 | 28 |
+| Arts & Aesthetics | 7 | 10 | 17 |
+| Health & Wellbeing | 19 | 6 | 25 |
+| Science & Technology | 25 | 16 | 41 |
+| Heritage & Manuscripts | 12 | 21 | 33 |
+| **Total** | **105** | **623** | **728** |
+
 ## Every IKS centre is a leaf
 
-The tree has **105 leaves**: the 15 curated centres below, plus every IKS
+The tree has **105 IKS-centre leaves**: the 15 curated centres below, plus every IKS
 centre in the database (`js/tree-centres.js`, generated with `js/places.js`):
 
 - all the IKS Division's centres from its official list
@@ -203,6 +250,7 @@ id such as `ka` (Karnataka) or `dl` (Delhi); the full list is in
 | `js/data.js` | Branches, centres, map pin positions and place-kind colours |
 | `js/places.js` | Places for "Find IKS places near me" (with sources) |
 | `js/tree-centres.js` | Leaves for every IKS centre in the database (generated) |
+| `js/tree-places.js` | Adds every other place as a small leaf on its branch |
 | `js/cities.js` | Cities a visitor can search from |
 | `js/chat.js` | The chatbot (built-in answers; optional AI mode) |
 | `js/chat-config.js` | Chatbot setting: the AI Worker's address, if any |

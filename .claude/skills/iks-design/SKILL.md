@@ -149,7 +149,21 @@ Motion, exposed as `window.Motion`.
   and same PI or title), and give each leaf a branch and a `state`.
 - The geometry adapts: up to 4 leaves sit left/right on a branch; more spiral
   round it at the golden angle and shrink (`size`), with smaller halos and
-  click targets. Long sibling lists in the panel show 6 plus "Show all".
+  click targets.
+- **Every other place is a small leaf** (`js/tree-places.js`): gurukuls,
+  institutes, heritage sites, traditions and Āyurveda & Yoga institutes,
+  clustered at the end of twigs, one twig per kind (`IKS.leafGroups`), with
+  gurukuls on regional twigs. They use one `InstancedMesh` per branch around a
+  foliage core, a tint of the branch colour mixed with the kind colour, and
+  screen-distance picking (front-facing leaves first, larger radius for touch).
+  Never give hundreds of leaves their own meshes, halos or raycast targets.
+  Hover, selection and list previews enlarge the instance and add a glow sprite.
+- Focusing a branch zooms the camera in (`view.zoom`). On touch screens the
+  first tap on an unfocused branch's small leaf focuses the branch instead of
+  opening the leaf.
+- Any list of leaves must stay usable at hundreds of entries: search, kind and
+  state filters, and pages of 24 (the branch leaf finder), or "Show more" in
+  steps (the panel's siblings: same twig, same state first).
 - Lighting stays warm (hemisphere `0xfff4e2`/`0xc9a26b` + white key + amber
   rim). Background is transparent so the paper shows through; no skyboxes or
   post-processing.
@@ -161,7 +175,7 @@ Motion, exposed as `window.Motion`.
 
 ## 7. Centre panel and map
 
-- Panel order: kicker (branch dot + name + "Leaf n of m") → name (serif) →
+- Panel order: kicker (branch dot + name + leaf kind) → name (serif) →
   type badge + place → summary → India map → What happens here → People →
   Visit & contact → Sources → other leaves on this branch.
 - The map uses `js/india-map.js` (CC BY 4.0, credit kept in the README and the

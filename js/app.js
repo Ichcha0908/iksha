@@ -173,33 +173,160 @@
     });
   }
 
+  /* ---------------------------------------------------------
+     Leaf finder: every leaf of a branch (or of the whole tree), searchable
+     and filterable by kind and state, a page at a time. With hundreds of
+     small leaves this is the quick way to any of them; hovering an entry
+     lights its leaf up on the tree.
+  --------------------------------------------------------- */
+  const GROUPS = window.IKS.leafGroups;
+  const groupById = Object.fromEntries(GROUPS.map(g => [g.id, g]));
+  const FIND_PAGE = 24;
+  const finder = { q: "", group: "all", state: "all", shown: FIND_PAGE };
+  const fold = v => String(v || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const ALL_LEAVES = BRANCHES.flatMap((b, bi) => b.centres.map((c, ci) => ({ b, bi, c, ci })));
+  ALL_LEAVES.forEach(x => {
+    x.hay = fold([x.c.name, x.c.type, x.c.city, STATE_NAMES[x.c.state] || x.c.stateName, x.c.place && x.c.place.host,
+      (x.c.people || []).map(p => p.name).join(" ")].join(" "));
+  });
+
+  function setFinder(patch) {
+    Object.assign(finder, { shown: FIND_PAGE }, patch);
+  }
+
+  function leafButton(x, showBranch) {
+    const g = groupById[x.c.group] || GROUPS[0];
+    return `<li><button type="button" class="leaf-btn${x.c.minor ? " small" : ""}" data-b="${x.bi}" data-c="${x.ci}" style="--c:${x.b.color};--g:${g.color}">
+      <svg aria-hidden="true"><use href="#leaf-icon"/></svg>
+      <span><b>${esc(x.c.name)}</b><small>${showBranch ? `${esc(x.b.name)} · ` : ""}${esc(x.c.type)} · ${esc(placeLine(x.c))}</small></span>
+    </button></li>`;
+  }
+
+  /* the finder's HTML for a pool of leaves (one branch, or the whole tree) */
+  function finderHTML(pool, wholeTree) {
+    const counts = {};
+    pool.forEach(x => { counts[x.c.group] = (counts[x.c.group] || 0) + 1; });
+    const groups = GROUPS.filter(g => counts[g.id]);
+    const states = {};
+    pool.forEach(x => { const n = STATE_NAMES[x.c.state] || x.c.stateName; if (n) states[n] = (states[n] || 0) + 1; });
+    const stateOpts = Object.keys(states).sort().map(n => `<option value="${esc(n)}"${finder.state === n ? " selected" : ""}>${esc(n)} (${states[n]})</option>`).join("");
+    return `
+      <div class="finder" role="search">
+        <div class="lf-row">
+          <label class="lf-search"><span class="sr-only">Search leaves</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+            <input type="search" class="lf-q" value="${esc(finder.q)}" autocomplete="off"
+              placeholder="${wholeTree ? `Search all ${pool.length} leaves: a name, town or state` : `Search this branch's ${pool.length} leaves`}">
+          </label>
+          <label class="lf-state"><span class="sr-only">State</span>
+            <select class="lf-st"><option value="all">All states</option>${stateOpts}</select>
+          </label>
+        </div>
+        ${groups.length > 1 ? `<div class="lf-groups" role="group" aria-label="Kind of leaf">
+          <button type="button" class="chip lf-g" data-g="all" aria-pressed="${finder.group === "all"}" style="--c:#8b6a3e"><span class="dot"></span>All<span class="count">${pool.length}</span></button>
+          ${groups.map(g => `<button type="button" class="chip lf-g" data-g="${g.id}" aria-pressed="${finder.group === g.id}" style="--c:${g.color}"><span class="dot"></span>${esc(g.label)}<span class="count">${counts[g.id]}</span></button>`).join("")}
+        </div>` : ""}
+        <p class="lf-count" aria-live="polite"></p>
+        <ul class="leaf-list lf-list"></ul>
+        <button type="button" class="near-btn lf-more" hidden></button>
+      </div>`;
+  }
+
+  /* wire up a rendered finder: filtering, paging, hover-preview */
+  function bindFinder(box, pool, { wholeTree = false } = {}) {
+    const list = box.querySelector(".lf-list");
+    const count = box.querySelector(".lf-count");
+    const more = box.querySelector(".lf-more");
+    const input = box.querySelector(".lf-q");
+    const matches = () => {
+      const words = fold(finder.q).split(/\s+/).filter(Boolean);
+      return pool.filter(x =>
+        (finder.group === "all" || x.c.group === finder.group) &&
+        (finder.state === "all" || (STATE_NAMES[x.c.state] || x.c.stateName) === finder.state) &&
+        words.every(w => x.hay.includes(w)));
+    };
+    function draw(fresh) {
+      // the whole tree is only listed once there's something to look for
+      const idle = wholeTree && !finder.q.trim() && finder.group === "all" && finder.state === "all";
+      const found = idle ? [] : matches();
+      const before = list.children.length;
+      const shown = found.slice(0, finder.shown);
+      if (fresh) list.innerHTML = shown.map(x => leafButton(x, wholeTree)).join("");
+      else list.insertAdjacentHTML("beforeend", shown.slice(before).map(x => leafButton(x, wholeTree)).join(""));
+      const added = Array.from(list.children).slice(fresh ? 0 : before);
+      added.forEach(li => {
+        const btn = li.firstElementChild;
+        const b = +btn.dataset.b, c = +btn.dataset.c;
+        btn.addEventListener("click", () => openCentre(b, c));
+        const on = () => tree && tree.preview(b, c), off = () => tree && tree.preview(null);
+        btn.addEventListener("pointerenter", on); btn.addEventListener("pointerleave", off);
+        btn.addEventListener("focus", on); btn.addEventListener("blur", off);
+        interactive(btn, { shadow: "0px 12px 24px -14px" });
+      });
+      reveal(added, { gap: 0.025, y: 10, duration: 0.4 });
+      count.textContent = idle ? ""
+        : found.length ? `Showing ${shown.length} of ${found.length} ${found.length === 1 ? "leaf" : "leaves"}`
+        : "No leaf matches. Try another word, kind or state.";
+      const rest = found.length - shown.length;
+      more.hidden = rest <= 0;
+      more.textContent = `Show ${Math.min(rest, FIND_PAGE)} more`;
+    }
+    let timer = 0;
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { setFinder({ q: input.value }); draw(true); }, 120);
+    });
+    box.querySelector(".lf-st").addEventListener("change", e => { setFinder({ state: e.target.value }); draw(true); });
+    box.querySelectorAll(".lf-g").forEach(btn => {
+      btn.addEventListener("click", () => {
+        setFinder({ group: btn.dataset.g });
+        box.querySelectorAll(".lf-g").forEach(x => x.setAttribute("aria-pressed", String(x === btn)));
+        draw(true);
+      });
+      interactive(btn, { lift: -2, shadow: "0px 8px 18px -12px", bg: "#fffaf0" });
+    });
+    more.addEventListener("click", () => { finder.shown += FIND_PAGE; draw(false); });
+    interactive(more, { lift: -2, shadow: "0px 8px 16px -12px" });
+    list.addEventListener("pointerleave", () => tree && tree.preview(null));
+    draw(true);
+  }
+
   function renderBranchInfo() {
     const box = $("#branch-info");
     const i = state.focused;
+    if (tree) tree.preview(null);
     if (i === null) {
-      box.innerHTML = `<p class="empty">Choose a branch to see its leaves, or click any glowing leaf on the tree.</p>`;
-      reveal(Array.from(box.children), { duration: 0.5 });
+      box.innerHTML = `
+        <div class="bi-inner bi-all">
+          <p class="empty">Choose a branch to see its leaves, or click any leaf on the tree. Every IKS place on this site is a leaf: search them all here.</p>
+          ${finderHTML(ALL_LEAVES, true)}
+        </div>`;
+      bindFinder(box, ALL_LEAVES, { wholeTree: true });
+      reveal(box.querySelectorAll(".empty, .finder > *:not([hidden])"), { duration: 0.5, gap: 0.05 });
       return;
     }
     const b = BRANCHES[i];
+    const pool = ALL_LEAVES.filter(x => x.bi === i);
+    const small = pool.filter(x => x.c.minor).length;
     box.innerHTML = `
       <div class="bi-inner" style="--c:${b.color}">
         <p class="bi-sa" lang="sa">${b.sanskrit}</p>
         <h2>${b.name}</h2>
         <p class="blurb">${b.blurb}</p>
-        <ul class="leaf-list">
-          ${b.centres.map((c, k) => `
-            <li><button type="button" class="leaf-btn" data-c="${k}" style="--c:${b.color}">
-              <svg aria-hidden="true"><use href="#leaf-icon"/></svg>
-              <span><b>${c.name}</b><small>${c.type} · ${STATE_NAMES[c.state]}</small></span>
-            </button></li>`).join("")}
-        </ul>
+        <p class="bi-stats">${pool.length - small} IKS centres${small ? ` and ${small} more places (gurukuls, institutes, heritage sites, traditions) grow on this branch. Large glowing leaves are IKS centres; the small leaves cluster on twigs by kind` : ""}.</p>
+        ${finderHTML(pool, false)}
       </div>`;
-    box.querySelectorAll(".leaf-btn").forEach(btn => {
-      btn.addEventListener("click", () => openCentre(i, +btn.dataset.c));
-      interactive(btn, { shadow: "0px 12px 24px -14px" });
-    });
-    reveal(box.querySelectorAll(".bi-sa, h2, .blurb, .leaf-list li"), { gap: 0.06 });
+    bindFinder(box, pool);
+    reveal(box.querySelectorAll(".bi-sa, h2, .blurb, .bi-stats, .finder > *:not(.lf-list):not([hidden])"), { gap: 0.06 });
+  }
+
+  /* open a branch's finder on one kind of leaf (from the panel's "browse all" button) */
+  function browseBranch(bi, group) {
+    setFinder({ q: "", group, state: "all" });
+    if (state.focused !== bi) { state.focused = bi; syncChips(); if (tree) tree.focus(bi); }
+    renderBranchInfo();
+    closePanel();
+    $("#branch-info").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
   }
 
   function syncChips() {
@@ -212,6 +339,7 @@
   const mqMobile = window.matchMedia("(max-width: 720px)");
 
   function focusBranch(i, { reveal = false } = {}) {
+    if (i !== state.focused) setFinder({ q: "", group: "all", state: "all" });
     state.focused = i;
     syncChips();
     renderBranchInfo();
@@ -305,6 +433,9 @@
 
   const esc = v => String(v).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 
+  /** "City, State" for a leaf (small leaves without a town show the state only) */
+  const placeLine = c => [c.city, STATE_NAMES[c.state] || c.stateName].filter((v, i, a) => v && a.indexOf(v) === i).join(", ");
+
   /** tel: link for the first number in a phone string such as "080 2670 1303 (University) · …" */
   function telLink(phone) {
     const first = String(phone).split(/[·/(]/)[0].replace(/[^\d+]/g, "");
@@ -331,16 +462,29 @@
     out.push(`<section class="pd-section"><h3>People</h3>${
       c.people && c.people.length
         ? `<ul class="pd-people">${c.people.map(p => `<li><b>${esc(p.name)}</b><span>${esc(p.role)}</span>${p.asOf ? `<small>As listed in: ${esc(p.asOf)}</small>` : ""}</li>`).join("")}</ul>`
-        : `<p class="pd-empty">The sources don't name the people who run it. Contact the institution below.</p>`
+        : `<p class="pd-empty">${esc(c.peopleNote || "The sources don't name the people who run it. Contact the institution below.")}</p>`
     }</section>`);
     const k = c.contact || {};
     const rows = [];
     if (k.address) rows.push(["Address", `<a href="https://www.google.com/maps/search/?${new URLSearchParams({ api: "1", query: `${c.name}, ${k.address}` })}" target="_blank" rel="noopener">${esc(k.address)}</a>`]);
-    if (k.phone) rows.push(["Phone", telLink(k.phone)]);
-    if (k.email) rows.push(["Email", mailLink(k.email)]);
+    if (k.phone) rows.push([k.listedBy ? "Listed phone" : "Phone", telLink(k.phone)]);
+    if (k.email) rows.push([k.listedBy ? "Listed email" : "Email", mailLink(k.email)]);
     if (k.hours) rows.push(["Hours", esc(k.hours)]);
     if (k.website) rows.push(["Website", `<a href="${esc(k.website)}" target="_blank" rel="noopener">${esc(k.website.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</a>`]);
-    if (rows.length) {
+    if (c.minor && !c.place.noMap) {
+      rows.push(["Directions", `<a href="${esc(nearby.directionsUrl(c.place))}" target="_blank" rel="noopener">Open in Google Maps</a>`]);
+    }
+    if (c.minor) {
+      // small leaves: what the source lists, and a search when it lists no phone or e-mail
+      let note = c.listedNote ? `<p class="pd-checked">${esc(c.listedNote)}</p>` : "";
+      if (!k.phone && !k.email) {
+        const q = new URLSearchParams({ q: `${c.name} ${c.place.city || ""} ${c.stateName || ""} contact` }).toString();
+        note += `<p class="pd-empty">${esc(c.contactNote)}${c.place.kind === "heritage" || c.place.kind === "tradition" ? ""
+          : ` <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">Search for its contact details</a>.`}</p>`;
+      }
+      out.push(`<section class="pd-section"><h3>Visit &amp; contact</h3>
+        ${rows.length ? `<dl class="pd-contact">${rows.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join("")}</dl>` : ""}${note}</section>`);
+    } else if (rows.length) {
       out.push(`<section class="pd-section"><h3>Visit &amp; contact</h3>
         <dl class="pd-contact">${rows.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join("")}</dl></section>`);
     } else {
@@ -354,7 +498,7 @@
     if (c.sources && c.sources.length) {
       out.push(`<section class="pd-section"><h3>Sources</h3>
         <ol class="pd-sources">${c.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></li>`).join("")}</ol>
-        <p class="pd-checked">Checked November 2026. Office-holders change, so confirm with the institution before visiting.</p></section>`);
+        <p class="pd-checked">${c.minor ? "Fetched" : "Checked"} November 2026. Office-holders change, so confirm with the institution before visiting.</p></section>`);
     }
     return out.join("");
   }
@@ -370,39 +514,68 @@
     state.panelOpen = true;
 
     panel.style.setProperty("--c", b.color);
-    $("#panel-kicker").innerHTML = `<span class="dot"></span>${b.name} · Leaf ${ci + 1} of ${b.centres.length}`;
+    const grp = (GROUPS.find(g => g.id === c.group) || GROUPS[0]);
+    $("#panel-kicker").innerHTML = `<span class="dot"></span>${b.name} · ${esc(grp.label)}`;
     $("#panel-title").textContent = c.name;
     $("#panel-type").textContent = c.type;
-    $("#panel-place").textContent = [c.city, STATE_NAMES[c.state]].filter(Boolean).join(", ");
+    $("#panel-place").textContent = placeLine(c);
     $("#panel-summary").innerHTML = (c.founded ? `<span class="founded">Founded ${esc(c.founded)}.</span> ` : "") + esc(c.summary || "");
-    $("#map-caption").textContent = `${c.name} is in ${c.city ? c.city + ", " : ""}${STATE_NAMES[c.state]}.`;
+    $("#map-caption").textContent = `${c.name} is in ${placeLine(c)}.`;
     showOnMap(c.state, b.color);
     $("#panel-details").innerHTML = centreDetails(c);
 
+    // siblings: the other leaves of the same kind on this branch (gurukuls: on the
+    // same regional twig), nearest first: same state, then the rest
     const list = $("#panel-siblings");
-    // long branches: show the first six (and the open leaf), the rest behind "Show all"
+    const twig = x => x.group + (x.region ? ":" + x.region : "");
+    const same = b.centres.map((s2, k) => ({ s: s2, k }))
+      .filter(x => twig(x.s) === twig(c))
+      .sort((x, y) => (x.k === ci ? -1 : y.k === ci ? 1 : 0) || (y.s.state === c.state) - (x.s.state === c.state));
+    $("#panel-sib-title").textContent = c.minor
+      ? `More ${grp.label.toLowerCase()}${c.region ? ` (${c.region} twig)` : ""}`
+      : "Other IKS centres on this branch";
     const SHOW = 6;
-    const shown = k => b.centres.length <= SHOW + 2 || k < SHOW || k === ci;
-    list.innerHTML = b.centres.map((s, k) => `
-      <li${shown(k) ? "" : " hidden"}><button type="button" class="leaf-btn" data-c="${k}" style="--c:${b.color}" ${k === ci ? 'aria-current="true"' : ""}>
+    let shownSib = Math.min(same.length, SHOW + 1);
+    const sibItem = x => `
+      <li><button type="button" class="leaf-btn${x.s.minor ? " small" : ""}" data-c="${x.k}" style="--c:${b.color};--g:${grp.color}" ${x.k === ci ? 'aria-current="true"' : ""}>
         <svg aria-hidden="true"><use href="#leaf-icon"/></svg>
-        <span><b>${esc(s.name)}</b><small>${esc(s.type)} · ${esc([s.city, STATE_NAMES[s.state]].filter(Boolean).join(", "))}</small></span>
-      </button></li>`).join("") + (b.centres.some((_, k) => !shown(k))
-        ? `<li class="sib-more"><button type="button" class="near-btn">Show all ${b.centres.length} leaves</button></li>` : "");
-    const moreBtn = list.querySelector(".sib-more button");
-    if (moreBtn) {
-      moreBtn.addEventListener("click", () => {
-        const hiddenItems = [...list.querySelectorAll("li[hidden]")];
-        hiddenItems.forEach(li => { li.hidden = false; });
-        moreBtn.parentElement.remove();
-        reveal(hiddenItems, { gap: 0.03, y: 10, duration: 0.4 });
-      });
-      interactive(moreBtn, { lift: -2, shadow: "0px 8px 16px -12px" });
-    }
-    list.querySelectorAll(".leaf-btn").forEach(btn => {
+        <span><b>${esc(x.s.name)}</b><small>${esc(x.s.type)} · ${esc(placeLine(x.s))}</small></span>
+      </button></li>`;
+    const bindSibs = items => items.forEach(li => {
+      const btn = li.querySelector(".leaf-btn");
+      if (!btn) return;
       btn.addEventListener("click", () => openCentre(bi, +btn.dataset.c));
       interactive(btn, { lift: -2, shadow: "0px 10px 20px -14px" });
     });
+    const moreRow = () => {
+      const rest = same.length - shownSib;
+      return (rest > 0 ? `<li class="sib-more"><button type="button" class="near-btn sib-show">Show ${Math.min(rest, 30)} more of ${same.length}</button></li>` : "")
+        + (b.centres.length > SHOW + 1 ? `<li class="sib-more"><button type="button" class="near-btn sib-browse">Search all ${b.centres.length} leaves of this branch</button></li>` : "");
+    };
+    function drawSibs(from) {
+      list.querySelectorAll(".sib-more").forEach(li => li.remove());
+      const html = same.slice(from, shownSib).map(sibItem).join("");
+      list.insertAdjacentHTML("beforeend", html + moreRow());
+      const items = Array.from(list.children).slice(from);
+      bindSibs(items);
+      const show = list.querySelector(".sib-show");
+      if (show) {
+        show.addEventListener("click", () => {
+          const at = shownSib;
+          shownSib = Math.min(same.length, shownSib + 30);
+          drawSibs(at);
+        });
+        interactive(show, { lift: -2, shadow: "0px 8px 16px -12px" });
+      }
+      const browse = list.querySelector(".sib-browse");
+      if (browse) {
+        browse.addEventListener("click", () => browseBranch(bi, "all"));
+        interactive(browse, { lift: -2, shadow: "0px 8px 16px -12px" });
+      }
+      if (from > 0) reveal(items, { gap: 0.03, y: 10, duration: 0.4 });
+    }
+    list.innerHTML = "";
+    drawSibs(0);
     list.parentElement.hidden = b.centres.length < 2;
 
     if (firstOpen) {
@@ -670,6 +843,122 @@
     bindu.add(binduCore, binduGlow);
     sway.add(bindu);
 
+    /* ---------- the many smaller leaves ----------
+       Every other IKS place (gurukuls, institutes, heritage sites…) is a small leaf.
+       They grow in clusters at the end of twigs, one twig per kind of place (the many
+       gurukuls on one twig per region), and are drawn as one instanced mesh per branch
+       so hundreds of leaves stay cheap. They're picked by screen distance (see pick()),
+       which makes small leaves easy to hit with a mouse or a finger. */
+    const minorBranches = [];     // per branch: { mesh, recs, appear, dim, … }
+    const minorRecs = [];         // every small leaf, for picking
+    const WHITE = new THREE.Color(0xffffff);
+    const PALE = new THREE.Color(0xeadbc0);
+    const groupColor = Object.fromEntries((window.IKS.leafGroups || []).map(g => [g.id, new THREE.Color(g.color)]));
+    const MINOR_SCALE = 0.15;
+    const tmpM = new THREE.Matrix4(), tmpS = new THREE.Vector3();
+
+    function buildMinorTwigs(b, bi, curve, D, P, color, start) {
+      const cores = [];
+      const items = b.centres.map((c, ci) => ({ c, ci })).filter(x => x.c.minor);
+      if (!items.length) return;
+      const twigs = new Map();
+      items.forEach(x => {
+        const key = x.c.group + (x.c.region ? ":" + x.c.region : "");
+        if (!twigs.has(key)) twigs.set(key, []);
+        twigs.get(key).push(x);
+      });
+      const keys = [...twigs.keys()];
+      const recs = [];
+      keys.forEach((key, k) => {
+        const list = twigs.get(key);
+        const m = list.length;
+        const t = keys.length === 1 ? 0.6 : 0.32 + (0.62 * k) / (keys.length - 1);
+        const at = curve.getPointAt(t);
+        const T = curve.getTangentAt(t);
+        const N2 = new THREE.Vector3().crossVectors(T, P).normalize();
+        if (N2.y < 0) N2.negate();
+        // twigs fan round the branch (golden angle), leaning up and out
+        const th = 0.9 + k * 2.39996;
+        // (clusters rise above the branch so the big IKS-centre leaves stay in view)
+        const dir = P.clone().multiplyScalar(Math.cos(th) * 0.85).addScaledVector(N2, 1.05 + Math.sin(th) * 0.3)
+          .addScaledVector(D, 0.2).normalize();
+        // the leaves cover a sphere's surface around the twig's end: radius from leaf count
+        const R = Math.max(0.15, 0.175 * Math.sqrt(m / (4 * Math.PI)));
+        const twigLen = 0.42 + R * 1.15;
+        const end = at.clone().addScaledVector(dir, twigLen);
+        const tw = taperedTube(new THREE.CatmullRomCurve3([at, at.clone().lerp(end, 0.5).addScaledVector(UP, 0.06), end]),
+          10, 6, Math.min(0.06, 0.03 + R * 0.04), 0.016, twigMat);
+        sway.add(tw);
+        growables.push({ mesh: tw, start: start + 0.45, dur: 0.5 });
+        const tint = color.clone().lerp(groupColor[list[0].c.group] || color, 0.4);
+        // a soft foliage core, so a cluster reads as a crown of leaves, not a hollow shell
+        const coreCol = tint.clone().lerp(new THREE.Color(0x4a2f17), 0.45);
+        const core = new THREE.Mesh(new THREE.SphereGeometry(R * 0.9, 18, 12),
+          new THREE.MeshStandardMaterial({ color: coreCol.clone(), roughness: 1 }));
+        core.position.copy(end).addScaledVector(dir, R * 0.25);
+        core.scale.setScalar(0.001);
+        core.userData = { base: coreCol, dimColor: coreCol.clone().lerp(PALE, 0.72) };
+        sway.add(core);
+        cores.push(core);
+        list.forEach((x, j) => {
+          // Fibonacci sphere, squashed a little so clusters read as foliage
+          const yy = 1 - (2 * (j + 0.5)) / m;
+          const rr = Math.sqrt(1 - yy * yy);
+          const phi = j * 2.39996 + k;
+          const normal = new THREE.Vector3(Math.cos(phi) * rr, yy * 0.85 + 0.15, Math.sin(phi) * rr).normalize();
+          const pos = end.clone().addScaledVector(normal, R).addScaledVector(dir, R * 0.25);
+          // the leaf lies on the cluster's surface, its face looking outward, tip upward
+          const zAxis = normal.clone();
+          let yAxis = UP.clone().addScaledVector(zAxis, -UP.dot(zAxis));
+          if (yAxis.lengthSq() < 1e-4) yAxis = dir.clone().addScaledVector(zAxis, -dir.dot(zAxis));
+          yAxis.normalize().applyAxisAngle(zAxis, (rand() - 0.5) * 0.9);
+          const xAxis = new THREE.Vector3().crossVectors(yAxis, zAxis);
+          const quat = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis));
+          // lift the tip away from the surface a little, for a feathery crown
+          quat.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -0.45 - rand() * 0.25));
+          const shade = tint.clone().offsetHSL((rand() - 0.5) * 0.03, 0, (rand() - 0.5) * 0.12);
+          const rec = {
+            b: bi, c: x.ci, pos, center: end, normal, quat, idx: recs.length,
+            base: shade, dimColor: shade.clone().lerp(PALE, 0.72),
+            s: MINOR_SCALE * (0.9 + rand() * 0.2), emph: 1,
+            delay: (j / Math.max(m - 1, 1)) * 0.55 + k * 0.04
+          };
+          recs.push(rec);
+          minorRecs.push(rec);
+        });
+      });
+      const mesh = new THREE.InstancedMesh(LEAF_GEO,
+        new THREE.MeshStandardMaterial({ map: veinTex, side: THREE.DoubleSide, roughness: 0.6, metalness: 0.04 }), recs.length);
+      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      recs.forEach(r => { mesh.setColorAt(r.idx, r.base); r.mesh = mesh; });
+      mesh.frustumCulled = false;
+      sway.add(mesh);
+      const info = { mesh, recs, cores, appear: 0, dim: 0, tDim: 0, appliedDim: -1, done: false };
+      minorBranches[bi] = info;
+      animate(info, { appear: 1 }, tx({ duration: 1.3, delay: start + 0.9, ease: EASE }));
+    }
+
+    function setMinorMatrix(r, k) {
+      tmpS.setScalar(Math.max(r.s * r.emph * k, 1e-4));
+      tmpM.compose(r.pos, r.quat, tmpS);
+      r.mesh.setMatrixAt(r.idx, tmpM);
+    }
+    const minorOf = (b, c) => {
+      const info = minorBranches[b];
+      return info ? info.recs.find(r => r.c === c) || null : null;
+    };
+
+    // glows that mark the hovered and the selected small leaf
+    const markGlow = color => {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color, transparent: true, opacity: 0, depthWrite: false, depthTest: false }));
+      s.visible = false;
+      s.renderOrder = 5;
+      sway.add(s);
+      return s;
+    };
+    const hoverGlow = markGlow(0xffe2a8), selGlow = markGlow(0xffd27a);
+    let emphasised = [];
+
     /* ---------- the six branches ---------- */
     const branchData = [];
     const leaves = [];         // clickable leaves
@@ -706,9 +995,11 @@
       // clickable leaves along the branch
       // Branches can carry many leaves: they spiral round the branch (golden angle)
       // and get smaller as the branch fills up, so they don't pile on each other.
-      const n = b.centres.length;
+      // the featured IKS centres come first in b.centres; the many smaller leaves follow
+      const featured = b.centres.filter(c => !c.minor);
+      const n = featured.length;
       const size = n <= 4 ? 1 : Math.max(0.42, Math.sqrt(4 / n));
-      b.centres.forEach((centre, ci) => {
+      featured.forEach((centre, ci) => {
         const isTip = ci === n - 1;
         const t = isTip ? 1 : (n <= 4 ? 0.42 + (0.5 * (ci + 0.5)) / Math.max(n - 1, 1) : 0.26 + (0.7 * (ci + 0.5)) / (n - 1));
         const at = curve.getPointAt(t);
@@ -773,6 +1064,8 @@
         group.scale.setScalar(0);
         leaves.push(rec);
       });
+
+      buildMinorTwigs(b, bi, curve, D, P, color, start);
 
       // decorative foliage along the branch
       for (let k = 0, deco = Math.max(6, 16 - Math.round(n / 2)); k < deco; k++) {
@@ -857,18 +1150,42 @@
     function refreshLeaves() {
       const sel = state.selected;
       leaves.forEach(L => {
-        const isHover = hovered && hovered.b === L.b && hovered.c === L.c;
+        const isHover = (hovered && hovered.b === L.b && hovered.c === L.c) ||
+          (preview && preview.b === L.b && preview.c === L.c);
         const isSel = sel && sel.b === L.b && sel.c === L.c;
         const h = isHover || isSel ? 1 : 0;
         const d = state.focused !== null && state.focused !== L.b ? 1 : 0;
         if (h !== L.tHover) { L.tHover = h; animate(L, { hover: h }, tx({ type: "spring", stiffness: 300, damping: 18 })); }
         if (d !== L.tDim) { L.tDim = d; animate(L, { dim: d }, tx({ duration: 0.5, ease: EASE })); }
       });
+      minorBranches.forEach((info, bi) => {
+        if (!info) return;
+        const d = state.focused !== null && state.focused !== bi ? 1 : 0;
+        if (d !== info.tDim) { info.tDim = d; animate(info, { dim: d }, tx({ duration: 0.5, ease: EASE })); }
+      });
+      // small leaves: the hovered / selected / previewed one grows and gets a glow
+      const hovRec = hovered && hovered.minor ? minorOf(hovered.b, hovered.c) : null;
+      const pv = preview && minorOf(preview.b, preview.c);
+      const selRec = sel ? minorOf(sel.b, sel.c) : null;
+      emphasised.forEach(r => { r.emph = 1; setMinorMatrix(r, 1); r.mesh.instanceMatrix.needsUpdate = true; });
+      emphasised = [hovRec, pv, selRec].filter(Boolean);
+      emphasised.forEach(r => {
+        r.emph = 2.1;
+        if (minorBranches[r.b].done) { setMinorMatrix(r, 1); r.mesh.instanceMatrix.needsUpdate = true; }
+      });
+      const place = (glow, r) => {
+        glow.visible = !!r;
+        if (r) { glow.position.copy(r.pos).addScaledVector(r.normal, 0.06); glow.userData.rec = r; }
+      };
+      place(hoverGlow, hovRec || pv);
+      place(selGlow, selRec);
     }
+    let preview = null;   // a leaf highlighted from the branch's leaf list
 
     /* ---------- sizing ---------- */
     let W = 1, H = 1;
-    const view = { shift: 0 };
+    const view = { shift: 0, zoom: 0 };
+    const camOffset = new THREE.Vector3();
     function resize() {
       const r = stage.getBoundingClientRect();
       W = Math.max(1, r.width); H = Math.max(1, r.height);
@@ -877,7 +1194,8 @@
       const tanH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
       const needW = camera.aspect < 0.8 ? 8.4 : 10.4, needH = 7.2;
       const dist = Math.max(needH / (2 * tanH), needW / (2 * tanH * camera.aspect));
-      camera.position.set(0, lookAt.y + dist * 0.2, dist);
+      camOffset.set(0, dist * 0.2, dist);
+      camera.position.copy(lookAt).add(camOffset);
       camera.lookAt(lookAt);
       camera.updateProjectionMatrix();
     }
@@ -898,7 +1216,35 @@
       ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
       raycaster.setFromCamera(ndc, camera);
       const hits = raycaster.intersectObjects(hitTargets, false);
-      return hits.length ? hits[0].object.userData : null;
+      if (hits.length) return hits[0].object.userData;
+      return pickMinor(clientX - r.left, clientY - r.top, touchPick ? 22 : 13);
+    }
+    let touchPick = false;
+
+    /* nearest small leaf on screen within `radius` px: front-facing ones only,
+       the focused branch first, and nearer leaves win over ones behind them */
+    const pv3 = new THREE.Vector3(), pc3 = new THREE.Vector3(), camW = new THREE.Vector3();
+    function pickMinor(px, py, radius) {
+      camera.getWorldPosition(camW);
+      let best = null, bestScore = Infinity;
+      for (const rec of minorRecs) {
+        const info = minorBranches[rec.b];
+        if (!info || info.appear < 0.6) continue;
+        pv3.copy(rec.pos).applyMatrix4(sway.matrixWorld);
+        pc3.copy(rec.center).applyMatrix4(sway.matrixWorld);
+        // skip leaves on the far side of their cluster
+        const out = pv3.clone().sub(pc3), toCam = camW.clone().sub(pv3);
+        if (out.dot(toCam) < -0.15 * out.length() * toCam.length()) continue;
+        const dist = toCam.length();
+        pv3.project(camera);
+        const x = (pv3.x * 0.5 + 0.5) * W, y = (-pv3.y * 0.5 + 0.5) * H;
+        const d = Math.hypot(x - px, y - py);
+        if (d > radius) continue;
+        const other = state.focused !== null && state.focused !== rec.b ? radius * 2 : 0;
+        const score = d + other + dist * 1.5;
+        if (score < bestScore) { bestScore = score; best = rec; }
+      }
+      return best ? { b: best.b, c: best.c, minor: true } : null;
     }
 
     function hideTooltip() {
@@ -916,7 +1262,7 @@
       canvas.classList.toggle("pointing", !!h && !dragging);
       if (!h) { hideTooltip(); return; }
       const b = BRANCHES[h.b], c = b.centres[h.c];
-      tooltip.innerHTML = `<strong>${c.name}</strong><span>${c.type} · ${STATE_NAMES[c.state]}</span>`;
+      tooltip.innerHTML = `<strong>${esc(c.name)}</strong><span>${esc(c.type)} · ${esc(placeLine(c))}</span>`;
       tooltip.style.borderLeft = `4px solid ${b.color}`;
       const r = stage.getBoundingClientRect();
       let x = clientX - r.left + 14, y = clientY - r.top + 14;
@@ -945,6 +1291,7 @@
     mqMobile.addEventListener("change", updateShift);
 
     canvas.addEventListener("pointerdown", e => {
+      touchPick = e.pointerType !== "mouse";
       dragging = true; moved = 0;
       downX = lastX = e.clientX; downY = e.clientY;
       vel = 0;
@@ -975,7 +1322,10 @@
       canvas.classList.remove("dragging");
       if (moved <= 6 && e.type === "pointerup") {
         const h = pick(e.clientX, e.clientY);
-        if (h) openCentre(h.b, h.c);
+        // small leaves are tiny on a touch screen: the first tap on another branch's
+        // small leaf brings that branch forward and zooms in; the next tap opens a leaf
+        if (h && h.minor && touchPick && state.focused !== h.b) focusBranch(h.b);
+        else if (h) openCentre(h.b, h.c);
         vel = 0;
       }
       noteInteraction();
@@ -1000,6 +1350,10 @@
     }
 
     /* slide the tree left when the side panel covers the right of the stage */
+    function updateZoom() {
+      const want = state.focused === null ? 0 : 1;
+      animate(view, { zoom: want }, tx({ type: "spring", stiffness: 60, damping: 18 }));
+    }
     function updateShift() {
       const want = state.panelOpen && !mqMobile.matches ? Math.min(W * 0.22, 230) : 0;
       animate(view, { shift: want }, tx({ type: "spring", stiffness: 90, damping: 20 }));
@@ -1010,6 +1364,9 @@
     const tmpQ = new THREE.Quaternion();
     const tmpV = new THREE.Vector3();
     const XAXIS = new THREE.Vector3(1, 0, 0);
+    const zoomLook = new THREE.Vector3().copy(lookAt);
+    const ZOOM = 0.34;   // how far the camera moves in on a focused branch
+    const tmpC = new THREE.Color();
     let elapsed = 0;
 
     let visible = true;
@@ -1083,6 +1440,50 @@
       else camera.clearViewOffset();
 
       world.updateMatrixWorld(true);
+
+      // zoom towards the focused branch so its leaves are large enough to pick
+      if (view.zoom > 0.001 && state.focused !== null) {
+        const bd = branchData[state.focused];
+        tmpV.copy(bd.curve.getPointAt(0.66)).applyMatrix4(sway.matrixWorld);
+        zoomLook.copy(lookAt).lerp(tmpV, 0.5 * view.zoom);
+        camera.position.copy(zoomLook).addScaledVector(camOffset, 1 - ZOOM * view.zoom);
+        camera.lookAt(zoomLook);
+      } else if (view.zoom <= 0.001) {
+        camera.position.copy(lookAt).add(camOffset);
+        camera.lookAt(lookAt);
+      } else {
+        // zooming back out after the branch was cleared: ease from the last zoomed view
+        zoomLook.lerp(lookAt, 1 - view.zoom);
+        camera.position.copy(zoomLook).addScaledVector(camOffset, 1 - ZOOM * view.zoom);
+        camera.lookAt(zoomLook);
+      }
+
+      // small leaves: grow in on load, fade back when another branch is focused
+      minorBranches.forEach(info => {
+        if (!info) return;
+        if (!info.done) {
+          info.recs.forEach(r => {
+            const k = THREE.MathUtils.clamp((info.appear * 1.6 - r.delay) / 0.45, 0, 1);
+            setMinorMatrix(r, 1 - Math.pow(1 - k, 3));
+          });
+          info.mesh.instanceMatrix.needsUpdate = true;
+          info.cores.forEach(c => c.scale.setScalar(Math.max(0.001, Math.min(1, info.appear * 1.4))));
+          if (info.appear >= 1) info.done = true;
+        }
+        if (Math.abs(info.dim - info.appliedDim) > 0.002) {
+          info.appliedDim = info.dim;
+          info.recs.forEach(r => info.mesh.setColorAt(r.idx, tmpC.copy(r.base).lerp(r.dimColor, info.dim)));
+          info.mesh.instanceColor.needsUpdate = true;
+          info.cores.forEach(c => c.material.color.copy(c.userData.base).lerp(c.userData.dimColor, info.dim));
+        }
+      });
+      [hoverGlow, selGlow].forEach((g, k) => {
+        if (!g.visible) return;
+        const pulse = 0.5 + 0.5 * Math.sin(t * 3 + k);
+        g.material.opacity = 0.55 + pulse * 0.3;
+        g.scale.setScalar(0.55 + pulse * 0.12);
+      });
+
       renderer.render(scene, camera);
 
       // place HTML labels at branch tips
@@ -1109,7 +1510,12 @@
     requestAnimationFrame(frame);
 
     return {
-      focus(i) { if (i !== null) faceBranch(i); refreshLeaves(); noteInteraction(); },
+      focus(i) { if (i !== null) faceBranch(i); refreshLeaves(); updateZoom(); noteInteraction(); },
+      /* light up a leaf while its entry in the list is hovered */
+      preview(b, c) {
+        preview = b === null || b === undefined ? null : { b, c, minor: !!BRANCHES[b].centres[c].minor };
+        refreshLeaves();
+      },
       select(b) {
         if (b !== null && b !== undefined) faceBranch(b);
         refreshLeaves(); updateShift(); noteInteraction();
@@ -1309,12 +1715,20 @@
             </a>
             <button type="button" class="near-btn spot-toggle" style="--c:${k.color}" aria-expanded="false" aria-controls="${id}">Contact</button>
             <a class="near-btn" style="--c:${k.color}" href="${esc(infoUrl(p))}" target="_blank" rel="noopener">${info}</a>
+            ${p.leaf ? `<button type="button" class="near-btn spot-tree" style="--c:${k.color}" data-b="${p.leaf.bi}" data-c="${p.leaf.ci}">
+              <svg aria-hidden="true"><use href="#leaf-icon"/></svg>On the tree</button>` : ""}
           </div>
         </li>`;
     }
 
     // open / close a card's contact section (one listener for the whole list)
     list.addEventListener("click", e => {
+      const leafBtn = e.target.closest(".spot-tree");
+      if (leafBtn) {
+        openCentre(+leafBtn.dataset.b, +leafBtn.dataset.c);
+        $("#stage").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+        return;
+      }
       const btn = e.target.closest(".spot-toggle");
       if (!btn) return;
       const panel = document.getElementById(btn.getAttribute("aria-controls"));

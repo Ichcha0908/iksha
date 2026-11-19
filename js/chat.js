@@ -39,6 +39,7 @@
   --------------------------------------------------------- */
   const DOCS = [];
   BRANCHES.forEach((b, bi) => b.centres.forEach((c, ci) => {
+    if (c.minor) return; // small leaves are their place records, indexed below
     DOCS.push({
       type: "leaf", bi, ci, b, c, name: c.name, city: c.city, state: STATE_NAMES[c.state] || "",
       text: [c.name, c.type, c.summary, (c.activities || []).join(" "), c.city, STATE_NAMES[c.state], b.name,
@@ -158,6 +159,7 @@
     const acts = [];
     if (d.type === "leaf") acts.push({ label: "Open on the tree", run: () => A.openCentre(d.bi, d.ci) });
     else {
+      if (d.p.leaf) acts.push({ label: "Open on the tree", run: () => A.openCentre(d.p.leaf.bi, d.p.leaf.ci) });
       if (!d.p.noMap) acts.push({ label: "Directions", href: A.directionsUrl(d.p) });
       if (d.p.url) acts.push({ label: "Website", href: d.p.url });
     }
@@ -296,10 +298,12 @@
     if (bid && !search(q, { limit: 1, needName: true }).some(r => r.nameHits >= 2)) {
       const b = BRANCHES.find(x => x.id === bid), bi = BRANCHES.indexOf(b);
       const leaves = DOCS.filter(d => d.type === "leaf" && d.bi === bi);
+      const others = b.centres.length - leaves.length;
       return {
         html: `<p><b>${esc(b.name)}</b> <span class="cb-dim">(${esc(b.sanskrit)})</span>: ${esc(b.blurb)}</p>
-               <p>${leaves.length} centres on this branch of the tree${leaves.length > 10 ? ", including" : ""}:</p><ul class="cb-list">${leaves.slice(0, 10).map(d => `<li>${itemLine(d)}</li>`).join("")}</ul>
-               ${leaves.length > 10 ? `<p class="cb-dim">…and ${leaves.length - 10} more. Open the branch to see them all.</p>` : ""}`,
+               <p>${leaves.length} IKS centres on this branch of the tree${leaves.length > 10 ? ", including" : ""}:</p><ul class="cb-list">${leaves.slice(0, 10).map(d => `<li>${itemLine(d)}</li>`).join("")}</ul>
+               ${leaves.length > 10 ? `<p class="cb-dim">…and ${leaves.length - 10} more.</p>` : ""}
+               ${others ? `<p class="cb-dim">The branch also has ${others} smaller leaves (gurukuls, institutes, heritage sites and traditions). Open the branch to search them all.</p>` : ""}`,
         picks: leaves, actions: [{ label: `Show the ${b.name} branch`, run: () => { A.focusBranch(bi); $("#stage").scrollIntoView({ behavior: "smooth" }); } }]
       };
     }
