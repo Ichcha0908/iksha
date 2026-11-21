@@ -16,6 +16,19 @@ An interactive 3D "Tree of Knowledge" for Indian Knowledge Systems (IKS).
   its leaf up on the tree. With no branch chosen, the finder searches all 728
   leaves. It is keyboard friendly and works without WebGL.
 
+## Hindi / English
+
+The **हिन्दी** button at the top right shows the whole site in Hindi (the
+**English** button switches back). The choice is remembered in the browser,
+and a link with `?lang=hi` opens the Hindi version directly. Translated: all
+page and interface text, the branches, the centres' descriptions, activities
+and roles, place descriptions, state and city names, the leaf finder, "near
+me" and the chatbot's built-in answers. The chatbot also understands simple
+Hindi questions ("वाराणसी के पास गुरुकुल", "हरियाणा में कितने गुरुकुल हैं?"),
+and in AI mode it answers in Hindi. Names of centres, people, towns and
+addresses, official project titles and source titles stay as the sources
+give them. The Hindi text is in `js/i18n-hi.js`; `js/i18n.js` applies it.
+
 ## Find IKS places near me
 
 The **Find IKS places near me** button (top of the page) and the *IKS places
@@ -251,6 +264,7 @@ id such as `ka` (Karnataka) or `dl` (Delhi); the full list is in
 | `js/places.js` | Places for "Find IKS places near me" (with sources) |
 | `js/tree-centres.js` | Leaves for every IKS centre in the database (generated) |
 | `js/tree-places.js` | Adds every other place as a small leaf on its branch |
+| `js/i18n.js`, `js/i18n-hi.js` | Language switch and the Hindi text |
 | `js/cities.js` | Cities a visitor can search from |
 | `js/chat.js` | The chatbot (built-in answers; optional AI mode) |
 | `js/chat-config.js` | Chatbot setting: the AI Worker's address, if any |

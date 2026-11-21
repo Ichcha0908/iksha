@@ -27,19 +27,21 @@
 ------------------------------------------------------------------- */
 (function () {
   const IKS = window.IKS;
+  const I = window.IKS_I18N || { t: (s, p) => (p ? s.replace(/\{(\w+)\}/g, (m, k) => p[k]) : s) };
+  const t = I.t;
   const PLACES = window.IKS_PLACES || [];
   const STATE_ID = Object.fromEntries(window.INDIA_MAP.states.map(s => [s.name, s.id]));
   const branchById = Object.fromEntries(IKS.branches.map(b => [b.id, b]));
 
   /* twigs: the kinds of leaf a branch can carry (the featured IKS centres are "centres") */
   IKS.leafGroups = [
-    { id: "centres", label: "IKS & research centres", color: "#d97b29" },
-    { id: "gurukuls", label: "Gurukuls & pāṭhaśālās", color: "#8a5a2b" },
-    { id: "ori", label: "Oriental institutes & libraries", color: "#7d5a9c" },
-    { id: "institutions", label: "Institutions", color: "#b0652a" },
-    { id: "heritage", label: "Heritage sites", color: "#4b5aa8" },
-    { id: "traditions", label: "Living traditions", color: "#c4517f" },
-    { id: "ayush", label: "Āyurveda & Yoga", color: "#4f8a4a" }
+    { id: "centres", label: t("IKS & research centres"), color: "#d97b29" },
+    { id: "gurukuls", label: t("Gurukuls & pāṭhaśālās"), color: "#8a5a2b" },
+    { id: "ori", label: t("Oriental institutes & libraries"), color: "#7d5a9c" },
+    { id: "institutions", label: t("Institutions"), color: "#b0652a" },
+    { id: "heritage", label: t("Heritage sites"), color: "#4b5aa8" },
+    { id: "traditions", label: t("Living traditions"), color: "#c4517f" },
+    { id: "ayush", label: t("Āyurveda & Yoga"), color: "#4f8a4a" }
   ];
 
   // the existing leaves are the featured IKS centres
@@ -122,13 +124,13 @@
     const listed = !!contact.listedBy;
     const leaf = {
       name: p.name,
-      type: p.kind === "gurukul" ? "Gurukul / Veda pāṭhaśālā"
-        : p.kind === "heritage" ? `Heritage site · ${p.host}`
-        : p.kind === "tradition" ? "Living tradition"
-        : p.kind === "ayush" ? "Āyurveda & Yoga institute"
-        : p.source === "hindupedia" ? "Oriental research institute"
-        : p.source === "hmml" ? "Manuscript collection"
-        : "Institution",
+      type: p.kind === "gurukul" ? t("Gurukul / Veda pāṭhaśālā")
+        : p.kind === "heritage" ? t("Heritage site · {host}", { host: p.host })
+        : p.kind === "tradition" ? t("Living tradition")
+        : p.kind === "ayush" ? t("Āyurveda & Yoga institute")
+        : p.source === "hindupedia" ? t("Oriental research institute")
+        : p.source === "hmml" ? t("Manuscript collection")
+        : t("Institution"),
       state: STATE_ID[p.state] || null,
       stateName: p.state,
       city: p.noMap || p.city === p.state ? "" : p.city,
@@ -150,22 +152,23 @@
       minor: true,
       place: p
     };
-    if (p.host && !/^(Gurukul|Living tradition|Oriental research institute|Manuscript collection|Ancient seat|Observatory|Temple|Living centre)/.test(p.host)
-        && squash(p.host) !== squash(p.name)) {
-      leaf.activities.push(`${p.kind === "ayush" ? "Campus" : "Host / campus"}: ${p.host}`);
+    const hostEn = (p.en && p.en.host) || p.host;   // the English host, before any translation
+    if (hostEn && !/^(Gurukul|Living tradition|Oriental research institute|Manuscript collection|Ancient seat|Observatory|Temple|Living centre)/.test(hostEn)
+        && squash(hostEn) !== squash(p.name)) {
+      leaf.activities.push(p.kind === "ayush" ? t("Campus: {host}", { host: p.host }) : t("Host / campus: {host}", { host: p.host }));
     }
     if (p.kind === "gurukul") {
       leaf.region = regionOf(p.state);
-      leaf.activities.push("Listed in the gurukul directories as a gurukul or Veda pāṭhaśālā.");
-      if (p.noMap) leaf.activities.push("The directories give no town for it, so it is shown by state.");
+      leaf.activities.push(t("Listed in the gurukul directories as a gurukul or Veda pāṭhaśālā."));
+      if (p.noMap) leaf.activities.push(t("The directories give no town for it, so it is shown by state."));
     }
-    if (p.approx && !p.noMap) leaf.activities.push("The source gives no street address; the map and directions point to the town.");
-    if (p.kind === "heritage") leaf.peopleNote = "A public heritage site, not an institution, so no single person is in charge.";
-    if (p.kind === "tradition") leaf.peopleNote = "A living tradition carried by a community, not an institution, so no single person is in charge.";
-    if (listed) leaf.listedNote = `Contact details as listed by ${contact.listedBy}. Directory listings can be out of date, so confirm before visiting.`;
-    leaf.contactNote = p.source === "gurukul" ? "The gurukul directories don't list a phone number for it."
-      : p.kind === "heritage" || p.kind === "tradition" ? "A public place: no office contact is listed."
-      : "The source doesn't list a phone number or e-mail.";
+    if (p.approx && !p.noMap) leaf.activities.push(t("The source gives no street address; the map and directions point to the town."));
+    if (p.kind === "heritage") leaf.peopleNote = t("A public heritage site, not an institution, so no single person is in charge.");
+    if (p.kind === "tradition") leaf.peopleNote = t("A living tradition carried by a community, not an institution, so no single person is in charge.");
+    if (listed) leaf.listedNote = t("Contact details as listed by {who}. Directory listings can be out of date, so confirm before visiting.", { who: contact.listedBy });
+    leaf.contactNote = p.source === "gurukul" ? t("The gurukul directories don't list a phone number for it.")
+      : p.kind === "heritage" || p.kind === "tradition" ? t("A public place: no office contact is listed.")
+      : t("The source doesn't list a phone number or e-mail.");
     return leaf;
   }
 

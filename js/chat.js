@@ -22,15 +22,22 @@
   const KINDS = window.IKS.placeKinds;
   const ENDPOINT = ((window.IKS_CHAT || {}).endpoint || "").trim();
   const $ = s => document.querySelector(s);
+  // language (js/i18n.js): t() for messages; the data keeps English state names, shown via stateName()
+  const I18N = window.IKS_I18N || { hi: false, t: (s, p) => (p ? s.replace(/\{(\w+)\}/g, (m, k) => p[k]) : s), state: n => n, city: n => n, HI: { states: {}, cities: {} } };
+  const t = I18N.t, HIN = I18N.hi;
+  const stateName = n => I18N.state(n);
 
   /* ---------------------------------------------------------
      text helpers
   --------------------------------------------------------- */
-  const fold = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const fold = s => String(s || "").normalize("NFD").replace(/[̀-ͯ\u093c]/g, "").toLowerCase();
   const STOP = new Set(("a an the of in on at to for and or is are was were be by with from about me my i you your " +
     "what which who whom whose where when how many much tell show list give find any some there here near nearby around " +
     "do does did can could would should please centre centres center centers place places institute institutes " +
-    "india indian iks know information info details detail this that these those it its").split(" "));
+    "india indian iks know information info details detail this that these those it its " +
+    // common Hindi question words
+    "क्या है हैं था थे में के की का को से पर और या कौन कौनसा कौनसे कौनसी कहाँ कहां कैसे कितने कितनी कितना पास निकट आसपास " +
+    "बताइए बताओ बताएं बताये बताए दिखाइए दिखाओ सूची चाहिए जानकारी बारे मुझे हमें कोई कुछ यह वह ये वो एक भारत भारतीय केंद्र केन्द्र संस्थान स्थान").split(" ").map(w => w.normalize("NFD").replace(/\u093c/g, "")));
   const words = s => fold(s).replace(/[^a-z0-9ऀ-෿ ]+/g, " ").split(/\s+/).filter(Boolean);
   const terms = s => words(s).filter(w => !STOP.has(w) && w.length > 1);
 
@@ -42,7 +49,8 @@
     if (c.minor) return; // small leaves are their place records, indexed below
     DOCS.push({
       type: "leaf", bi, ci, b, c, name: c.name, city: c.city, state: STATE_NAMES[c.state] || "",
-      text: [c.name, c.type, c.summary, (c.activities || []).join(" "), c.city, STATE_NAMES[c.state], b.name,
+      text: [c.name, c.type, c.summary, (c.activities || []).join(" "), c.city, STATE_NAMES[c.state], stateName(STATE_NAMES[c.state]), b.name,
+        b.en ? b.en.name : "", c.en ? [c.en.type, c.en.summary, c.en.activities.join(" ")].join(" ") : "",
         (c.people || []).map(p => p.name + " " + p.role).join(" ")].join(" ")
     });
   }));
@@ -51,7 +59,7 @@
     if (p.ref && leafNames.has(fold(p.ref))) return; // the leaf already covers it
     DOCS.push({
       type: "place", p, name: p.name, city: p.city, state: p.state,
-      text: [p.name, p.host, p.city, p.state, p.study, p.about, (A.kindOf(p.kind) || {}).label, p.kind,
+      text: [p.name, p.host, p.city, p.state, stateName(p.state), p.study, p.about, p.en ? p.en.about : "", (A.kindOf(p.kind) || {}).label, p.kind,
         p.lead ? p.lead.name : "", p.founded ? "founded " + p.founded : ""].join(" ")
     });
   });
@@ -90,7 +98,13 @@
   const STATES = [...new Set(Object.values(STATE_NAMES).concat(PLACES.map(p => p.state)).filter(Boolean))];
   const STATE_ALIAS = { "up": "Uttar Pradesh", "mp": "Madhya Pradesh", "tn": "Tamil Nadu", "ap": "Andhra Pradesh", "wb": "West Bengal",
     "orissa": "Odisha", "j&k": "Jammu and Kashmir", "kashmir": "Jammu and Kashmir", "bengal": "West Bengal" };
+  // Hindi state and city names (from js/i18n-hi.js) point at the English ones the data uses
+  const HI_STATES = Object.entries((I18N.HI || {}).states || {}).map(([en, hi]) => [fold(hi), en]).sort((a, b) => b[0].length - a[0].length);
+  const HI_CITIES = Object.entries((I18N.HI || {}).cities || {}).map(([en, hi]) => [fold(hi), en]).sort((a, b) => b[0].length - a[0].length);
   function findState(q) {
+    const fq = fold(q);
+    const hiHit = HI_STATES.find(([h]) => fq.includes(h));
+    if (hiHit) return hiHit[1];
     const f = " " + fold(q).replace(/[^a-z& ]/g, " ") + " ";
     const hit = STATES.filter(s => f.includes(" " + fold(s) + " ")).sort((a, b) => b.length - a.length)[0];
     if (hit) return hit;
@@ -98,6 +112,9 @@
     return null;
   }
   function findCityIn(q) {
+    const fq = fold(q);
+    const hiHit = HI_CITIES.find(([h]) => fq.includes(h));
+    if (hiHit) { const c = CITIES.find(x => x.name === hiHit[1]); if (c) return c; }
     const f = " " + fold(q).replace(/[^a-z ]/g, " ") + " ";
     let best = null;
     CITIES.forEach(c => [c.name, ...(c.aka || [])].forEach(n => {
@@ -108,14 +125,15 @@
     return best ? best.city : null;
   }
   const KIND_WORDS = [
-    { re: /gurukul|gurukula|pathashala|patashala|pathasala|veda school|vedic school|vidyalaya/, kinds: ["gurukul"], label: "gurukuls" },
-    { re: /ayurved|ayush|unani|siddha|medicine|health|wellbeing|wellness|yoga/, kinds: ["ayush"], branch: "health", label: "Āyurveda, Yoga and health places",
+    { re: /gurukul|gurukula|pathashala|patashala|pathasala|veda school|vedic school|vidyalaya|गुरुकुल|पाठशाला|विद्यालय/, kinds: ["gurukul"], label: "gurukuls" },
+    { re: /ayurved|ayush|unani|siddha|medicine|health|wellbeing|wellness|yoga|आयुर्वेद|योग|स्वास्थ्य|यूनानी|चिकित्सा|आयुष/, kinds: ["ayush"], branch: "health", label: "Āyurveda, Yoga and health places",
       alsoKinds: ["centre", "institution"], alsoText: /ayurved|yoga|unani|siddha|medic|health|wellbeing|ayush|rasayana|vrikshayurved/ },
-    { re: /manuscript|library|libraries|archive|oriental/, kinds: ["institution"], text: /manuscript|library|oriental/, branch: "heritage", label: "manuscript libraries and oriental institutes" },
-    { re: /temple|heritage site|observatory|monument|ancient universit|nalanda/, kinds: ["heritage"], label: "heritage sites" },
-    { re: /tradition|craft|tribal|stepwell/, kinds: ["tradition"], label: "living traditions" },
-    { re: /iks cent|iks division|research cent|iit|universit/, kinds: ["centre", "institution"], leaves: true, label: "IKS centres and institutions" }
+    { re: /manuscript|library|libraries|archive|oriental|पांडुलिपि|पाण्डुलिपि|पुस्तकालय|प्राच्य|अभिलेखागार/, kinds: ["institution"], text: /manuscript|library|oriental/, branch: "heritage", label: "manuscript libraries and oriental institutes" },
+    { re: /temple|heritage site|observatory|monument|ancient universit|nalanda|मंदिर|मन्दिर|धरोहर|विरासत|वेधशाला|स्मारक|नालंदा/, kinds: ["heritage"], label: "heritage sites" },
+    { re: /tradition|craft|tribal|stepwell|परंपरा|परम्परा|शिल्प|जनजाति|आदिवासी|बावड़ी|बावडी/, kinds: ["tradition"], label: "living traditions" },
+    { re: /iks cent|iks division|research cent|iit|universit|iks केंद्र|iks केन्द्र|शोध केंद्र|अनुसंधान केंद्र|विश्वविद्यालय/, kinds: ["centre", "institution"], leaves: true, label: "IKS centres and institutions" }
   ];
+  KIND_WORDS.forEach(k => { k.re = new RegExp(k.re.source.split("|").map(fold).join("|")); });
   const kindIn = q => KIND_WORDS.find(k => k.re.test(fold(q))) || null;
   const matchesKind = (d, k) => {
     if (!k) return true;
@@ -126,18 +144,18 @@
   };
 
   const BRANCH_WORDS = {
-    veda: /\bveda|vedic|darshan|darsana|philosoph|upanishad|vedanta|nyaya|mimamsa|samkhya|sankhya/,
-    language: /language|literature|sanskrit|tamil|grammar|vyakarana|poetry|kavya|sahitya/,
-    arts: /\bart|aesthetic|dance|music|natya|kathakali|craft|sculpture|rasa/,
-    health: /ayurved|yoga|health|wellbeing|medicine/,
-    science: /science|technolog|mathemat|ganita|astronom|jyotis|metallurg|vastu/,
-    heritage: /heritage|manuscript|library|archive|palm.?leaf/
+    veda: /\bveda|vedic|darshan|darsana|philosoph|upanishad|vedanta|nyaya|mimamsa|samkhya|sankhya|वेद|दर्शन|उपनिषद|न्याय|मीमांसा/,
+    language: /language|literature|sanskrit|tamil|grammar|vyakarana|poetry|kavya|sahitya|भाषा|साहित्य|संस्कृत|व्याकरण|काव्य/,
+    arts: /\bart|aesthetic|dance|music|natya|kathakali|craft|sculpture|rasa|कला|सौंदर्य|नृत्य|संगीत|नाट्य|मूर्ति/,
+    health: /ayurved|yoga|health|wellbeing|medicine|आयुर्वेद|योग|स्वास्थ्य|कल्याण/,
+    science: /science|technolog|mathemat|ganita|astronom|jyotis|metallurg|vastu|विज्ञान|प्रौद्योगिकी|गणित|खगोल|ज्योतिष|वास्तु/,
+    heritage: /heritage|manuscript|library|archive|palm.?leaf|धरोहर|विरासत|पांडुलिपि|पुस्तकालय|अभिलेख/
   };
 
   /* ---------------------------------------------------------
      answer building blocks (HTML strings + action buttons)
   --------------------------------------------------------- */
-  const loc = d => [d.city, d.state].filter((v, i, a) => v && a.indexOf(v) === i).join(", ");
+  const loc = d => [d.city && d.city !== d.state ? d.city : "", stateName(d.state)].filter((v, i, a) => v && a.indexOf(v) === i).join(", ");
   function leadOf(d) {
     if (d.type === "leaf") return (d.c.people || [])[0] || null;
     if (d.p.ref && A.CENTRE_BY_NAME[d.p.ref]) return (A.CENTRE_BY_NAME[d.p.ref].people || [])[0] || null;
@@ -149,31 +167,31 @@
     return d.p.contact || {};
   }
   function aboutOf(d) {
-    if (d.type === "leaf") return (d.c.founded ? `Founded ${d.c.founded}. ` : "") + d.c.summary;
+    if (d.type === "leaf") return (d.c.founded ? t("Founded {year}.", { year: d.c.founded }) + " " : "") + d.c.summary;
     if (d.p.ref && A.CENTRE_BY_NAME[d.p.ref]) return A.CENTRE_BY_NAME[d.p.ref].summary;
     const squash = v => fold(v).replace(/[^a-z0-9]/g, "");
     const study = d.p.study && squash(d.p.study) !== squash(d.p.name) ? d.p.study : "";
-    return (d.p.founded ? `Founded ${d.p.founded}. ` : "") + [study, d.p.about, d.p.pillars].filter(Boolean).join(" ");
+    return (d.p.founded ? t("Founded {year}.", { year: d.p.founded }) + " " : "") + [study, d.p.about, d.p.pillars].filter(Boolean).join(" ");
   }
   function actionsFor(d) {
     const acts = [];
-    if (d.type === "leaf") acts.push({ label: "Open on the tree", run: () => A.openCentre(d.bi, d.ci) });
+    if (d.type === "leaf") acts.push({ label: t("Open on the tree"), run: () => A.openCentre(d.bi, d.ci) });
     else {
-      if (d.p.leaf) acts.push({ label: "Open on the tree", run: () => A.openCentre(d.p.leaf.bi, d.p.leaf.ci) });
-      if (!d.p.noMap) acts.push({ label: "Directions", href: A.directionsUrl(d.p) });
-      if (d.p.url) acts.push({ label: "Website", href: d.p.url });
+      if (d.p.leaf) acts.push({ label: t("Open on the tree"), run: () => A.openCentre(d.p.leaf.bi, d.p.leaf.ci) });
+      if (!d.p.noMap) acts.push({ label: t("Directions"), href: A.directionsUrl(d.p) });
+      if (d.p.url) acts.push({ label: t("Website"), href: d.p.url });
     }
     return acts;
   }
   function itemLine(d, extra = "") {
     const kind = d.type === "leaf" ? d.b.name
       : d.p.kind === "institution" && d.p.host && d.p.host.length < 40 ? d.p.host
-      : ((A.kindOf(d.p.kind) || {}).label || "").replace(/s$/, "");
+      : (A.kindOf(d.p.kind) || {}).one || ((A.kindOf(d.p.kind) || {}).label || "").replace(/s$/, "");
     return `<b>${esc(d.name)}</b> <span class="cb-dim">· ${esc(kind)} · ${esc(loc(d))}${extra}</span>`;
   }
   function listAnswer(intro, docs, more = "") {
     return {
-      html: `<p>${intro}</p><ul class="cb-list">${docs.map(x => `<li>${itemLine(x.d || x, x.dist != null ? ` · ${Math.round(x.dist)} km` : "")}</li>`).join("")}</ul>${more}`,
+      html: `<p>${intro}</p><ul class="cb-list">${docs.map(x => `<li>${itemLine(x.d || x, x.dist != null ? " · " + t("{n} km", { n: Math.round(x.dist) }) : "")}</li>`).join("")}</ul>${more}`,
       picks: docs.map(x => x.d || x)
     };
   }
@@ -181,23 +199,31 @@
     const lead = leadOf(d), k = contactOf(d);
     const parts = [`<p><b>${esc(d.name)}</b> <span class="cb-dim">· ${esc(loc(d))}</span></p>`];
     if (focus === "all") parts.push(`<p>${esc(aboutOf(d))}</p>`);
-    if (lead) parts.push(`<p><span class="cb-label">Person in charge</span> ${esc(lead.name)}, ${esc(lead.role)}${lead.asOf ? ` <span class="cb-dim">(as listed in ${esc(lead.asOf)})</span>` : ""}</p>`);
-    else if (focus !== "all") parts.push(`<p class="cb-dim">The site's sources don't name a person in charge here.</p>`);
+    if (lead) parts.push(`<p><span class="cb-label">${t("Person in charge")}</span> ${esc(lead.name)}, ${esc(lead.role)}${lead.asOf ? ` <span class="cb-dim">${t("(as listed in {src})", { src: esc(lead.asOf) })}</span>` : ""}</p>`);
+    else if (focus !== "all") parts.push(`<p class="cb-dim">${t("The site's sources don't name a person in charge here.")}</p>`);
     const rows = [];
-    if (k.phone) rows.push(`Phone: ${telLink(k.phone)}`);
-    if (k.email) rows.push(`Email: ${mailLink(k.email)}`);
-    if (k.address && focus !== "person") rows.push(`Address: ${esc(k.address)}`);
-    if (rows.length) parts.push(`<p>${rows.join("<br>")}${k.listedBy ? ` <span class="cb-dim">(listed by ${esc(k.listedBy)})</span>` : ""}</p>`);
+    if (k.phone) rows.push(`${t("Phone")}: ${telLink(k.phone)}`);
+    if (k.email) rows.push(`${t("Email")}: ${mailLink(k.email)}`);
+    if (k.address && focus !== "person") rows.push(`${t("Address")}: ${esc(k.address)}`);
+    if (rows.length) parts.push(`<p>${rows.join("<br>")}${k.listedBy ? ` <span class="cb-dim">${t("(listed by {who})", { who: esc(k.listedBy) })}</span>` : ""}</p>`);
     else if (focus === "contact") parts.push(`<p class="cb-dim">${d.type === "place" && d.p.source === "iksindia"
-      ? "The IKS Division doesn't publish phone numbers or e-mails for its centres."
-      : "The site's sources don't list a phone number or e-mail for it."}</p>`);
+      ? t("The IKS Division doesn't publish phone numbers or e-mails for its centres.")
+      : t("The site's sources don't list a phone number or e-mail for it.")}</p>`);
     return { html: parts.join(""), picks: [d], actions: actionsFor(d) };
   }
 
   /* ---------------------------------------------------------
      the built-in answerer
   --------------------------------------------------------- */
-  const SUGGEST = [
+  const SUGGEST = HIN ? [
+    "IKS क्या है?",
+    "वाराणसी के पास गुरुकुल",
+    "Sahitya Akademi के प्रमुख कौन हैं?",
+    "केरल में आयुर्वेद केंद्र",
+    "हरियाणा में कितने गुरुकुल हैं?",
+    "तमिलनाडु में पांडुलिपि पुस्तकालय",
+    "वेद और दर्शन शाखा किस बारे में है?"
+  ] : [
     "What is IKS?",
     "Gurukuls near Varanasi",
     "Who heads Sahitya Akademi?",
@@ -207,58 +233,61 @@
     "What is Veda & Darshana about?"
   ];
   const HELP = ENDPOINT
-    ? `<p>Namaste. Ask me anything about Indian Knowledge Systems. I use this website's information on ${PLACES.length} centres, institutes and gurukuls first, and search the web when I need to, showing my sources.</p>`
-    : `<p>Namaste. I answer from the information on this website: the centres on the tree, ${PLACES.length} IKS places and gurukuls, their people, contacts and sources.</p>
-    <p>Try asking what IKS is, about a place near a city, centres in a state, who runs a centre, or how to contact one.</p>`;
+    ? `<p>${t("Namaste. Ask me anything about Indian Knowledge Systems. I use this website's information on {n} centres, institutes and gurukuls first, and search the web when I need to, showing my sources.", { n: PLACES.length })}</p>`
+    : `<p>${t("Namaste. I answer from the information on this website: the centres on the tree, {n} IKS places and gurukuls, their people, contacts and sources.", { n: PLACES.length })}</p>
+    <p>${t("Try asking what IKS is, about a place near a city, centres in a state, who runs a centre, or how to contact one.")}</p>`;
 
   /* short explainers for common general questions, quoted from the site's sources */
   const EXPLAIN = [
     {
-      re: /what (is|are) (the )?(iks|indian knowledge system)|meaning of (iks|indian knowledge)|define (iks|indian knowledge)|about iks\b/,
-      html: `<p><b>Indian Knowledge Systems (IKS)</b> are the knowledge traditions developed in India over thousands of years, in philosophy, language and literature, the arts, health, mathematics, astronomy, architecture, agriculture and more. In the IKS Division's words, they "are nurtured in all languages of India such as Tamil, Sanskrit, Pali, Prakrit, Arabic, Persian, Kannada, Malayalam, Telugu, Odia, Bengali" and "have been preserved in many textual, oral traditions and kula paramparas that are practiced."</p>
+      re: /what (is|are) (the )?(iks|indian knowledge system)|meaning of (iks|indian knowledge)|define (iks|indian knowledge)|about iks\b|(iks|भारतीय ज्ञान (प्रणाली|परंपरा|परम्परा)).{0,12}(क्या|मतलब|अर्थ|परिचय)/,
+      html: HIN ? I18N.HI.ui.EXPLAIN_IKS : `<p><b>Indian Knowledge Systems (IKS)</b> are the knowledge traditions developed in India over thousands of years, in philosophy, language and literature, the arts, health, mathematics, astronomy, architecture, agriculture and more. In the IKS Division's words, they "are nurtured in all languages of India such as Tamil, Sanskrit, Pali, Prakrit, Arabic, Persian, Kannada, Malayalam, Telugu, Odia, Bengali" and "have been preserved in many textual, oral traditions and kula paramparas that are practiced."</p>
         <p>The Ministry of Education's <b>IKS Division</b> (set up in 2020) aims "to rejuvenate and mainstream Indian Knowledge Systems for the contemporary world", funding IKS centres, research projects, internships and textbooks.</p>
         <p class="cb-dim">Sources: iksindia.org (About; IKS Centres).</p>`,
       actions: [{ label: "iksindia.org", href: "https://iksindia.org/" }]
     },
     {
-      re: /what (is|are) (a |the )?(gurukul|gurukula|gurukulam|pathashala|veda pathashala)/,
-      html: `<p>A <b>gurukula</b> (gurukulam) is "a type of residential educational institution, in which a student lives with the acharya or guru." Traditional gurukuls teach the Vedas, Vedāṅgas, Darśanas, Sanskrit grammar and, in some, Āyurveda and Yoga; many today follow a hybrid pattern alongside a school board.</p>
+      re: /what (is|are) (a |the )?(gurukul|gurukula|gurukulam|pathashala|veda pathashala)|(गुरुकुल|पाठशाला).{0,8}(क्या|मतलब|अर्थ)/,
+      html: HIN ? t(I18N.HI.ui.EXPLAIN_GURUKUL, { n: PLACES.filter(p => p.kind === "gurukul").length }) : `<p>A <b>gurukula</b> (gurukulam) is "a type of residential educational institution, in which a student lives with the acharya or guru." Traditional gurukuls teach the Vedas, Vedāṅgas, Darśanas, Sanskrit grammar and, in some, Āyurveda and Yoga; many today follow a hybrid pattern alongside a school board.</p>
         <p>This site lists ${PLACES.filter(p => p.kind === "gurukul").length} gurukuls and Veda pāṭhaśālās. Ask "gurukuls near <i>your city</i>" to find one.</p>
         <p class="cb-dim">Source: vediconcepts.org (Gurukul list).</p>`,
       actions: [{ label: "vediconcepts.org", href: "https://vediconcepts.org/gurukul-list/" }]
     }
   ];
-  const webSearch = q => ({ label: "Search Google", href: "https://www.google.com/search?" + new URLSearchParams({ q }).toString() });
+  const webSearch = q => ({ label: t("Search Google"), google: true, href: "https://www.google.com/search?" + new URLSearchParams({ q }).toString() });
 
   // words that say what is wanted, not which place: ignored when judging a name match
   const ASK_WORDS = new Set(("contact phone number numbers call email mail address reach visit timing timings hours " +
-    "who runs run running head heads headed lead leads charge incharge director principal chancellor vice secretary president acharya get").split(" "));
+    "who runs run running head heads headed lead leads charge incharge director principal chancellor vice secretary president acharya get " +
+    "संपर्क सम्पर्क फोन नंबर नम्बर ईमेल मेल पता प्रमुख प्रभारी निदेशक कुलपति सचिव अध्यक्ष आचार्य चलाता चलाते").split(" ").map(fold));
   const coreTerms = q => terms(q).filter(t => !ASK_WORDS.has(t));
 
   function builtIn(q) {
     const f = fold(q).trim();
     const ex = EXPLAIN.find(e => e.re.test(f));
     if (ex) return { html: ex.html, actions: ex.actions };
-    if (!f || /^(hi|hello|hey|namaste|namaskar|pranam)\b|what can you do|^help\b|how do you work/.test(f)) {
+    if (!f || /^(hi|hello|hey|namaste|namaskar|pranam)\b|what can you do|^help\b|how do you work|^(नमस्ते|नमस्कार|प्रणाम|मदद)|क्या कर सकते/.test(f)) {
       return { html: HELP, suggest: SUGGEST };
     }
     const kind = kindIn(q);
     const city = findCityIn(q);
     const state = findState(q);
-    const radius = +((f.match(/(\d{2,3})\s*km/) || [])[1] || 0);
+    const radius = +((f.match(/(\d{2,3})\s*(km|किमी|किलोमीटर)/) || [])[1] || 0);
 
-    const wantsContact = /contact|phone|number|call|email|e-mail|mail|address|reach|visit|timing|hours/.test(f);
+    const wantsContact = /contact|phone|number|call|email|e-mail|mail|address|reach|visit|timing|hours|संपर्क|सम्पर्क|फोन|नंबर|नम्बर|ईमेल|पता|समय/.test(f);
+    const NEAR = /near|around|close to|within|nearby|km|के पास|पास में|निकट|नजदीक|आसपास|किमी/;
     // 1. how many
-    if (/how many|\bcount\b/.test(f) || (/number of/.test(f) && !/phone|contact|mobile/.test(f))) {
+    if (/how many|\bcount\b|कितने|कितनी|कितना|संख्या/.test(f) || (/number of/.test(f) && !/phone|contact|mobile/.test(f))) {
       const pool = DOCS.filter(d => matchesKind(d, kind) && (!state || d.state === state));
-      const what = kind ? kind.label : "IKS places, centres and gurukuls";
-      return { html: `<p>The site lists <b>${pool.length}</b> ${esc(what)}${state ? ` in ${esc(state)}` : ""}.</p>` +
-        (pool.length ? `<p class="cb-dim">Ask "${esc(kind ? kind.label : "places")} in ${esc(state || "a state")}" to see them.</p>` : "") };
+      const what = t(kind ? kind.label : "IKS places, centres and gurukuls");
+      return { html: `<p>${state ? t("The site lists <b>{n}</b> {what} in {state}.", { n: pool.length, what: esc(what), state: esc(stateName(state)) })
+          : t("The site lists <b>{n}</b> {what}.", { n: pool.length, what: esc(what) })}</p>` +
+        (pool.length ? `<p class="cb-dim">${t("Ask \"{what} in {state}\" to see them.", { what: esc(t(kind ? kind.label : "places")), state: esc(state ? stateName(state) : t("a state")) })}</p>` : "") };
     }
 
     // 2a. who runs / contact for a named centre (before "near a city": "IIT Madras" is a centre, not a city question)
-    const wantsPerson = /\bwho\b|head|in charge|incharge|director|principal|vice.?chancellor|secretary|president|acharya|run(s|ning)?\b|lead/.test(f);
-    if ((wantsPerson || wantsContact) && !/\bnear|around|close to|within|\bkm\b/.test(f)) {
+    const wantsPerson = /\bwho\b|head|in charge|incharge|director|principal|vice.?chancellor|secretary|president|acharya|run(s|ning)?\b|lead|कौन|प्रमुख|प्रभारी|निदेशक|कुलपति|सचिव|अध्यक्ष|आचार्य/.test(f);
+    if ((wantsPerson || wantsContact) && !/\bnear|around|close to|within|\bkm\b|के पास|निकट|नजदीक|आसपास|किमी/.test(f)) {
       const hit = search(q, { limit: 1, needName: true })[0];
       if (hit && hit.nameHits >= Math.max(1, Math.min(2, coreTerms(q).length, terms(hit.d.name).length))) {
         return describe(hit.d, { focus: wantsContact ? "contact" : "person" });
@@ -266,7 +295,7 @@
     }
 
     // 2. near a city
-    if (city && (/near|around|close to|within|nearby|km/.test(f) || !state || fold(city.name) !== fold(state))) {
+    if (city && (NEAR.test(f) || !state || fold(city.name) !== fold(state))) {
       const r = radius || 60;
       const hits = DOCS.filter(d => d.type === "place" && !d.p.noMap && matchesKind(d, kind))
         .map(d => ({ d, dist: A.km(city, d.p) })).filter(x => x.dist <= r).sort((a, b) => a.dist - b.dist);
@@ -274,23 +303,25 @@
       const leaves = DOCS.filter(d => d.type === "leaf" && matchesKind(d, kind) && fold(d.city).includes(fold(city.name)));
       const all = leaves.map(d => ({ d, dist: 0 })).concat(hits);
       if (!all.length) {
-        return { html: `<p>I don't have any ${esc(kind ? kind.label : "IKS places")} within ${r} km of ${esc(city.name)}.</p>`,
-          actions: [{ label: `Show nearest to ${city.name}`, run: () => A.nearCity(city.name) }] };
+        return { html: `<p>${t("I don't have any {what} within {r} km of {city}.", { what: esc(t(kind ? kind.label : "IKS places")), r, city: esc(I18N.city(city.name)) })}</p>`,
+          actions: [{ label: t("Show nearest to {city}", { city: I18N.city(city.name) }), run: () => A.nearCity(city.name) }] };
       }
       const top = all.slice(0, 6);
-      const res = listAnswer(`${all.length} ${esc(kind ? kind.label : "IKS places")} within ${r} km of <b>${esc(city.name)}</b>${all.length > 6 ? ", nearest first" : ""}:`, top);
-      res.actions = [{ label: `See all near ${city.name}`, run: () => A.nearCity(city.name) }];
+      const res = listAnswer(t(all.length > 6 ? "{n} {what} within {r} km of <b>{city}</b>, nearest first:" : "{n} {what} within {r} km of <b>{city}</b>:",
+        { n: all.length, what: esc(t(kind ? kind.label : "IKS places")), r, city: esc(I18N.city(city.name)) }), top);
+      res.actions = [{ label: t("See all near {city}", { city: I18N.city(city.name) }), run: () => A.nearCity(city.name) }];
       return res;
     }
 
     // 4. listing by state (and kind)
-    if (state && (kind || /list|which|what|show|in /.test(f))) {
+    if (state && (kind || /list|which|what|show|in |सूची|कौन|क्या|दिखा|में/.test(f))) {
       const pool = DOCS.filter(d => d.state === state && matchesKind(d, kind));
-      if (!pool.length) return { html: `<p>I don't have any ${esc(kind ? kind.label : "IKS places")} in ${esc(state)} on this site.</p>` };
+      if (!pool.length) return { html: `<p>${t("I don't have any {what} in {state} on this site.", { what: esc(t(kind ? kind.label : "IKS places")), state: esc(stateName(state)) })}</p>` };
       pool.sort((a, b) => (a.type === "leaf" ? -1 : 0) - (b.type === "leaf" ? -1 : 0) || (a.p && a.p.kind === "gurukul") - (b.p && b.p.kind === "gurukul"));
       const top = pool.slice(0, 8);
-      return listAnswer(`${pool.length} ${esc(kind ? kind.label : "IKS places and centres")} in <b>${esc(state)}</b>${pool.length > 8 ? " (first 8)" : ""}:`, top,
-        pool.length > 8 ? `<p class="cb-dim">Ask about one by name for details, or narrow it down, e.g. "gurukuls near ${esc((CITIES.find(c => c.state === state) || {}).name || "a city")}".</p>` : "");
+      return listAnswer(t(pool.length > 8 ? "{n} {what} in <b>{state}</b> (first 8):" : "{n} {what} in <b>{state}</b>:",
+        { n: pool.length, what: esc(t(kind ? kind.label : "IKS places and centres")), state: esc(stateName(state)) }), top,
+        pool.length > 8 ? `<p class="cb-dim">${t("Ask about one by name for details, or narrow it down, e.g. \"gurukuls near {city}\".", { city: esc(I18N.city((CITIES.find(c => c.state === state) || {}).name) || t("a city")) })}</p>` : "");
     }
 
     // 5. a branch of knowledge
@@ -301,10 +332,10 @@
       const others = b.centres.length - leaves.length;
       return {
         html: `<p><b>${esc(b.name)}</b> <span class="cb-dim">(${esc(b.sanskrit)})</span>: ${esc(b.blurb)}</p>
-               <p>${leaves.length} IKS centres on this branch of the tree${leaves.length > 10 ? ", including" : ""}:</p><ul class="cb-list">${leaves.slice(0, 10).map(d => `<li>${itemLine(d)}</li>`).join("")}</ul>
-               ${leaves.length > 10 ? `<p class="cb-dim">…and ${leaves.length - 10} more.</p>` : ""}
-               ${others ? `<p class="cb-dim">The branch also has ${others} smaller leaves (gurukuls, institutes, heritage sites and traditions). Open the branch to search them all.</p>` : ""}`,
-        picks: leaves, actions: [{ label: `Show the ${b.name} branch`, run: () => { A.focusBranch(bi); $("#stage").scrollIntoView({ behavior: "smooth" }); } }]
+               <p>${t(leaves.length > 10 ? "{n} IKS centres on this branch of the tree, including:" : "{n} IKS centres on this branch of the tree:", { n: leaves.length })}</p><ul class="cb-list">${leaves.slice(0, 10).map(d => `<li>${itemLine(d)}</li>`).join("")}</ul>
+               ${leaves.length > 10 ? `<p class="cb-dim">${t("…and {n} more.", { n: leaves.length - 10 })}</p>` : ""}
+               ${others ? `<p class="cb-dim">${t("The branch also has {n} smaller leaves (gurukuls, institutes, heritage sites and traditions). Open the branch to search them all.", { n: others })}</p>` : ""}`,
+        picks: leaves, actions: [{ label: t("Show the {name} branch", { name: b.name }), run: () => { A.focusBranch(bi); $("#stage").scrollIntoView({ behavior: "smooth" }); } }]
       };
     }
 
@@ -315,13 +346,13 @@
       return describe(hits[0].d);
     }
     if (hits.length && hits[0].nameHits > 0) {
-      const res = listAnswer("Here's what I found on the site that best matches your question:", hits.slice(0, 5),
-        `<p class="cb-dim">Ask about one of them by name for its details and contacts, or search the web for more.</p>`);
+      const res = listAnswer(t("Here's what I found on the site that best matches your question:"), hits.slice(0, 5),
+        `<p class="cb-dim">${t("Ask about one of them by name for its details and contacts, or search the web for more.")}</p>`);
       res.actions = [webSearch(q)];
       return res;
     }
     return {
-      html: `<p>That isn't in this site's information. I can tell you about IKS centres, institutes, gurukuls, manuscript libraries and heritage places listed here, or you can search the web for it.</p>`,
+      html: `<p>${t("That isn't in this site's information. I can tell you about IKS centres, institutes, gurukuls, manuscript libraries and heritage places listed here, or you can search the web for it.")}</p>`,
       actions: [webSearch(q)], suggest: SUGGEST.slice(0, 3)
     };
   }
@@ -358,7 +389,7 @@
       const res = await fetch(ENDPOINT, {
         method: "POST", signal: ctrl.signal,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q, history: history.slice(-6), context: contextFor(q, local) })
+        body: JSON.stringify({ question: q, history: history.slice(-6), context: contextFor(q, local), lang: HIN ? "hi" : "en" })
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
@@ -385,23 +416,23 @@
   root.innerHTML = `
     <button type="button" class="cb-fab" aria-expanded="false" aria-controls="cb-panel">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>
-      <span>Ask about IKS</span>
+      <span>${t("Ask about IKS")}</span>
     </button>
-    <section class="cb-panel" id="cb-panel" role="dialog" aria-label="Ask about Indian Knowledge Systems" hidden>
+    <section class="cb-panel" id="cb-panel" role="dialog" aria-label="${t("Ask about Indian Knowledge Systems")}" hidden>
       <header class="cb-head">
         <div>
           <p class="cb-title">Jñāna Sahāyaka</p>
-          <p class="cb-sub">${ENDPOINT ? "AI answers from this site and the web" : "Answers from this site's data"}</p>
+          <p class="cb-sub">${ENDPOINT ? t("AI answers from this site and the web") : t("Answers from this site's data")}</p>
         </div>
-        <button type="button" class="cb-close" aria-label="Close chat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <button type="button" class="cb-close" aria-label="${t("Close chat")}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </header>
       <div class="cb-log" role="log" aria-live="polite"></div>
       <form class="cb-form">
-        <label class="sr-only" for="cb-input">Your question</label>
-        <input id="cb-input" autocomplete="off" maxlength="400" placeholder="Ask about centres, gurukuls, people…">
-        <button type="submit" class="cb-send" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2-6z"/></svg></button>
+        <label class="sr-only" for="cb-input">${t("Your question")}</label>
+        <input id="cb-input" autocomplete="off" maxlength="400" placeholder="${t("Ask about centres, gurukuls, people…")}">
+        <button type="submit" class="cb-send" aria-label="${t("Send")}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2-6z"/></svg></button>
       </form>
-      <p class="cb-note">${ENDPOINT ? "AI can make mistakes; check the linked sources." : "Built-in assistant: it knows this site's data and can send you to a web search."}</p>
+      <p class="cb-note">${ENDPOINT ? t("AI can make mistakes; check the linked sources.") : t("Built-in assistant: it knows this site's data and can send you to a web search.")}</p>
     </section>`;
   document.body.appendChild(root);
   const fab = root.querySelector(".cb-fab"), panel = root.querySelector(".cb-panel"), log = root.querySelector(".cb-log");
@@ -458,14 +489,14 @@
         const { answer, sources } = await askAI(q, local);
         dots?.stop(); wait.remove();
         const srcHtml = Array.isArray(sources) && sources.length
-          ? `<p class="cb-sources"><span class="cb-label">Sources</span>${sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join("")}</p>` : "";
+          ? `<p class="cb-sources"><span class="cb-label">${t("Sources")}</span>${sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join("")}</p>` : "";
         // site buttons only when the answer is about one record from the site
-        const acts = local.picks && local.picks.length === 1 ? actionsFor(local.picks[0]) : (local.actions || []).filter(a => !/Search Google/.test(a.label));
+        const acts = local.picks && local.picks.length === 1 ? actionsFor(local.picks[0]) : (local.actions || []).filter(a => !a.google);
         addMsg("bot", renderAI(answer) + srcHtml, { actions: acts });
         history.push({ role: "user", content: q }, { role: "assistant", content: answer });
       } catch (err) {
         dots?.stop(); wait.remove();
-        addMsg("bot", local.html + `<p class="cb-dim">(The AI service didn't respond, so this is the built-in answer.)</p>`, local);
+        addMsg("bot", local.html + `<p class="cb-dim">${t("(The AI service didn't respond, so this is the built-in answer.)")}</p>`, local);
       }
     } else {
       addMsg("bot", local.html, local);

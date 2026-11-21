@@ -267,3 +267,19 @@ Motion, exposed as `window.Motion`.
    it, scroll to the footer, reload with reduced motion.
 3. The console must show no errors.
 4. Update the README if you added files, libraries or behaviour.
+
+## Languages (English / Hindi)
+
+- Every visible string must work in both languages. Interface messages go
+  through `IKS_I18N.t("English text {param}", { param })`, with the Hindi in
+  `js/i18n-hi.js` (`ui`). Fixed page text uses `data-i18n` /
+  `data-i18n-ph` / `data-i18n-label` keys (`html`). New content data needs
+  its Hindi in `data` (exact text) or `patterns`.
+- Keep names of centres, people, towns and addresses, official titles and
+  source titles as the sources give them. Show states and cities with
+  `IKS_I18N.state()` / `.city()`; the data keeps English names.
+- Hindi uses Noto Sans Devanagari (body) and Tiro Devanagari Hindi
+  (headings), and no letter-spacing (it breaks conjuncts).
+- The हिन्दी / English button stays fixed at the top right, below the panel
+  and its scrim. Test both languages at 1440×900 and 390×844.
+

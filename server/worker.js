@@ -106,7 +106,7 @@ export default {
     const messages = [
       { role: "system", content: SYSTEM },
       ...cleanHistory(body.history),
-      { role: "user", content: `<site_data>\n${packContext(body.context)}\n</site_data>\n\nVisitor's question: ${question}` }
+      { role: "user", content: `<site_data>\n${packContext(body.context)}\n</site_data>\n\n${body.lang === "hi" ? "The visitor is reading the site in Hindi: answer in Hindi (Devanagari), keeping names as they appear in the data.\n\n" : ""}Visitor's question: ${question}` }
     ];
     // OpenRouter's web search server tool: Claude decides when to search; for Claude
     // models OpenRouter runs Anthropic's own web search. At most 2 searches a question.

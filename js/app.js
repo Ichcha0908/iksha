@@ -7,6 +7,10 @@
   const BRANCHES = window.IKS.branches;
   const ANCHORS = window.STATE_ANCHORS;
   const STATE_NAMES = Object.fromEntries(window.INDIA_MAP.states.map(s => [s.id, s.name]));
+  // language (js/i18n.js): t() for interface messages, stateName() for display
+  const I18N = window.IKS_I18N || { lang: "en", hi: false, t: (s, p) => (p ? s.replace(/\{(\w+)\}/g, (m, k) => p[k]) : s), state: n => n, city: n => n };
+  const t = I18N.t;
+  const stateName = n => I18N.state(n);
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const $ = sel => document.querySelector(sel);
   const SVGNS = "http://www.w3.org/2000/svg";
@@ -186,7 +190,8 @@
   const fold = v => String(v || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   const ALL_LEAVES = BRANCHES.flatMap((b, bi) => b.centres.map((c, ci) => ({ b, bi, c, ci })));
   ALL_LEAVES.forEach(x => {
-    x.hay = fold([x.c.name, x.c.type, x.c.city, STATE_NAMES[x.c.state] || x.c.stateName, x.c.place && x.c.place.host,
+    const st = STATE_NAMES[x.c.state] || x.c.stateName;
+    x.hay = fold([x.c.name, x.c.type, x.c.en && x.c.en.type, x.c.city, st, stateName(st), x.c.place && x.c.place.host,
       (x.c.people || []).map(p => p.name).join(" ")].join(" "));
   });
 
@@ -209,21 +214,22 @@
     const groups = GROUPS.filter(g => counts[g.id]);
     const states = {};
     pool.forEach(x => { const n = STATE_NAMES[x.c.state] || x.c.stateName; if (n) states[n] = (states[n] || 0) + 1; });
-    const stateOpts = Object.keys(states).sort().map(n => `<option value="${esc(n)}"${finder.state === n ? " selected" : ""}>${esc(n)} (${states[n]})</option>`).join("");
+    const stateOpts = Object.keys(states).sort((a, b) => stateName(a).localeCompare(stateName(b), I18N.lang))
+      .map(n => `<option value="${esc(n)}"${finder.state === n ? " selected" : ""}>${esc(stateName(n))} (${states[n]})</option>`).join("");
     return `
       <div class="finder" role="search">
         <div class="lf-row">
-          <label class="lf-search"><span class="sr-only">Search leaves</span>
+          <label class="lf-search"><span class="sr-only">${t("Search leaves")}</span>
             <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
             <input type="search" class="lf-q" value="${esc(finder.q)}" autocomplete="off"
-              placeholder="${wholeTree ? `Search all ${pool.length} leaves: a name, town or state` : `Search this branch's ${pool.length} leaves`}">
+              placeholder="${wholeTree ? t("Search all {n} leaves: a name, town or state", { n: pool.length }) : t("Search this branch's {n} leaves", { n: pool.length })}">
           </label>
-          <label class="lf-state"><span class="sr-only">State</span>
-            <select class="lf-st"><option value="all">All states</option>${stateOpts}</select>
+          <label class="lf-state"><span class="sr-only">${t("State")}</span>
+            <select class="lf-st"><option value="all">${t("All states")}</option>${stateOpts}</select>
           </label>
         </div>
-        ${groups.length > 1 ? `<div class="lf-groups" role="group" aria-label="Kind of leaf">
-          <button type="button" class="chip lf-g" data-g="all" aria-pressed="${finder.group === "all"}" style="--c:#8b6a3e"><span class="dot"></span>All<span class="count">${pool.length}</span></button>
+        ${groups.length > 1 ? `<div class="lf-groups" role="group" aria-label="${t("Kind of leaf")}">
+          <button type="button" class="chip lf-g" data-g="all" aria-pressed="${finder.group === "all"}" style="--c:#8b6a3e"><span class="dot"></span>${t("All")}<span class="count">${pool.length}</span></button>
           ${groups.map(g => `<button type="button" class="chip lf-g" data-g="${g.id}" aria-pressed="${finder.group === g.id}" style="--c:${g.color}"><span class="dot"></span>${esc(g.label)}<span class="count">${counts[g.id]}</span></button>`).join("")}
         </div>` : ""}
         <p class="lf-count" aria-live="polite"></p>
@@ -265,11 +271,11 @@
       });
       reveal(added, { gap: 0.025, y: 10, duration: 0.4 });
       count.textContent = idle ? ""
-        : found.length ? `Showing ${shown.length} of ${found.length} ${found.length === 1 ? "leaf" : "leaves"}`
-        : "No leaf matches. Try another word, kind or state.";
+        : found.length ? t(found.length === 1 ? "Showing {a} of {b} leaf" : "Showing {a} of {b} leaves", { a: shown.length, b: found.length })
+        : t("No leaf matches. Try another word, kind or state.");
       const rest = found.length - shown.length;
       more.hidden = rest <= 0;
-      more.textContent = `Show ${Math.min(rest, FIND_PAGE)} more`;
+      more.textContent = t("Show {n} more", { n: Math.min(rest, FIND_PAGE) });
     }
     let timer = 0;
     input.addEventListener("input", () => {
@@ -298,7 +304,7 @@
     if (i === null) {
       box.innerHTML = `
         <div class="bi-inner bi-all">
-          <p class="empty">Choose a branch to see its leaves, or click any leaf on the tree. Every IKS place on this site is a leaf: search them all here.</p>
+          <p class="empty">${t("Choose a branch to see its leaves, or click any leaf on the tree. Every IKS place on this site is a leaf: search them all here.")}</p>
           ${finderHTML(ALL_LEAVES, true)}
         </div>`;
       bindFinder(box, ALL_LEAVES, { wholeTree: true });
@@ -313,7 +319,9 @@
         <p class="bi-sa" lang="sa">${b.sanskrit}</p>
         <h2>${b.name}</h2>
         <p class="blurb">${b.blurb}</p>
-        <p class="bi-stats">${pool.length - small} IKS centres${small ? ` and ${small} more places (gurukuls, institutes, heritage sites, traditions) grow on this branch. Large glowing leaves are IKS centres; the small leaves cluster on twigs by kind` : ""}.</p>
+        <p class="bi-stats">${small
+          ? t("{a} IKS centres and {b} more places (gurukuls, institutes, heritage sites, traditions) grow on this branch. Large glowing leaves are IKS centres; the small leaves cluster on twigs by kind.", { a: pool.length - small, b: small })
+          : t("{a} IKS centres grow on this branch.", { a: pool.length })}</p>
         ${finderHTML(pool, false)}
       </div>`;
     bindFinder(box, pool);
@@ -404,7 +412,7 @@
     }
     map.current = path;
     const [x, y] = ANCHORS[stateId] || [306, 348];
-    const name = STATE_NAMES[stateId] || "";
+    const name = stateName(STATE_NAMES[stateId] || "");
     const right = x < 430;
     map.pinLayer.innerHTML = `
       <g transform="translate(${x} ${y})">
@@ -434,7 +442,7 @@
   const esc = v => String(v).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 
   /** "City, State" for a leaf (small leaves without a town show the state only) */
-  const placeLine = c => [c.city, STATE_NAMES[c.state] || c.stateName].filter((v, i, a) => v && a.indexOf(v) === i).join(", ");
+  const placeLine = c => [c.city, stateName(STATE_NAMES[c.state] || c.stateName)].filter((v, i, a) => v && a.indexOf(v) === i).join(", ");
 
   /** tel: link for the first number in a phone string such as "080 2670 1303 (University) · …" */
   function telLink(phone) {
@@ -456,23 +464,23 @@
   function centreDetails(c) {
     const out = [];
     if (c.activities && c.activities.length) {
-      out.push(`<section class="pd-section"><h3>What happens here</h3>
+      out.push(`<section class="pd-section"><h3>${t("What happens here")}</h3>
         <ul class="pd-list">${c.activities.map(a => `<li>${esc(a)}</li>`).join("")}</ul></section>`);
     }
-    out.push(`<section class="pd-section"><h3>People</h3>${
+    out.push(`<section class="pd-section"><h3>${t("People")}</h3>${
       c.people && c.people.length
-        ? `<ul class="pd-people">${c.people.map(p => `<li><b>${esc(p.name)}</b><span>${esc(p.role)}</span>${p.asOf ? `<small>As listed in: ${esc(p.asOf)}</small>` : ""}</li>`).join("")}</ul>`
-        : `<p class="pd-empty">${esc(c.peopleNote || "The sources don't name the people who run it. Contact the institution below.")}</p>`
+        ? `<ul class="pd-people">${c.people.map(p => `<li><b>${esc(p.name)}</b><span>${esc(p.role)}</span>${p.asOf ? `<small>${t("As listed in: {src}", { src: esc(p.asOf) })}</small>` : ""}</li>`).join("")}</ul>`
+        : `<p class="pd-empty">${esc(c.peopleNote || t("The sources don't name the people who run it. Contact the institution below."))}</p>`
     }</section>`);
     const k = c.contact || {};
     const rows = [];
-    if (k.address) rows.push(["Address", `<a href="https://www.google.com/maps/search/?${new URLSearchParams({ api: "1", query: `${c.name}, ${k.address}` })}" target="_blank" rel="noopener">${esc(k.address)}</a>`]);
-    if (k.phone) rows.push([k.listedBy ? "Listed phone" : "Phone", telLink(k.phone)]);
-    if (k.email) rows.push([k.listedBy ? "Listed email" : "Email", mailLink(k.email)]);
-    if (k.hours) rows.push(["Hours", esc(k.hours)]);
-    if (k.website) rows.push(["Website", `<a href="${esc(k.website)}" target="_blank" rel="noopener">${esc(k.website.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</a>`]);
+    if (k.address) rows.push([t("Address"), `<a href="https://www.google.com/maps/search/?${new URLSearchParams({ api: "1", query: `${c.name}, ${k.address}` })}" target="_blank" rel="noopener">${esc(k.address)}</a>`]);
+    if (k.phone) rows.push([k.listedBy ? t("Listed phone") : t("Phone"), telLink(k.phone)]);
+    if (k.email) rows.push([k.listedBy ? t("Listed email") : t("Email"), mailLink(k.email)]);
+    if (k.hours) rows.push([t("Hours"), esc(k.hours)]);
+    if (k.website) rows.push([t("Website"), `<a href="${esc(k.website)}" target="_blank" rel="noopener">${esc(k.website.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</a>`]);
     if (c.minor && !c.place.noMap) {
-      rows.push(["Directions", `<a href="${esc(nearby.directionsUrl(c.place))}" target="_blank" rel="noopener">Open in Google Maps</a>`]);
+      rows.push([t("Directions"), `<a href="${esc(nearby.directionsUrl(c.place))}" target="_blank" rel="noopener">${t("Open in Google Maps")}</a>`]);
     }
     if (c.minor) {
       // small leaves: what the source lists, and a search when it lists no phone or e-mail
@@ -480,25 +488,25 @@
       if (!k.phone && !k.email) {
         const q = new URLSearchParams({ q: `${c.name} ${c.place.city || ""} ${c.stateName || ""} contact` }).toString();
         note += `<p class="pd-empty">${esc(c.contactNote)}${c.place.kind === "heritage" || c.place.kind === "tradition" ? ""
-          : ` <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">Search for its contact details</a>.`}</p>`;
+          : ` <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">${t("Search for its contact details")}</a>.`}</p>`;
       }
-      out.push(`<section class="pd-section"><h3>Visit &amp; contact</h3>
+      out.push(`<section class="pd-section"><h3>${t("Visit & contact")}</h3>
         ${rows.length ? `<dl class="pd-contact">${rows.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join("")}</dl>` : ""}${note}</section>`);
     } else if (rows.length) {
-      out.push(`<section class="pd-section"><h3>Visit &amp; contact</h3>
+      out.push(`<section class="pd-section"><h3>${t("Visit & contact")}</h3>
         <dl class="pd-contact">${rows.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join("")}</dl></section>`);
     } else {
       // e.g. IKS Division centres: the official list gives no address, phone or e-mail
-      const host = ((c.activities || []).find(a => a.startsWith("Host institution: ")) || "").replace("Host institution: ", "");
+      const host = (((c.en && c.en.activities) || c.activities || []).find(a => a.startsWith("Host institution: ")) || "").replace("Host institution: ", "");
       const q = new URLSearchParams({ q: `${c.name} ${host.startsWith("not named") ? "" : host} ${c.city || ""} contact` }).toString();
-      out.push(`<section class="pd-section"><h3>Visit &amp; contact</h3>
-        <p class="pd-empty">The official list doesn't give an address, phone or e-mail for this centre.
-        <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">Search for its contact details</a>.</p></section>`);
+      out.push(`<section class="pd-section"><h3>${t("Visit & contact")}</h3>
+        <p class="pd-empty">${t("The official list doesn't give an address, phone or e-mail for this centre.")}
+        <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">${t("Search for its contact details")}</a>.</p></section>`);
     }
     if (c.sources && c.sources.length) {
-      out.push(`<section class="pd-section"><h3>Sources</h3>
+      out.push(`<section class="pd-section"><h3>${t("Sources")}</h3>
         <ol class="pd-sources">${c.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></li>`).join("")}</ol>
-        <p class="pd-checked">${c.minor ? "Fetched" : "Checked"} November 2026. Office-holders change, so confirm with the institution before visiting.</p></section>`);
+        <p class="pd-checked">${c.minor ? t("Fetched November 2026. Office-holders change, so confirm with the institution before visiting.") : t("Checked November 2026. Office-holders change, so confirm with the institution before visiting.")}</p></section>`);
     }
     return out.join("");
   }
@@ -519,8 +527,8 @@
     $("#panel-title").textContent = c.name;
     $("#panel-type").textContent = c.type;
     $("#panel-place").textContent = placeLine(c);
-    $("#panel-summary").innerHTML = (c.founded ? `<span class="founded">Founded ${esc(c.founded)}.</span> ` : "") + esc(c.summary || "");
-    $("#map-caption").textContent = `${c.name} is in ${placeLine(c)}.`;
+    $("#panel-summary").innerHTML = (c.founded ? `<span class="founded">${t("Founded {year}.", { year: esc(c.founded) })}</span> ` : "") + esc(c.summary || "");
+    $("#map-caption").textContent = t("{name} is in {place}.", { name: c.name, place: placeLine(c) });
     showOnMap(c.state, b.color);
     $("#panel-details").innerHTML = centreDetails(c);
 
@@ -532,8 +540,9 @@
       .filter(x => twig(x.s) === twig(c))
       .sort((x, y) => (x.k === ci ? -1 : y.k === ci ? 1 : 0) || (y.s.state === c.state) - (x.s.state === c.state));
     $("#panel-sib-title").textContent = c.minor
-      ? `More ${grp.label.toLowerCase()}${c.region ? ` (${c.region} twig)` : ""}`
-      : "Other IKS centres on this branch";
+      ? (c.region ? t("More {kind} ({region} twig)", { kind: I18N.hi ? grp.label : grp.label.toLowerCase(), region: t(c.region) })
+        : t("More {kind}", { kind: I18N.hi ? grp.label : grp.label.toLowerCase() }))
+      : t("Other IKS centres on this branch");
     const SHOW = 6;
     let shownSib = Math.min(same.length, SHOW + 1);
     const sibItem = x => `
@@ -549,8 +558,8 @@
     });
     const moreRow = () => {
       const rest = same.length - shownSib;
-      return (rest > 0 ? `<li class="sib-more"><button type="button" class="near-btn sib-show">Show ${Math.min(rest, 30)} more of ${same.length}</button></li>` : "")
-        + (b.centres.length > SHOW + 1 ? `<li class="sib-more"><button type="button" class="near-btn sib-browse">Search all ${b.centres.length} leaves of this branch</button></li>` : "");
+      return (rest > 0 ? `<li class="sib-more"><button type="button" class="near-btn sib-show">${t("Show {n} more of {total}", { n: Math.min(rest, 30), total: same.length })}</button></li>` : "")
+        + (b.centres.length > SHOW + 1 ? `<li class="sib-more"><button type="button" class="near-btn sib-browse">${t("Search all {n} leaves of this branch", { n: b.centres.length })}</button></li>` : "");
     };
     function drawSibs(from) {
       list.querySelectorAll(".sib-more").forEach(li => li.remove());
@@ -1540,6 +1549,8 @@
     const PLACES = window.IKS_PLACES || [];
     const CITIES = window.IKS_CITIES || [];
     const KINDS = window.IKS.placeKinds;
+    // Hindi: city names typed in Devanagari find their city too
+    if (I18N.hi) CITIES.forEach(c => { const h = I18N.city(c.name); if (h !== c.name) c.aka = [...(c.aka || []), h]; });
     const RADII = [50, 100, 200, 300];
     const PAGE = 12;
     const kindOf = k => KINDS.find(g => g.kinds.includes(k)) || KINDS[0];
@@ -1563,7 +1574,7 @@
       const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
       return 2 * 6371 * Math.asin(Math.sqrt(h));
     }
-    const fmtKm = d => (d < 10 ? d.toFixed(1) : Math.round(d)) + " km";
+    const fmtKm = d => t("{n} km", { n: d < 10 ? d.toFixed(1) : Math.round(d) });
 
     // Google Maps: with a typed city the route starts there; with "my location"
     // no origin is sent, so Google uses the device's own location.
@@ -1591,7 +1602,7 @@
       return b;
     }
     const radiusChips = RADII.map(r => {
-      const b = chip(`${r} km`, r === near.radius, "#8b6a3e");
+      const b = chip(t("{n} km", { n: r }), r === near.radius, "#8b6a3e");
       b.addEventListener("click", () => {
         near.radius = r;
         radiusChips.forEach((c, i) => c.setAttribute("aria-pressed", String(RADII[i] === r)));
@@ -1616,7 +1627,7 @@
     });
 
     // city suggestions
-    $("#near-cities").innerHTML = CITIES.map(c => `<option value="${esc(c.name)}">${esc(c.state)}</option>`).join("");
+    $("#near-cities").innerHTML = CITIES.map(c => `<option value="${esc(c.name)}">${esc(I18N.hi ? `${I18N.city(c.name)} · ${stateName(c.state)}` : c.state)}</option>`).join("");
 
     /* ---- rendering ---- */
     /* what the place studies or does, shown on the card */
@@ -1637,86 +1648,87 @@
 
       // person in charge
       if (lead) {
-        html += `<div class="sc-person"><span class="sc-label">Person in charge</span>
+        html += `<div class="sc-person"><span class="sc-label">${t("Person in charge")}</span>
           <b>${esc(lead.name)}</b><span>${esc(lead.role)}</span>
-          ${lead.asOf ? `<small>As listed in: ${esc(lead.asOf)}</small>` : ""}</div>`;
+          ${lead.asOf ? `<small>${t("As listed in: {src}", { src: esc(lead.asOf) })}</small>` : ""}</div>`;
       } else if (p.kind === "heritage" || p.kind === "tradition") {
         html += `<p class="sc-none">${p.kind === "heritage"
-          ? "A public heritage site, not an institution, so no single person is in charge. Visitor details are on the site's official page."
-          : "A living tradition carried by a community, not an institution, so no single person is in charge."}</p>`;
+          ? t("A public heritage site, not an institution, so no single person is in charge. Visitor details are on the site's official page.")
+          : t("A living tradition carried by a community, not an institution, so no single person is in charge.")}</p>`;
       } else {
-        html += `<p class="sc-none">The source doesn't name a person in charge.</p>`;
+        html += `<p class="sc-none">${t("The source doesn't name a person in charge.")}</p>`;
       }
 
       // phone / e-mail / address (only what a source lists)
       // institutional contacts are labelled as office lines; directory listings say who listed them
       const listed = !!contact.listedBy;
-      if (contact.phone) rows.push([listed ? "Listed phone" : "Office phone", telLink(contact.phone)]);
-      if (contact.email) rows.push([listed ? "Listed email" : "Office email", mailLink(contact.email)]);
-      if (contact.address) rows.push(["Address", esc(contact.address)]);
-      if (contact.hours) rows.push(["Hours", esc(contact.hours)]);
+      if (contact.phone) rows.push([listed ? t("Listed phone") : t("Office phone"), telLink(contact.phone)]);
+      if (contact.email) rows.push([listed ? t("Listed email") : t("Office email"), mailLink(contact.email)]);
+      if (contact.address) rows.push([t("Address"), esc(contact.address)]);
+      if (contact.hours) rows.push([t("Hours"), esc(contact.hours)]);
       if (rows.length) {
-        html += `<dl class="pd-contact">${rows.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join("")}</dl>`;
+        html += `<dl class="pd-contact">${rows.map(([dt, d]) => `<dt>${dt}</dt><dd>${d}</dd>`).join("")}</dl>`;
       }
       if (!contact.phone && !contact.email && p.kind !== "heritage" && p.kind !== "tradition") {
         const who = lead ? lead.name.replace(/^(Dr|Prof)\.?\s*/i, "") : p.name;
-        const q = new URLSearchParams({ q: `${who} ${p.host || p.name} contact email` }).toString();
+        const q = new URLSearchParams({ q: `${who} ${(p.en && p.en.host) || p.host || p.name} contact email` }).toString();
         html += `<p class="sc-none">${p.source === "iksindia"
-          ? "The IKS Division doesn't publish phone numbers or e-mails for its centres."
-          : p.source === "gurukul" ? "The gurukul directories don't list a phone number for it."
-          : "The source doesn't list a phone number or e-mail."}
-          <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">Search for ${lead ? esc(lead.name) + "'s" : "their"} contact</a>.</p>`;
+          ? t("The IKS Division doesn't publish phone numbers or e-mails for its centres.")
+          : p.source === "gurukul" ? t("The gurukul directories don't list a phone number for it.")
+          : t("The source doesn't list a phone number or e-mail.")}
+          <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">${lead ? t("Search for {name}'s contact", { name: esc(lead.name) }) : t("Search for their contact")}</a>.</p>`;
       }
 
       // more about the work
       if (c && c.activities && c.activities.length) {
-        html += `<div class="sc-more"><span class="sc-label">What happens here</span>
+        html += `<div class="sc-more"><span class="sc-label">${t("What happens here")}</span>
           <ul class="pd-list">${c.activities.map(a => `<li>${esc(a)}</li>`).join("")}</ul></div>`;
       } else if (p.source === "iksindia" && p.status) {
-        html += `<div class="sc-more"><span class="sc-label">About this centre</span>
-          <ul class="pd-list"><li>Status: ${esc(p.status.toLowerCase())}</li><li>${esc(p.pillars || "")}</li><li>Funded by the IKS Division, Ministry of Education</li></ul></div>`;
+        html += `<div class="sc-more"><span class="sc-label">${t("About this centre")}</span>
+          <ul class="pd-list"><li>${t("Status: {s}", { s: esc(I18N.hi ? p.status : p.status.toLowerCase()) })}</li><li>${esc(p.pillars || "")}</li><li>${t("Funded by the IKS Division, Ministry of Education")}</li></ul></div>`;
       }
 
       const src = c ? (c.sources || [])[0] : null;
-      const srcLine = src ? `<a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.label)}</a> and the leaf's full source list`
-        : p.source === "iksindia" ? `<a href="https://iksindia.org/search_site_centers/index.php" target="_blank" rel="noopener">IKS Division list of centres</a>`
+      const srcLine = src ? `<a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.label)}</a> ${t("and the leaf's full source list")}`
+        : p.source === "iksindia" ? `<a href="https://iksindia.org/search_site_centers/index.php" target="_blank" rel="noopener">${t("IKS Division list of centres")}</a>`
         : p.source === "uem" ? `<a href="https://iks.uem.edu.in/iks-centres/" target="_blank" rel="noopener">iks.uem.edu.in</a>`
         : p.source === "gurukul" ? [["aaryasamaj.com", "https://www.aaryasamaj.com/gurukuls-list"], ["vediconcepts.org", "https://vediconcepts.org/gurukul-list/"]]
             .filter(([n]) => (contact.listedBy || "").includes(n))
-            .map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${n}</a>`).join(" and ") + " (directory listings may be out of date; confirm before visiting)"
+            .map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${n}</a>`).join(t(" and ")) + t(" (directory listings may be out of date; confirm before visiting)")
         : p.source === "hindupedia" ? `<a href="https://www.hindupedia.com/en/Oriental_Research_Institutes_of_India" target="_blank" rel="noopener">Hindupedia: Oriental Research Institutes of India</a>`
-        : p.source === "hmml" ? `<a href="https://hmml.org/collections/repositories/india/" target="_blank" rel="noopener">HMML repository list</a>`
+        : p.source === "hmml" ? `<a href="https://hmml.org/collections/repositories/india/" target="_blank" rel="noopener">${t("HMML repository list")}</a>`
         : `<a href="https://iksguru.in/" target="_blank" rel="noopener">iksguru.in</a>`;
-      html += `<p class="sc-source">Source: ${srcLine}.</p>`;
+      html += `<p class="sc-source">${t("Source: {src}.", { src: srcLine })}</p>`;
       return `<div class="spot-contact" id="${id}" hidden>${html}</div>`;
     }
 
     let cardSeq = 0;
     function card(p) {
       const k = kindOf(p.kind);
-      const where = [p.host && p.kind !== "tradition" ? esc(p.host) : null, `${esc(p.city)}, ${esc(p.state)}`]
+      const where = [p.host && p.kind !== "tradition" ? esc(p.host) : null,
+        [p.city !== p.state ? esc(p.city) : null, esc(stateName(p.state))].filter(Boolean).join(", ")]
         .filter(Boolean).join(" · ");
-      const info = p.url ? "Website" : "Learn more";
+      const info = p.url ? t("Website") : t("Learn more");
       const study = studyText(p);
       const id = `spot-contact-${++cardSeq}`;
       return `
         <li class="spot" style="--c:${k.color}">
           <div class="place-top">
-            <span class="place-kind"><span class="dot"></span>${esc(k.label.replace(/s$/, ""))}</span>
+            <span class="place-kind"><span class="dot"></span>${esc(k.one || k.label.replace(/s$/, ""))}</span>
             <span class="place-dist">${fmtKm(p.d)}</span>
           </div>
           <h3>${esc(p.name)}</h3>
-          <p class="place-host">${where}${p.approx ? '<span class="approx" title="Shown at the city centre: the source gives no street address">approx.</span>' : ""}</p>
-          ${study ? `<p class="place-about"><span class="spot-label">${p.kind === "heritage" || p.kind === "tradition" ? "What it is" : "What they study"}</span>${esc(study)}</p>` : ""}
+          <p class="place-host">${where}${p.approx ? `<span class="approx" title="${t("Shown at the city centre: the source gives no street address")}">${t("approx.")}</span>` : ""}</p>
+          ${study ? `<p class="place-about"><span class="spot-label">${p.kind === "heritage" || p.kind === "tradition" ? t("What it is") : t("What they study")}</span>${esc(study)}</p>` : ""}
           ${contactBlock(p, id)}
           <div class="place-actions">
             <a class="near-btn primary" style="--c:${k.color}" href="${esc(directionsUrl(p))}" target="_blank" rel="noopener">
-              <svg aria-hidden="true"><use href="#pin-icon"/></svg>Directions
+              <svg aria-hidden="true"><use href="#pin-icon"/></svg>${t("Directions")}
             </a>
-            <button type="button" class="near-btn spot-toggle" style="--c:${k.color}" aria-expanded="false" aria-controls="${id}">Contact</button>
+            <button type="button" class="near-btn spot-toggle" style="--c:${k.color}" aria-expanded="false" aria-controls="${id}">${t("Contact")}</button>
             <a class="near-btn" style="--c:${k.color}" href="${esc(infoUrl(p))}" target="_blank" rel="noopener">${info}</a>
             ${p.leaf ? `<button type="button" class="near-btn spot-tree" style="--c:${k.color}" data-b="${p.leaf.bi}" data-c="${p.leaf.ci}">
-              <svg aria-hidden="true"><use href="#leaf-icon"/></svg>On the tree</button>` : ""}
+              <svg aria-hidden="true"><use href="#leaf-icon"/></svg>${t("On the tree")}</button>` : ""}
           </div>
         </li>`;
     }
@@ -1734,7 +1746,7 @@
       const panel = document.getElementById(btn.getAttribute("aria-controls"));
       const open = btn.getAttribute("aria-expanded") !== "true";
       btn.setAttribute("aria-expanded", String(open));
-      btn.textContent = open ? "Hide contact" : "Contact";
+      btn.textContent = open ? t("Hide contact") : t("Contact");
       panel.anim?.stop();
       if (open) {
         panel.hidden = false;
@@ -1757,12 +1769,12 @@
       const where = `<strong>${esc(near.origin.label)}</strong>`;
       let items;
       if (inside.length) {
-        status.innerHTML = `${inside.length} IKS ${inside.length === 1 ? "place" : "places"} within ${near.radius} km of ${where}.`;
+        status.innerHTML = t(inside.length === 1 ? "{n} IKS place within {r} km of {where}." : "{n} IKS places within {r} km of {where}.", { n: inside.length, r: near.radius, where });
         items = inside;
       } else {
         const next = pool.slice(0, 3);
-        status.innerHTML = `Nothing within ${near.radius} km of ${where}. ` +
-          (next.length ? `The nearest ${next.length === 1 ? "place is" : "places are"} below; try a wider distance.` : "");
+        status.innerHTML = t("Nothing within {r} km of {where}.", { r: near.radius, where }) + " " +
+          (next.length ? t(next.length === 1 ? "The nearest place is below; try a wider distance." : "The nearest places are below; try a wider distance.") : "");
         items = next;
       }
       const visible = items.slice(0, near.shown);
@@ -1771,7 +1783,7 @@
       list.querySelectorAll(".spot").forEach(li => interactive(li, { lift: -3, shadow: "0px 18px 30px -22px", border: false, press: false }));
       const rest = items.length - visible.length;
       more.hidden = rest <= 0;
-      more.textContent = `Show ${rest} more`;
+      more.textContent = t("Show {n} more", { n: rest });
       if (animateIn) reveal(Array.from(list.children), { gap: 0.05, y: 14, duration: 0.55 });
       else if (visible.length) {
         const fresh = Array.from(list.children).slice(near.shown - PAGE);
@@ -1806,37 +1818,37 @@
       const c = findCity(input.value);
       if (!c) {
         status.innerHTML = input.value.trim()
-          ? `“${esc(input.value.trim())}” isn't in the city list yet. Try a nearby larger city, or use your location.`
-          : "Type a city name, or use your location.";
+          ? t("“{q}” isn't in the city list yet. Try a nearby larger city, or use your location.", { q: esc(input.value.trim()) })
+          : t("Type a city name, or use your location.");
         list.innerHTML = ""; more.hidden = true;
         return;
       }
-      input.value = c.name;
-      setOrigin({ lat: c.lat, lng: c.lng, label: c.name, city: c.name });
+      input.value = I18N.city(c.name);
+      setOrigin({ lat: c.lat, lng: c.lng, label: I18N.city(c.name), city: c.name });
     });
     input.addEventListener("change", () => { if (findCity(input.value)) $("#near-city-form").requestSubmit(); });
 
     /* ---- browser location ---- */
     function locate() {
       if (!("geolocation" in navigator)) {
-        status.textContent = "This browser can't share its location. Type a city instead.";
+        status.textContent = t("This browser can't share its location. Type a city instead.");
         input.focus();
         return;
       }
       locateBtn.disabled = true;
-      status.textContent = "Finding your location…";
+      status.textContent = t("Finding your location…");
       navigator.geolocation.getCurrentPosition(pos => {
         locateBtn.disabled = false;
         const here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         const closest = CITIES.reduce((best, c) => (km(here, c) < km(here, best) ? c : best), CITIES[0]);
-        const label = closest && km(here, closest) < 40 ? `your location (near ${closest.name})` : "your location";
+        const label = closest && km(here, closest) < 40 ? t("your location (near {city})", { city: I18N.city(closest.name) }) : t("your location");
         setOrigin({ ...here, label });
       }, err => {
         locateBtn.disabled = false;
         scrollAfterResults = false;
         status.textContent = err.code === err.PERMISSION_DENIED
-          ? "Location access was blocked. Type a city instead, or allow location for this site in your browser."
-          : "Couldn't get your location just now. Type a city instead.";
+          ? t("Location access was blocked. Type a city instead, or allow location for this site in your browser.")
+          : t("Couldn't get your location just now. Type a city instead.");
         input.focus();
       }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 10 * 60 * 1000 });
     }
@@ -1851,16 +1863,16 @@
     });
     interactive(heroBtn, { shadow: "0px 10px 22px -12px" });
 
-    status.textContent = "Use your location or type a city to see what's nearby.";
+    status.textContent = t("Use your location or type a city to see what's nearby.");
 
     // let other features (the chatbot) show "near me" results for a city
     return {
       nearCity(cityName) {
         const c = findCity(cityName);
         if (!c) return false;
-        input.value = c.name;
+        input.value = I18N.city(c.name);
         scrollAfterResults = true;
-        setOrigin({ lat: c.lat, lng: c.lng, label: c.name, city: c.name });
+        setOrigin({ lat: c.lat, lng: c.lng, label: I18N.city(c.name), city: c.name });
         return true;
       },
       km, kindOf, findCity, directionsUrl
@@ -1876,6 +1888,7 @@
     animate(".frame .orn", { opacity: [0, 1] }, tx({ duration: 1.2, delay: stagger(0.06, { startDelay: 0.1 }) }));
     // hero: kicker, title, lede rise in one after another
     reveal(".hero > *", { delay: 0.15, gap: 0.12, y: 22, duration: 0.9 });
+    animate("#lang-toggle", { opacity: [0, 1], y: [-10, 0] }, tx({ duration: 0.6, delay: 0.5, ease: EASE }));
 
     const once = { amount: 0.2 };
     inView(".stage", el => { animate(el, { opacity: [0, 1] }, tx({ duration: 1.2, ease: EASE })); }, { amount: 0.1 });
@@ -1894,6 +1907,7 @@
   buildMap();
   const nearby = setupNearby();
   setupReveals();
+  if ($("#lang-toggle")) interactive($("#lang-toggle"), { lift: -2, shadow: "0px 10px 22px -12px", bg: "#fffaf0" });
   tree = createTree();
 
   /* shared with js/chat.js */

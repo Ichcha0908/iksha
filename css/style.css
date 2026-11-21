@@ -13,8 +13,8 @@
   --accent: #d97b29;
   --frame-inset: 16px;
   --corner: clamp(84px, 11vw, 164px);
-  --serif: "Marcellus", "Cormorant Garamond", Georgia, serif;
-  --sans: "Jost", "Segoe UI", system-ui, sans-serif;
+  --serif: "Marcellus", "Tiro Devanagari Hindi", "Cormorant Garamond", Georgia, serif;
+  --sans: "Jost", "Noto Sans Devanagari", "Segoe UI", system-ui, sans-serif;
   --deva: "Tiro Devanagari Sanskrit", "Noto Serif Devanagari", serif;
   --ease-out: cubic-bezier(.22, 1, .36, 1);
 }
@@ -822,3 +822,38 @@ h1 {
 .motion .nearby,
 .motion .foot > *,
 .motion .frame .orn { opacity: 0; }
+
+/* ---------- language switch (top right) ---------- */
+.lang-toggle {
+  position: fixed;
+  z-index: 12; /* above the frame and the tree, below the panel and its scrim */
+  top: calc(var(--frame-inset) + 20px);
+  right: calc(var(--frame-inset) + 22px);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 15px 7px 8px;
+  border: 1px solid rgba(176, 132, 70, 0.5);
+  border-radius: 999px;
+  background: rgba(255, 247, 232, 0.92);
+  color: var(--ink);
+  font: inherit;
+  font-size: .95rem;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0) 0 0 0 -10px;
+}
+.lang-toggle .lt-glyph {
+  display: grid; place-items: center;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: .82rem;
+  line-height: 1;
+}
+.lang-toggle:focus-visible { outline: 2px solid var(--ink-soft); outline-offset: 2px; }
+.motion .lang-toggle { opacity: 0; }
+/* Hindi: Devanagari reads better a touch larger, with no letter-spacing on small caps */
+:root:lang(hi) body { line-height: 1.7; }
+/* letter-spacing breaks Devanagari conjuncts apart */
+:root:lang(hi) body * { letter-spacing: 0 !important; }

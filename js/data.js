@@ -471,11 +471,11 @@ window.IKS = {
    Colours reuse the branch palette. `kinds` groups the data's `kind` values
    behind one filter chip. */
 window.IKS.placeKinds = [
-  { id: "centres", label: "IKS centres", color: "#d97b29", kinds: ["centre", "institution"] },
-  { id: "heritage", label: "Heritage sites", color: "#4b5aa8", kinds: ["heritage"] },
-  { id: "traditions", label: "Living traditions", color: "#c4517f", kinds: ["tradition"] },
-  { id: "ayush", label: "Āyurveda & Yoga", color: "#4f8a4a", kinds: ["ayush"] },
-  { id: "gurukuls", label: "Gurukuls", color: "#8a5a2b", kinds: ["gurukul"] }
+  { id: "centres", label: "IKS centres", one: "IKS centre", color: "#d97b29", kinds: ["centre", "institution"] },
+  { id: "heritage", label: "Heritage sites", one: "Heritage site", color: "#4b5aa8", kinds: ["heritage"] },
+  { id: "traditions", label: "Living traditions", one: "Living tradition", color: "#c4517f", kinds: ["tradition"] },
+  { id: "ayush", label: "Āyurveda & Yoga", one: "Āyurveda & Yoga", color: "#4f8a4a", kinds: ["ayush"] },
+  { id: "gurukuls", label: "Gurukuls", one: "Gurukul", color: "#8a5a2b", kinds: ["gurukul"] }
 ];
 
 /* A point well inside each state, in the map's 612 × 696 viewBox
