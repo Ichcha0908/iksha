@@ -2,25 +2,23 @@
    Jñāna Sahāyaka: AI answers for the IKS website's chatbot.
 
    A Cloudflare Worker that receives { question, history, context } from
-   js/chat.js, asks Claude to answer using only the site records in
-   `context`, and returns { answer }. The Anthropic API key stays here,
-   as a Worker secret; it never reaches the browser.
+   js/chat.js, asks Claude (through OpenRouter) to answer using the site
+   records in `context`, and returns { answer, sources }. The OpenRouter API
+   key stays here, as a Worker secret; it never reaches the browser.
 
    Secrets / variables (see server/README.md):
-     ANTHROPIC_API_KEY  (secret, required)
-     ALLOWED_ORIGINS    comma-separated site origins allowed to call this,
-                        e.g. "https://ichcha0908.github.io"
-     MODEL              optional; defaults to claude-opus-5-5
-     WEB_SEARCH         optional; "off" turns off web search
+     OPENROUTER_API_KEY  (secret, required)
+     ALLOWED_ORIGINS     comma-separated site origins allowed to call this,
+                         e.g. "https://ichcha0908.github.io"
+     MODEL               optional; defaults to anthropic/claude-sonnet-5.5
+     WEB_SEARCH          optional; "off" turns off web search
    ============================================================= */
-import Anthropic from "@anthropic-ai/sdk";
-
 const SYSTEM = `You are Jñāna Sahāyaka, the assistant on a website about Indian Knowledge Systems (IKS): its centres, oriental research institutes, manuscript libraries, gurukuls and heritage places. Visitors may ask anything; help them well.
 
 Where answers come from, in this order:
 1. The website's records inside <site_data>. Use them for anything about the places, people, contacts and centres listed on this site.
 2. Your own knowledge, for general questions (for example "What is IKS?", "What are the six darśanas?", "Who was Āryabhaṭa?").
-3. The web_search tool, when the question needs current, local or specific facts that are neither in <site_data> nor something you know reliably (recent news, admissions, events, a centre that isn't on the site, a person's current role). Search instead of guessing.
+3. Web search, when the question needs current, local or specific facts that are neither in <site_data> nor something you know reliably (recent news, admissions, events, a centre that isn't on the site, a person's current role). Search instead of guessing.
 
 Rules:
 - Never invent names, people, phone numbers, e-mail addresses, addresses, dates or figures. Give a person's contact details only if they are in <site_data> or in a search result, and say where they come from.
@@ -30,6 +28,7 @@ Rules:
 - If a question has nothing to do with India or IKS, still answer it helpfully and briefly.
 - Reply in the language the visitor wrote in (for example English or Hindi), keeping names as they appear in the data.`;
 
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const MAX_QUESTION = 500;
 const MAX_CONTEXT_CHARS = 40000;
 
@@ -94,7 +93,7 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     if (request.method !== "POST") return json({ error: "Use POST." }, 405, cors);
     if (!allowOrigin) return json({ error: "This site is not allowed to use the chatbot service." }, 403, cors);
-    if (!env.ANTHROPIC_API_KEY) return json({ error: "The chatbot service is not configured." }, 500, cors);
+    if (!env.OPENROUTER_API_KEY) return json({ error: "The chatbot service is not configured." }, 500, cors);
 
     const ip = request.headers.get("CF-Connecting-IP") || "unknown";
     if (limited(ip)) return json({ error: "Too many questions; please wait a few minutes." }, 429, cors);
@@ -104,56 +103,70 @@ export default {
     const question = typeof body?.question === "string" ? body.question.trim().slice(0, MAX_QUESTION) : "";
     if (!question) return json({ error: "Ask a question." }, 400, cors);
 
-    const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
     const messages = [
+      { role: "system", content: SYSTEM },
       ...cleanHistory(body.history),
       { role: "user", content: `<site_data>\n${packContext(body.context)}\n</site_data>\n\nVisitor's question: ${question}` }
     ];
-    // Anthropic's server-side web search: Claude searches when it needs to and the API runs the searches
+    // OpenRouter's web search server tool: Claude decides when to search; for Claude
+    // models OpenRouter runs Anthropic's own web search. At most 2 searches a question.
     const tools = env.WEB_SEARCH === "off" ? [] : [{
-      type: "web_search_20260209", name: "web_search", max_uses: 3,
-      user_location: { type: "approximate", country: "IN", timezone: "Asia/Kolkata" }
+      type: "openrouter:web_search",
+      parameters: {
+        max_uses: 2,
+        max_total_results: 8,
+        user_location: { type: "approximate", country: "IN", timezone: "Asia/Kolkata" }
+      }
     }];
-    try {
-      let response;
-      // a long server-side search turn can pause; send it back (no extra user message) to let it finish
-      for (let round = 0; round < 3; round++) {
-        response = await client.beta.messages.create({
-          model: env.MODEL || "claude-opus-5-5",
-          max_tokens: 16000,
-          // short chat answers: low effort keeps them fast and inexpensive
-          output_config: { effort: "low" },
-          // if the model declines a request, the API retries it on a fallback model in the same call
-          betas: ["server-side-fallback-2026-07-01"],
-          fallbacks: "default",
-          system: SYSTEM,
-          ...(tools.length ? { tools } : {}),
-          messages
-        });
-        if (response.stop_reason !== "pause_turn") break;
-        messages.push({ role: "assistant", content: response.content });
-      }
 
-      if (response.stop_reason === "refusal") {
-        return json({ answer: "I can't help with that one. Try asking about Indian Knowledge Systems, or about a centre, gurukul or library on this site." }, 200, cors);
-      }
-      const texts = response.content.filter(b => b.type === "text");
-      const answer = texts.map(b => b.text).join("").trim();
-      if (!answer) return json({ error: "No answer was produced." }, 502, cors);
-      // web pages Claude cited, de-duplicated, for the chat window to list under the answer
-      const sources = [];
-      for (const b of texts) {
-        for (const c of b.citations || []) {
-          if (c.url && !sources.some(x => x.url === c.url)) sources.push({ title: c.title || c.url, url: c.url });
-        }
-      }
-      return json({ answer, sources: sources.slice(0, 6) }, 200, cors);
-    } catch (error) {
-      if (error instanceof Anthropic.RateLimitError) return json({ error: "The AI service is busy; please try again shortly." }, 429, cors);
-      if (error instanceof Anthropic.AuthenticationError) return json({ error: "The chatbot service is not configured correctly." }, 500, cors);
-      if (error instanceof Anthropic.BadRequestError) return json({ error: "The question could not be processed." }, 400, cors);
-      if (error instanceof Anthropic.APIError) return json({ error: "The AI service had a problem." }, 502, cors);
-      return json({ error: "Something went wrong." }, 500, cors);
+    let res, data;
+    try {
+      res = await fetch(OPENROUTER_URL, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          // app attribution on OpenRouter (optional)
+          "HTTP-Referer": allowOrigin !== "*" ? allowOrigin : "https://ichcha0908.github.io",
+          "X-OpenRouter-Title": "IKS Tree of Knowledge"
+        },
+        body: JSON.stringify({
+          model: env.MODEL || "anthropic/claude-sonnet-5.5",
+          max_tokens: 1500,
+          // short chat answers: little thinking keeps them fast and inexpensive
+          reasoning: { effort: "low", exclude: true },
+          messages,
+          ...(tools.length ? { tools, max_tool_calls: 3 } : {})
+        })
+      });
+      data = await res.json().catch(() => null);
+    } catch {
+      return json({ error: "The AI service could not be reached." }, 502, cors);
     }
+
+    if (!res.ok || !data || data.error) {
+      const status = res.status;
+      if (status === 401 || status === 403) return json({ error: "The chatbot service is not configured correctly." }, 500, cors);
+      // out of credits: the site falls back to its built-in answers
+      if (status === 402) return json({ error: "AI answers are paused (the API credits have run out)." }, 503, cors);
+      if (status === 429) return json({ error: "The AI service is busy; please try again shortly." }, 429, cors);
+      if (status === 400) return json({ error: "The question could not be processed." }, 400, cors);
+      return json({ error: "The AI service had a problem." }, 502, cors);
+    }
+
+    const message = data.choices?.[0]?.message || {};
+    const content = message.content;
+    const answer = (typeof content === "string" ? content
+      : Array.isArray(content) ? content.map(p => (typeof p === "string" ? p : p?.text || "")).join("") : "").trim();
+    if (!answer) return json({ error: "No answer was produced." }, 502, cors);
+    // web pages Claude cited, de-duplicated, for the chat window to list under the answer
+    const sources = [];
+    for (const a of message.annotations || []) {
+      const c = a?.type === "url_citation" ? a.url_citation : null;
+      if (c?.url && /^https?:\/\//.test(c.url) && !sources.some(x => x.url === c.url)) {
+        sources.push({ title: String(c.title || c.url).slice(0, 200), url: c.url });
+      }
+    }
+    return json({ answer, sources: sources.slice(0, 6) }, 200, cors);
   }
 };

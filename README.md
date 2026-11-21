@@ -86,7 +86,7 @@ There are two modes:
   (`js/chat.js`). It also explains "What is IKS?" and "What is a gurukul?"
   (quoting iksindia.org and vediconcepts.org), and for anything else it
   can't answer it offers a **Search Google** button for that question.
-- **AI (optional):** deploy the Cloudflare Worker in `server/` and put its
+- **AI (optional):** deploy the Cloudflare Worker in `server/` (Claude through OpenRouter) and put its
   address in `js/chat-config.js`. Claude then answers any question: from the
   site's records for its centres, people and contacts; from its own knowledge
   for general questions; and with web search for current facts, listing its
