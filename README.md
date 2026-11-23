@@ -26,6 +26,12 @@ line on what was taken from it. Every leaf also lists its own sources.
 
 ## Suggest an update (feedback)
 
+*Switched off for now* (the button isn't shown; `js/feedback.js` is kept but
+not loaded). To turn it back on: deploy the Worker with its FEEDBACK store
+(see below), put its address in `js/chat-config.js`, add
+`<script src="js/feedback.js"></script>` after `chat.js` in `index.html`,
+and restore the "Suggest an update" buttons in `js/app.js` (git history).
+
 The **Suggest an update** button (bottom left, and in every leaf's panel and
 "near me" card) opens a short form for corrections and new information:
 which entry, what kind of update, the details, a source link, and an
