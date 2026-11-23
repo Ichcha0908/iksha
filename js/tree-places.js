@@ -169,13 +169,14 @@
         && squash(hostEn) !== squash(p.name)) {
       leaf.activities.push(p.kind === "ayush" ? t("Campus: {host}", { host: p.host }) : t("Host / campus: {host}", { host: p.host }));
     }
+    if (p.peopleNote) leaf.peopleNote = t(p.peopleNote);
     if (p.source === "atlas") atlasLeaf(leaf, p);
     if (p.kind === "gurukul") {
       leaf.region = regionOf(p.state);
       leaf.activities.push(t("Listed in the gurukul directories as a gurukul or Veda pāṭhaśālā."));
       if (p.noMap) leaf.activities.push(t("The directories give no town for it, so it is shown by state."));
     }
-    if (p.approx && !p.noMap) leaf.activities.push(t("The source gives no street address; the map and directions point to the town."));
+    if (p.approx && !p.noMap && !contact.address) leaf.activities.push(t("The source gives no street address; the map and directions point to the town."));
     if (p.kind === "heritage") leaf.peopleNote = t("A public heritage site, not an institution, so no single person is in charge.");
     if (p.kind === "tradition") leaf.peopleNote = t("A living tradition carried by a community, not an institution, so no single person is in charge.");
     if (listed) leaf.listedNote = t("Contact details as listed by {who}. Directory listings can be out of date, so confirm before visiting.", { who: contact.listedBy });

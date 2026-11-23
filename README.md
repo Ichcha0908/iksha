@@ -90,7 +90,7 @@ Places live in `js/places.js`, generated from:
 | [iksindia.org](https://iksindia.org/) | The IKS Division's list of IKS centres (89 after removing duplicates). The list gives institute and state but no address, so each centre is placed at its campus, or at its city when marked *approx.* Seven centres whose town couldn't be verified are left out. |
 | [iks.uem.edu.in](https://iks.uem.edu.in/iks-centres/) | "IKS Centres across the World": the six with a physical site in India. |
 | [iksguru.in](https://iksguru.in/) | Heritage map (ancient universities, observatories, temples, seats of learning), regional living traditions and AYUSH institutes, with the site's coordinates. Places outside India are left out. |
-| [IKS Atlas](https://iks-atlas.vercel.app/) | About 475 heritage places, living traditions, museums, archives, research institutions and texts (Kerala and across India). The Atlas marks every record as a draft in review whose source it hasn't checked, so the site labels them "From the IKS Atlas (draft)" and links each to its Atlas record and the source the Atlas lists; descriptions are the Atlas's own (English only). About 23 records already on the site add their Atlas link to that entry instead. Locations from [OpenStreetMap](https://www.openstreetmap.org/copyright) (Nominatim); Those that couldn't be matched (and the texts) are on the tree and in the chatbot by state but not in "near me". |
+| [IKS Atlas](https://iks-atlas.vercel.app/) | 477 heritage places, living traditions, museums, archives, research institutions and texts (Kerala and across India). The Atlas marks every record as a draft in review whose source it hasn't checked, so the site labels them "From the IKS Atlas (draft)" and links each to its Atlas record and the source the Atlas lists; descriptions are the Atlas's own (English only). 23 records already on the site add their Atlas link to that entry instead. Locations from [OpenStreetMap](https://www.openstreetmap.org/copyright) (Nominatim), kept only when the matched place agrees with the record's own name (264 located, some only to their town and marked *approx.*). The other 213, and the 3 texts, are on the tree and in the chatbot by state but not in "near me". |
 | [IISH](https://www.iish.org/) | The Indian Institute of Scientific Heritage, Thrissur, from its About and Contact pages. Its listed Director and founder, Dr. N. Gopalakrishnan, died in April 2023 ([Organiser](https://organiser.org/2023/05/01/171869/bharat/scientist-dr-n-gopalakrishnan-a-dedicated-proponent-of-sanatan-dharma-passes-away)), so no person in charge is named. |
 | [sanskritdocuments.org](https://sanskritdocuments.org/sites/), [Scribd](https://www.scribd.com/) lists | Not used: these sites block automated access (Scribd requires a signed-in browser). |
 
@@ -192,13 +192,20 @@ How the many leaves stay easy to use:
 
 | Branch | IKS centres | Other leaves | All leaves |
 | --- | --- | --- | --- |
-| Veda & Darshana | 23 | 561 | 584 |
-| Language & Literature | 19 | 9 | 28 |
-| Arts & Aesthetics | 7 | 10 | 17 |
-| Health & Wellbeing | 19 | 6 | 25 |
-| Science & Technology | 25 | 16 | 41 |
-| Heritage & Manuscripts | 12 | 21 | 33 |
-| **Total** | **105** | **623** | **728** |
+| Veda & Darshana | 23 | 564 | 587 |
+| Language & Literature | 19 | 12 | 31 |
+| Arts & Aesthetics | 7 | 280 | 287 |
+| Health & Wellbeing | 19 | 9 | 28 |
+| Science & Technology | 25 | 39 | 64 |
+| Heritage & Manuscripts | 12 | 197 | 209 |
+| **Total** | **105** | **1,101** | **1,206** |
+
+The IKS Atlas added 477 leaves (temples, churches and other sacred sites and
+the performing arts and crafts mostly on Arts & Aesthetics; archaeological
+sites, forts, palaces, museums and archives on Heritage & Manuscripts;
+farming, water and boat-building traditions on Science & Technology), and
+IISH one (Science & Technology). Atlas entries from Kerala and from the rest
+of India sit on separate twigs.
 
 ## Every IKS centre is a leaf
 
