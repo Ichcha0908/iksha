@@ -532,6 +532,27 @@ h1 {
 .near-note { margin: 26px auto 0; max-width: 680px; color: var(--ink-faint); font-size: .84rem; }
 
 
+/* ---------- acknowledgments ---------- */
+.acks { max-width: 920px; margin: 72px auto 0; text-align: center; scroll-margin-top: 28px; }
+.acks-sa { margin: 0; font-family: var(--deva); color: var(--accent); }
+.acks h2 { margin: 2px 0 6px; font-family: var(--serif); font-weight: 400; font-size: clamp(1.5rem, 3vw, 2rem); }
+.acks-lede { margin: 0 auto; max-width: 640px; color: var(--ink-soft); }
+.acks-list {
+  list-style: none; margin: 22px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px;
+  text-align: left;
+}
+.ack {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 12px 15px;
+  border: 1px solid rgba(176, 132, 70, 0.35); border-radius: 12px;
+  background: rgba(255, 247, 232, 0.7);
+}
+.ack a, .ack b { color: var(--ink); font-weight: 500; text-decoration-color: var(--gold); }
+.ack span { color: var(--ink-faint); font-size: .86rem; line-height: 1.45; }
+.acks-note { margin: 16px 0 0; color: var(--ink-faint); font-size: .88rem; }
+.motion .acks { opacity: 0; }
+
 .foot { margin-top: 56px; text-align: center; }
 .verse { margin: 0; font-family: var(--deva); font-size: 1.35rem; color: var(--ink-soft); }
 .verse-tr { margin: 4px 0 0; color: var(--ink-faint); font-size: .92rem; }
@@ -685,6 +706,12 @@ h1 {
 .pd-people span { color: var(--ink-soft); }
 .pd-people small { display: block; margin-top: 2px; color: var(--ink-faint); font-size: .78rem; }
 .pd-empty { margin: 0; color: var(--ink-faint); font-size: .9rem; font-style: italic; }
+.pd-draft {
+  margin: 0 0 4px; padding: 10px 13px;
+  border: 1px dashed rgba(176, 132, 70, .6); border-radius: 10px;
+  background: #fff8ea; color: var(--ink-soft); font-size: .86rem; line-height: 1.5;
+}
+.pd-draft b { display: block; color: #8a4a14; font-weight: 500; }
 .pd-contact { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: .92rem; }
 .pd-contact dt { color: var(--ink-faint); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; padding-top: 2px; }
 .pd-contact dd { margin: 0; color: var(--ink); line-height: 1.45; overflow-wrap: anywhere; }

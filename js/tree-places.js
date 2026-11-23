@@ -31,6 +31,8 @@
   const t = I.t;
   const PLACES = window.IKS_PLACES || [];
   const STATE_ID = Object.fromEntries(window.INDIA_MAP.states.map(s => [s.name, s.id]));
+  // newer names for areas the (older) map outline draws inside another shape
+  Object.assign(STATE_ID, { "Ladakh": "jk", "Dadra and Nagar Haveli and Daman and Diu": "dn" });
   const branchById = Object.fromEntries(IKS.branches.map(b => [b.id, b]));
 
   /* twigs: the kinds of leaf a branch can carry (the featured IKS centres are "centres") */
@@ -41,7 +43,9 @@
     { id: "institutions", label: t("Institutions"), color: "#b0652a" },
     { id: "heritage", label: t("Heritage sites"), color: "#4b5aa8" },
     { id: "traditions", label: t("Living traditions"), color: "#c4517f" },
-    { id: "ayush", label: t("Āyurveda & Yoga"), color: "#4f8a4a" }
+    { id: "ayush", label: t("Āyurveda & Yoga"), color: "#4f8a4a" },
+    { id: "museums", label: t("Museums & archives"), color: "#6f7d2f" },
+    { id: "texts", label: t("Classical texts"), color: "#9a6b2f" }
   ];
 
   // the existing leaves are the featured IKS centres
@@ -75,6 +79,7 @@
     "Kohima": "heritage"
   };
   const branchFor = p => {
+    if (p.branch) return p.branch;   // js/places-atlas.js gives each entry its branch
     if (BRANCH_OF[p.name]) return BRANCH_OF[p.name];
     if (p.kind === "gurukul") return "veda";
     if (p.kind === "ayush") return "health";
@@ -86,6 +91,8 @@
     if (p.kind === "heritage") return "heritage";
     if (p.kind === "tradition") return "traditions";
     if (p.kind === "ayush") return "ayush";
+    if (p.kind === "museum" || p.kind === "archive") return "museums";
+    if (p.kind === "text") return "texts";
     if (p.source === "hindupedia" || p.source === "hmml") return "ori";
     return "institutions";
   };
@@ -110,7 +117,12 @@
     uem: [{ label: "IKS Centres across the World (iks.uem.edu.in)", url: "https://iks.uem.edu.in/iks-centres/" }],
     iksguru: [{ label: "iksguru.in: IKS resources and heritage map", url: "https://iksguru.in/resources" }],
     hindupedia: [{ label: "Hindupedia: Oriental Research Institutes of India", url: "https://www.hindupedia.com/en/Oriental_Research_Institutes_of_India" }],
-    hmml: [{ label: "HMML (Hill Museum & Manuscript Library): repositories in India", url: "https://hmml.org/collections/repositories/india/" }]
+    hmml: [{ label: "HMML (Hill Museum & Manuscript Library): repositories in India", url: "https://hmml.org/collections/repositories/india/" }],
+    iish: [
+      { label: "IISH: About IISH", url: "https://www.iish.org/about-iish/" },
+      { label: "IISH: Contact (its list of office-holders is out of date)", url: "https://www.iish.org/contact/" },
+      { label: "Organiser: Dr N Gopalakrishnan passes away (May 2023)", url: "https://organiser.org/2023/05/01/171869/bharat/scientist-dr-n-gopalakrishnan-a-dedicated-proponent-of-sanatan-dharma-passes-away" }
+    ]
   };
   const GURUKUL_SOURCES = [
     ["aaryasamaj.com", { label: "aaryasamaj.com: Gurukuls list", url: "https://www.aaryasamaj.com/gurukuls-list" }],
@@ -157,6 +169,7 @@
         && squash(hostEn) !== squash(p.name)) {
       leaf.activities.push(p.kind === "ayush" ? t("Campus: {host}", { host: p.host }) : t("Host / campus: {host}", { host: p.host }));
     }
+    if (p.source === "atlas") atlasLeaf(leaf, p);
     if (p.kind === "gurukul") {
       leaf.region = regionOf(p.state);
       leaf.activities.push(t("Listed in the gurukul directories as a gurukul or Veda pāṭhaśālā."));
@@ -170,6 +183,28 @@
       : p.kind === "heritage" || p.kind === "tradition" ? t("A public place: no office contact is listed.")
       : t("The source doesn't list a phone number or e-mail.");
     return leaf;
+  }
+
+  /* IKS Atlas entries: the Atlas's own text and links, marked as a draft */
+  const atlasSources = a => [
+    { label: t("IKS Atlas record {id} (draft, in review)", { id: a.id }), url: a.url },
+    { label: t("Source listed by the IKS Atlas (not yet checked by the Atlas)"), url: a.src }
+  ];
+  function atlasLeaf(leaf, p) {
+    const a = p.atlas;
+    leaf.type = t(a.group);
+    leaf.summary = p.full || p.about;
+    leaf.draft = true;
+    leaf.activities = [t("From the IKS Atlas, record {id}. The Atlas lists it as a draft in review.", { id: a.id })];
+    if (p.noMap) leaf.activities.push(p.kind === "text" ? t("A text, not a place, so it has no map location.")
+      : t("Its location couldn't be matched on OpenStreetMap, so it is shown by state."));
+    else if (p.approx) leaf.activities.push(t("Located at its town from OpenStreetMap; check the exact spot before visiting."));
+    if (p.kind === "museum" || p.kind === "archive" || p.kind === "institution") leaf.peopleNote = t("The IKS Atlas doesn't name the people who run it.");
+    if (p.kind === "text") leaf.peopleNote = t("A text, not an institution.");
+    leaf.contactNote = t("The IKS Atlas doesn't list contact details.");
+    leaf.sources = atlasSources(a);
+    // long Atlas lists: Kerala and the rest of India on separate twigs
+    leaf.region = a.id.startsWith("KER") ? "Kerala" : "Across India";
   }
 
   // the tree's existing leaves, by name, so no place is added twice
@@ -189,6 +224,15 @@
     const leaf = leafFrom(p);
     b.centres.push(leaf);
     p.leaf = leaf;
+  });
+
+  // Atlas records that are already on the site: add the Atlas link to that entry
+  const placeByName = new Map(PLACES.map(p => [squash(p.name), p]));
+  (window.IKS_ATLAS_SAME || []).forEach(({ name, atlas }) => {
+    const c = onTree.get(squash(name)) || (placeByName.get(squash(name)) || {}).leaf;
+    if (!c) return;
+    c.sources = (c.sources || []).concat(atlasSources(atlas));
+    c.atlas = atlas;
   });
 
   // where each leaf sits (branch index, leaf index), for links from other features

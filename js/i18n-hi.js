@@ -43,6 +43,21 @@ window.IKS_HI = {
         <a href="https://iksguru.in/" target="_blank" rel="noopener">iksguru.in</a>।`,
     verseTr: "“सत्य एक है; ज्ञानी उसे अनेक नामों से पुकारते हैं।”",
     close: "बंद करें",
+    acksTitle: "आभार",
+    acksLede: "यह साइट इन संस्थानों और परियोजनाओं द्वारा प्रकाशित जानकारी को एक साथ लाती है। इन सभी का धन्यवाद। हर पत्ता अपने ठीक-ठीक स्रोतों से जुड़ा है।",
+    acksNote: "कुछ पुराना दिखा? “जानकारी अपडेट सुझाएँ” का उपयोग करें।",
+    ack_iksDiv: "IKS केंद्रों की आधिकारिक सूची, उनके मेज़बान संस्थान और प्रधान अन्वेषक, और IKS का अर्थ।",
+    ack_atlas: "लगभग 480 धरोहर स्थल, जीवंत परंपराएँ, संग्रहालय, अभिलेखागार और ग्रंथ (वहाँ की प्रविष्टियाँ अभी समीक्षाधीन हैं)।",
+    ack_iish: "इसका काम, प्रकाशन और राष्ट्रीय धरोहर केंद्र।",
+    ack_uem: "भारत में स्थित IKS केंद्र और संस्थान।",
+    ack_iksguru: "धरोहर स्थल, जीवंत परंपराएँ और आयुर्वेद व योग संस्थान, नक्शे पर उनके स्थानों सहित।",
+    ack_hindupedia: "प्राच्य शोध संस्थान और पांडुलिपि पुस्तकालय।",
+    ack_hmml: "भारत के वे पांडुलिपि भंडार जिनका यह डिजिटलीकरण कर रहा है।",
+    ack_aarya: "गुरुकुल, उनके स्थान और सूचीबद्ध संपर्क।",
+    ack_vedic: "और गुरुकुल तथा वेद पाठशालाएँ, और गुरुकुल क्या होता है।",
+    ack_official: "नेतृत्व पेज, विवरणिकाएँ और वार्षिक रिपोर्टें, जो हर पत्ते में “स्रोत” के अंतर्गत जुड़ी हैं।",
+    ack_osm: "IKS एटलस के स्थानों की जगहें (डेटा © OpenStreetMap योगदानकर्ता, ODbL)।",
+    ack_svgmaps: "भारत के राज्यों का रूपरेखा नक्शा (CC BY 4.0)।",
     sibTitle: "इस शाखा के अन्य पत्ते"
   },
 
@@ -247,6 +262,36 @@ window.IKS_HI = {
     "Sending…": "भेजा जा रहा है…",
     "Too many updates from here just now; please try again in a while.": "अभी यहाँ से बहुत सारे अपडेट भेजे गए हैं; कृपया थोड़ी देर बाद फिर कोशिश करें।",
     "It couldn't be sent just now. Please try again in a few minutes.": "अभी यह भेजा नहीं जा सका। कृपया कुछ मिनट बाद फिर कोशिश करें।",
+
+    /* IKS Atlas and IISH entries (js/places-atlas.js) */
+    "Museums & archives": "संग्रहालय और अभिलेखागार",
+    "Classical texts": "शास्त्रीय ग्रंथ",
+    "Archaeology and architecture": "पुरातत्त्व और स्थापत्य",
+    "Built and community heritage": "निर्मित और सामुदायिक धरोहर",
+    "Museums and collections": "संग्रहालय और संग्रह",
+    "Archives and manuscripts": "अभिलेखागार और पांडुलिपियाँ",
+    "Digital archives": "डिजिटल अभिलेखागार",
+    "Research institutions": "शोध संस्थान",
+    "Kerala": "केरल",
+    "Across India": "पूरे भारत में",
+    "IKS Atlas": "IKS एटलस",
+    "IKS Atlas record {id}": "IKS एटलस प्रविष्टि {id}",
+    "IKS Atlas record {id} (draft, in review)": "IKS एटलस प्रविष्टि {id} (मसौदा, समीक्षाधीन)",
+    "Source listed by the IKS Atlas (not yet checked by the Atlas)": "IKS एटलस द्वारा दिया गया स्रोत (एटलस ने अभी इसकी जाँच नहीं की है)",
+    "From the IKS Atlas, record {id}. The Atlas lists it as a draft in review.": "IKS एटलस से, प्रविष्टि {id}। एटलस इसे समीक्षाधीन मसौदे के रूप में सूचीबद्ध करता है।",
+    "A text, not a place, so it has no map location.": "यह एक ग्रंथ है, कोई स्थान नहीं, इसलिए नक्शे पर इसका कोई स्थान नहीं है।",
+    "Its location couldn't be matched on OpenStreetMap, so it is shown by state.": "OpenStreetMap पर इसका स्थान नहीं मिल सका, इसलिए इसे राज्य के आधार पर दिखाया गया है।",
+    "Located at its town from OpenStreetMap; check the exact spot before visiting.": "OpenStreetMap से इसके शहर पर दिखाया गया है; जाने से पहले सटीक जगह की पुष्टि कर लें।",
+    "The IKS Atlas doesn't name the people who run it.": "IKS एटलस इसे चलाने वालों के नाम नहीं देता।",
+    "A text, not an institution.": "यह एक ग्रंथ है, कोई संस्थान नहीं।",
+    "The IKS Atlas doesn't list contact details.": "IKS एटलस संपर्क विवरण नहीं देता।",
+    "From the IKS Atlas (draft)": "IKS एटलस से (मसौदा)",
+    "This entry's description comes from the IKS Atlas, a collection still in review that hasn't checked its sources yet. Check before relying on it.":
+      "इस प्रविष्टि का विवरण IKS एटलस से है, जो अभी समीक्षाधीन संग्रह है और जिसने अपने स्रोतों की जाँच अभी नहीं की है। इस पर भरोसा करने से पहले पुष्टि कर लें।",
+    "(The description is in English.)": "(विवरण अंग्रेज़ी में है।)",
+    "(a draft in review; its descriptions and sources aren't verified yet)": "(समीक्षाधीन मसौदा; इसके विवरण और स्रोत अभी सत्यापित नहीं हैं)",
+    "(From the IKS Atlas, a draft in review.)": "(IKS एटलस से, समीक्षाधीन मसौदा।)",
+    "museums and archives": "संग्रहालय और अभिलेखागार",
 
     /* small leaves (js/tree-places.js) */
     "IKS & research centres": "IKS और शोध केंद्र",
@@ -516,6 +561,15 @@ window.IKS_HI = {
     "Descriptive catalogues of its manuscripts": "इसकी पांडुलिपियों की विवरणात्मक सूचियाँ",
     "Workshops in manuscriptology, palaeography and Telugu inscriptions": "पांडुलिपि-विज्ञान, पुरालिपि-विज्ञान और तेलुगु अभिलेखों पर कार्यशालाएँ",
     "Faculty (Telugu; epigraphy)": "संकाय सदस्य (तेलुगु; अभिलेख-विज्ञान)",
+
+    /* --- more places (js/places-atlas.js) --- */
+    "Museums & archives": "संग्रहालय और अभिलेखागार",
+    "Museum or archive": "संग्रहालय या अभिलेखागार",
+    "Charitable trust · National Heritage Centre": "धर्मार्थ न्यास · राष्ट्रीय धरोहर केंद्र",
+    "A charitable trust founded in August 1999 to study and teach India's scientific and cultural heritage through lectures, study classes, seminars, exhibitions and publications, including e-books on the four Vedas.":
+      "भारत की वैज्ञानिक और सांस्कृतिक धरोहर के अध्ययन और शिक्षण के लिए अगस्त 1999 में स्थापित धर्मार्थ न्यास, जो व्याख्यानों, अध्ययन कक्षाओं, संगोष्ठियों, प्रदर्शनियों और प्रकाशनों (चारों वेदों की ई-पुस्तकों सहित) के माध्यम से काम करता है।",
+    "Founded on Śrāvaṇa Pūrṇimā in August 1999 and registered as a charitable trust, IISH works to teach India's scientific, technological and cultural heritage, the Vedas, Vedāṅgas, Upavedas and darśanas, to a wide public. It publishes books, recordings and e-books (including the four Vedas), holds lectures, study classes, seminars, exhibitions, camps and study tours, and runs the National Heritage Centre at Mazhuvanchery near Thrissur. Its founder, the CSIR scientist Dr. N. Gopalakrishnan, died in April 2023.":
+      "अगस्त 1999 में श्रावण पूर्णिमा के दिन स्थापित और धर्मार्थ न्यास के रूप में पंजीकृत IISH भारत की वैज्ञानिक, प्रौद्योगिकीय और सांस्कृतिक धरोहर (वेद, वेदांग, उपवेद और दर्शन) को व्यापक जनता तक पहुँचाने का काम करता है। यह पुस्तकें, रिकॉर्डिंग और ई-पुस्तकें (चारों वेदों सहित) प्रकाशित करता है; व्याख्यान, अध्ययन कक्षाएँ, संगोष्ठियाँ, प्रदर्शनियाँ, शिविर और अध्ययन यात्राएँ आयोजित करता है; और त्रिशूर के पास मळुवंचेरी में राष्ट्रीय धरोहर केंद्र चलाता है। इसके संस्थापक, CSIR वैज्ञानिक डॉ. एन. गोपालकृष्णन, का अप्रैल 2023 में निधन हो गया।",
 
     /* --- place descriptions (js/places.js) --- */
     "IIT Kharagpur's centre for teaching and research in Indian Knowledge Systems.": "भारतीय ज्ञान प्रणाली में अध्यापन और शोध के लिए IIT खड़गपुर का केंद्र।",

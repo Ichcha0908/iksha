@@ -59,7 +59,7 @@
     if (p.ref && leafNames.has(fold(p.ref))) return; // the leaf already covers it
     DOCS.push({
       type: "place", p, name: p.name, city: p.city, state: p.state,
-      text: [p.name, p.host, p.city, p.state, stateName(p.state), p.study, p.about, p.en ? p.en.about : "", (A.kindOf(p.kind) || {}).label, p.kind,
+      text: [p.name, p.host, p.city, p.state, stateName(p.state), p.study, p.about, p.full, p.en ? p.en.about : "", (A.kindOf(p.kind) || {}).label, p.kind,
         p.lead ? p.lead.name : "", p.founded ? "founded " + p.founded : ""].join(" ")
     });
   });
@@ -128,9 +128,10 @@
     { re: /gurukul|gurukula|pathashala|patashala|pathasala|veda school|vedic school|vidyalaya|गुरुकुल|पाठशाला|विद्यालय/, kinds: ["gurukul"], label: "gurukuls" },
     { re: /ayurved|ayush|unani|siddha|medicine|health|wellbeing|wellness|yoga|आयुर्वेद|योग|स्वास्थ्य|यूनानी|चिकित्सा|आयुष/, kinds: ["ayush"], branch: "health", label: "Āyurveda, Yoga and health places",
       alsoKinds: ["centre", "institution"], alsoText: /ayurved|yoga|unani|siddha|medic|health|wellbeing|ayush|rasayana|vrikshayurved/ },
-    { re: /manuscript|library|libraries|archive|oriental|पांडुलिपि|पाण्डुलिपि|पुस्तकालय|प्राच्य|अभिलेखागार/, kinds: ["institution"], text: /manuscript|library|oriental/, branch: "heritage", label: "manuscript libraries and oriental institutes" },
-    { re: /temple|heritage site|observatory|monument|ancient universit|nalanda|मंदिर|मन्दिर|धरोहर|विरासत|वेधशाला|स्मारक|नालंदा/, kinds: ["heritage"], label: "heritage sites" },
-    { re: /tradition|craft|tribal|stepwell|परंपरा|परम्परा|शिल्प|जनजाति|आदिवासी|बावड़ी|बावडी/, kinds: ["tradition"], label: "living traditions" },
+    { re: /museum|gallery|संग्रहालय|वीथिका/, kinds: ["museum", "archive"], label: "museums and archives" },
+    { re: /manuscript|library|libraries|archive|oriental|पांडुलिपि|पाण्डुलिपि|पुस्तकालय|प्राच्य|अभिलेखागार/, kinds: ["institution", "archive"], text: /manuscript|library|oriental|archive/, branch: "heritage", label: "manuscript libraries and oriental institutes" },
+    { re: /temple|heritage site|observatory|monument|ancient universit|nalanda|fort|palace|cave|stupa|monaster|church|mosque|synagogue|archaeolog|excavat|मंदिर|मन्दिर|धरोहर|विरासत|वेधशाला|स्मारक|नालंदा|किला|किले|महल|गुफा|स्तूप|मठ/, kinds: ["heritage"], label: "heritage sites" },
+    { re: /tradition|craft|tribal|stepwell|dance|music|theatre|theater|weaving|painting|puppet|farming|परंपरा|परम्परा|शिल्प|जनजाति|आदिवासी|बावड़ी|बावडी|नृत्य|संगीत|बुनाई|चित्रकला|खेती/, kinds: ["tradition"], label: "living traditions" },
     { re: /iks cent|iks division|research cent|iit|universit|iks केंद्र|iks केन्द्र|शोध केंद्र|अनुसंधान केंद्र|विश्वविद्यालय/, kinds: ["centre", "institution"], leaves: true, label: "IKS centres and institutions" }
   ];
   KIND_WORDS.forEach(k => { k.re = new RegExp(k.re.source.split("|").map(fold).join("|")); });
@@ -171,7 +172,8 @@
     if (d.p.ref && A.CENTRE_BY_NAME[d.p.ref]) return A.CENTRE_BY_NAME[d.p.ref].summary;
     const squash = v => fold(v).replace(/[^a-z0-9]/g, "");
     const study = d.p.study && squash(d.p.study) !== squash(d.p.name) ? d.p.study : "";
-    return (d.p.founded ? t("Founded {year}.", { year: d.p.founded }) + " " : "") + [study, d.p.about, d.p.pillars].filter(Boolean).join(" ");
+    if (d.p.source === "atlas") return `${d.p.full || d.p.about} ${t("(From the IKS Atlas, a draft in review.)")}`;
+    return (d.p.founded ? t("Founded {year}.", { year: d.p.founded }) + " " : "") + [study, d.p.full || d.p.about, d.p.pillars].filter(Boolean).join(" ");
   }
   function actionsFor(d) {
     const acts = [];
@@ -363,7 +365,7 @@
   function recordOf(d) {
     const lead = leadOf(d), k = contactOf(d);
     const src = d.type === "leaf" ? (d.c.sources || []).map(s => s.url).slice(0, 2).join(" ")
-      : ({ iksindia: "iksindia.org", uem: "iks.uem.edu.in", iksguru: "iksguru.in", tree: "this site", gurukul: k.listedBy, hindupedia: "hindupedia.com", hmml: "hmml.org" })[d.p.source] || "";
+      : ({ iksindia: "iksindia.org", uem: "iks.uem.edu.in", iksguru: "iksguru.in", tree: "this site", gurukul: k.listedBy, hindupedia: "hindupedia.com", hmml: "hmml.org", iish: "iish.org", atlas: d.p.atlas ? `IKS Atlas ${d.p.atlas.id} (draft, unverified); its listed source: ${d.p.atlas.src}` : "" })[d.p.source] || "";
     return {
       name: d.name, kind: d.type === "leaf" ? `${d.b.name} centre` : d.p.kind, location: loc(d),
       about: aboutOf(d), person_in_charge: lead ? `${lead.name}, ${lead.role}` : undefined,

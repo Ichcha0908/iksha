@@ -16,6 +16,14 @@ An interactive 3D "Tree of Knowledge" for Indian Knowledge Systems (IKS).
   its leaf up on the tree. With no branch chosen, the finder searches all 728
   leaves. It is keyboard friendly and works without WebGL.
 
+## Acknowledgments
+
+The **Acknowledgments** section at the bottom of the page lists the main
+sources (the IKS Division, the IKS Atlas, IISH, UEM Kolkata's IKS list,
+iksguru.in, Hindupedia, HMML, the two gurukul directories, the centres'
+official sites, OpenStreetMap and the svg-maps outline of India), each with a
+line on what was taken from it. Every leaf also lists its own sources.
+
 ## Suggest an update (feedback)
 
 The **Suggest an update** button (bottom left, and in every leaf's panel and
@@ -82,6 +90,8 @@ Places live in `js/places.js`, generated from:
 | [iksindia.org](https://iksindia.org/) | The IKS Division's list of IKS centres (89 after removing duplicates). The list gives institute and state but no address, so each centre is placed at its campus, or at its city when marked *approx.* Seven centres whose town couldn't be verified are left out. |
 | [iks.uem.edu.in](https://iks.uem.edu.in/iks-centres/) | "IKS Centres across the World": the six with a physical site in India. |
 | [iksguru.in](https://iksguru.in/) | Heritage map (ancient universities, observatories, temples, seats of learning), regional living traditions and AYUSH institutes, with the site's coordinates. Places outside India are left out. |
+| [IKS Atlas](https://iks-atlas.vercel.app/) | About 475 heritage places, living traditions, museums, archives, research institutions and texts (Kerala and across India). The Atlas marks every record as a draft in review whose source it hasn't checked, so the site labels them "From the IKS Atlas (draft)" and links each to its Atlas record and the source the Atlas lists; descriptions are the Atlas's own (English only). About 23 records already on the site add their Atlas link to that entry instead. Locations from [OpenStreetMap](https://www.openstreetmap.org/copyright) (Nominatim); Those that couldn't be matched (and the texts) are on the tree and in the chatbot by state but not in "near me". |
+| [IISH](https://www.iish.org/) | The Indian Institute of Scientific Heritage, Thrissur, from its About and Contact pages. Its listed Director and founder, Dr. N. Gopalakrishnan, died in April 2023 ([Organiser](https://organiser.org/2023/05/01/171869/bharat/scientist-dr-n-gopalakrishnan-a-dedicated-proponent-of-sanatan-dharma-passes-away)), so no person in charge is named. |
 | [sanskritdocuments.org](https://sanskritdocuments.org/sites/), [Scribd](https://www.scribd.com/) lists | Not used: these sites block automated access (Scribd requires a signed-in browser). |
 
 None of the sources lists dated, located events (the IKS Division's
@@ -272,6 +282,7 @@ id such as `ka` (Karnataka) or `dl` (Delhi); the full list is in
 | `css/style.css` | Styling, colours, frame and panel |
 | `js/app.js` | 3D tree (three.js), interaction, map and panel |
 | `js/data.js` | Branches, centres, map pin positions and place-kind colours |
+| `js/places-atlas.js` | IKS Atlas and IISH entries (generated) |
 | `js/places.js` | Places for "Find IKS places near me" (with sources) |
 | `js/tree-centres.js` | Leaves for every IKS centre in the database (generated) |
 | `js/tree-places.js` | Adds every other place as a small leaf on its branch |

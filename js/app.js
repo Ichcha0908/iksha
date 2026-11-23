@@ -411,7 +411,9 @@
       }
     }
     map.current = path;
-    const [x, y] = ANCHORS[stateId] || [306, 348];
+    // no state on record (e.g. a classical text): no pin
+    if (!ANCHORS[stateId]) { map.pinLayer.innerHTML = ""; return; }
+    const [x, y] = ANCHORS[stateId];
     const name = stateName(STATE_NAMES[stateId] || "");
     const right = x < 430;
     map.pinLayer.innerHTML = `
@@ -463,6 +465,10 @@
   /** structured detail sections for a centre's panel */
   function centreDetails(c) {
     const out = [];
+    // entries from the IKS Atlas are drafts there: say so first
+    if (c.draft) {
+      out.push(`<p class="pd-draft"><b>${t("From the IKS Atlas (draft)")}</b> ${t("This entry's description comes from the IKS Atlas, a collection still in review that hasn't checked its sources yet. Check before relying on it.")}${I18N.hi ? " " + t("(The description is in English.)") : ""}</p>`);
+    }
     if (c.activities && c.activities.length) {
       out.push(`<section class="pd-section"><h3>${t("What happens here")}</h3>
         <ul class="pd-list">${c.activities.map(a => `<li>${esc(a)}</li>`).join("")}</ul></section>`);
@@ -1591,6 +1597,7 @@
       return "https://www.google.com/maps/dir/?" + q.toString();
     }
     function infoUrl(p) {
+      if (p.atlas) return p.atlas.url;
       if (p.url) return p.url;
       return "https://www.google.com/search?" + new URLSearchParams({ q: `${p.name} ${p.host || ""} ${p.city}` }).toString();
     }
@@ -1679,6 +1686,7 @@
         html += `<p class="sc-none">${p.source === "iksindia"
           ? t("The IKS Division doesn't publish phone numbers or e-mails for its centres.")
           : p.source === "gurukul" ? t("The gurukul directories don't list a phone number for it.")
+          : p.source === "atlas" ? t("The IKS Atlas doesn't list contact details.")
           : t("The source doesn't list a phone number or e-mail.")}
           <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">${lead ? t("Search for {name}'s contact", { name: esc(lead.name) }) : t("Search for their contact")}</a>.</p>`;
       }
@@ -1701,6 +1709,8 @@
             .map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${n}</a>`).join(t(" and ")) + t(" (directory listings may be out of date; confirm before visiting)")
         : p.source === "hindupedia" ? `<a href="https://www.hindupedia.com/en/Oriental_Research_Institutes_of_India" target="_blank" rel="noopener">Hindupedia: Oriental Research Institutes of India</a>`
         : p.source === "hmml" ? `<a href="https://hmml.org/collections/repositories/india/" target="_blank" rel="noopener">${t("HMML repository list")}</a>`
+        : p.source === "atlas" ? `<a href="${esc(p.atlas.url)}" target="_blank" rel="noopener">${t("IKS Atlas record {id}", { id: esc(p.atlas.id) })}</a> ${t("(a draft in review; its descriptions and sources aren't verified yet)")}`
+        : p.source === "iish" ? `<a href="https://www.iish.org/contact/" target="_blank" rel="noopener">iish.org</a>`
         : `<a href="https://iksguru.in/" target="_blank" rel="noopener">iksguru.in</a>`;
       html += `<p class="sc-source">${t("Source: {src}.", { src: srcLine })}</p>`;
       html += `<p class="sc-source"><button type="button" class="sc-suggest" data-feedback="${esc(p.name)}">${t("Suggest an update")}</button></p>`;
@@ -1713,7 +1723,7 @@
       const where = [p.host && p.kind !== "tradition" ? esc(p.host) : null,
         [p.city !== p.state ? esc(p.city) : null, esc(stateName(p.state))].filter(Boolean).join(", ")]
         .filter(Boolean).join(" · ");
-      const info = p.url ? t("Website") : t("Learn more");
+      const info = p.atlas ? t("IKS Atlas") : p.url ? t("Website") : t("Learn more");
       const study = studyText(p);
       const id = `spot-contact-${++cardSeq}`;
       return `
@@ -1724,7 +1734,7 @@
           </div>
           <h3>${esc(p.name)}</h3>
           <p class="place-host">${where}${p.approx ? `<span class="approx" title="${t("Shown at the city centre: the source gives no street address")}">${t("approx.")}</span>` : ""}</p>
-          ${study ? `<p class="place-about"><span class="spot-label">${p.kind === "heritage" || p.kind === "tradition" ? t("What it is") : t("What they study")}</span>${esc(study)}</p>` : ""}
+          ${study ? `<p class="place-about"><span class="spot-label">${["heritage", "tradition", "museum", "archive", "text"].includes(p.kind) ? t("What it is") : t("What they study")}</span>${esc(study)}</p>` : ""}
           ${contactBlock(p, id)}
           <div class="place-actions">
             <a class="near-btn primary" style="--c:${k.color}" href="${esc(directionsUrl(p))}" target="_blank" rel="noopener">
@@ -1903,6 +1913,10 @@
     }, once);
     inView(".branch-info", el => { reveal([el], { y: 24, duration: 0.8 }); }, once);
     inView(".nearby", el => { reveal([el], { y: 24, duration: 0.8 }); }, { amount: 0.1 });
+    inView(".acks", el => {
+      reveal([el], { y: 24, duration: 0.8 });
+      reveal(el.querySelectorAll(".ack"), { delay: 0.25, gap: 0.04, y: 12, duration: 0.5 });
+    }, { amount: 0.1 });
     inView(".foot", el => { reveal(Array.from(el.children), { gap: 0.14, y: 14, duration: 0.9 }); }, { amount: 0.5 });
   }
 
