@@ -16,6 +16,17 @@ An interactive 3D "Tree of Knowledge" for Indian Knowledge Systems (IKS).
   its leaf up on the tree. With no branch chosen, the finder searches all 728
   leaves. It is keyboard friendly and works without WebGL.
 
+## Suggest an update (feedback)
+
+The **Suggest an update** button (bottom left, and in every leaf's panel and
+"near me" card) opens a short form for corrections and new information:
+which entry, what kind of update, the details, a source link, and an
+optional name and contact. Submissions go to the Cloudflare Worker in
+`server/` and are stored there; the editors download them as a CSV and check
+each one against its source before changing the data. Setup:
+[`server/README.md`](server/README.md) → Feedback. The form is in
+`js/feedback.js`.
+
 ## Hindi / English
 
 The **हिन्दी** button at the top right shows the whole site in Hindi (the
@@ -265,6 +276,7 @@ id such as `ka` (Karnataka) or `dl` (Delhi); the full list is in
 | `js/tree-centres.js` | Leaves for every IKS centre in the database (generated) |
 | `js/tree-places.js` | Adds every other place as a small leaf on its branch |
 | `js/i18n.js`, `js/i18n-hi.js` | Language switch and the Hindi text |
+| `js/feedback.js` | The "Suggest an update" form |
 | `js/cities.js` | Cities a visitor can search from |
 | `js/chat.js` | The chatbot (built-in answers; optional AI mode) |
 | `js/chat-config.js` | Chatbot setting: the AI Worker's address, if any |

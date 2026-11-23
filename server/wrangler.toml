@@ -13,3 +13,11 @@ ALLOWED_ORIGINS = "https://ichcha0908.github.io"
 # Optional: "off" stops Claude from searching the web (answers then come from
 # the site's data and Claude's own knowledge only).
 # WEB_SEARCH = "off"
+
+# Feedback storage (visitors' corrections and new information).
+# Create it once with:  npx wrangler kv namespace create FEEDBACK
+# then paste the id it prints below and remove the # signs.
+# [[kv_namespaces]]
+# binding = "FEEDBACK"
+# id = "paste-the-id-here"
+

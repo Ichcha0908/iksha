@@ -812,6 +812,68 @@ h1 {
   .cb-panel { position: fixed; left: 8px; right: 8px; bottom: 8px; width: auto; height: min(78vh, 640px); }
 }
 
+/* ---------- suggest an update (js/feedback.js) ---------- */
+.fb-fab {
+  position: fixed; z-index: 30;
+  left: calc(var(--frame-inset) + 22px); bottom: calc(var(--frame-inset) + 22px);
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 11px 17px 11px 13px;
+  border: 1px solid rgba(176, 132, 70, 0.55); border-radius: 999px;
+  background: rgba(255, 247, 232, 0.95); color: var(--ink);
+  font: 500 .92rem var(--sans); cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0) 0 0 0 -10px;
+  opacity: 0;
+}
+.fb-fab svg, .pd-suggest svg { width: 18px; height: 18px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
+.fb-scrim { position: fixed; inset: 0; z-index: 40; background: rgba(63, 36, 20, .28); }
+.fb-panel {
+  position: fixed; z-index: 41;
+  left: 50%; top: 50%; translate: -50% -50%;
+  width: min(600px, calc(100vw - 32px)); max-height: calc(100vh - 48px);
+  overflow-y: auto; overscroll-behavior: contain;
+  padding: 30px 30px 24px;
+  border: 1px solid rgba(176, 132, 70, 0.55); border-radius: 14px;
+  background: var(--card);
+  box-shadow: inset 0 0 0 5px var(--card), inset 0 0 0 6px rgba(176, 132, 70, 0.28), rgba(70, 40, 10, .45) 0 30px 60px -28px;
+}
+.fb-close { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid rgba(176, 132, 70, .4); border-radius: 50%; background: var(--card); cursor: pointer; }
+.fb-close svg { width: 14px; height: 14px; stroke: var(--ink); stroke-width: 1.8; fill: none; stroke-linecap: round; }
+.fb-kicker { margin: 0; font-family: var(--deva); color: var(--accent); }
+.fb-panel h2 { margin: 2px 0 6px; font-family: var(--serif); font-weight: 400; font-size: 1.6rem; color: var(--ink); }
+.fb-lede { margin: 0 0 16px; color: var(--ink-soft); font-size: .95rem; }
+.fb-form { display: flex; flex-direction: column; gap: 12px; }
+.fb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; }
+.fb-field { display: flex; flex-direction: column; gap: 5px; }
+.fb-field > span { font-size: .86rem; color: var(--ink-soft); }
+.fb-field i { font-style: normal; color: var(--ink-faint); }
+.fb-field b { color: var(--accent); font-weight: 500; }
+.fb-field input, .fb-field select, .fb-field textarea {
+  width: 100%; padding: 10px 13px;
+  border: 1px solid rgba(176, 132, 70, .45); border-radius: 10px;
+  background: #fffaf0; color: var(--ink); font: .95rem var(--sans);
+}
+.fb-field textarea { resize: vertical; min-height: 110px; line-height: 1.5; }
+.fb-field input::placeholder, .fb-field textarea::placeholder { color: var(--ink-faint); }
+.fb-field input:focus-visible, .fb-field select:focus-visible, .fb-field textarea:focus-visible { outline: 2px solid var(--ink-soft); outline-offset: 1px; }
+.fb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.fb-privacy { margin: 2px 0 0; font-size: .8rem; color: var(--ink-faint); }
+.fb-status { min-height: 1.2em; margin: 0; font-size: .88rem; color: #9a3d12; }
+.fb-status a { color: inherit; }
+.fb-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.fb-actions .near-btn { width: auto; }
+.fb-send:disabled { opacity: .5; cursor: not-allowed; }
+.fb-done { padding: 8px 0 4px; color: var(--ink-soft); }
+.fb-thanks { margin: 0 0 4px; font-family: var(--serif); font-size: 1.4rem; color: var(--ink); }
+.pd-feedback { margin: 18px 0 0; padding-top: 14px; border-top: 1px dashed var(--gold-line); font-size: .88rem; color: var(--ink-faint); display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.pd-suggest { width: auto; display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; font-size: .88rem; cursor: pointer; }
+.sc-suggest { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-decoration: underline; text-decoration-color: var(--c); cursor: pointer; }
+@media (max-width: 720px) {
+  .fb-fab { left: 14px; bottom: 14px; padding: 12px; }
+  .fb-fab span { display: none; }
+  .fb-panel { padding: 24px 18px 18px; max-height: calc(100vh - 24px); width: calc(100vw - 16px); }
+  .fb-row { grid-template-columns: 1fr; }
+}
+
 /* ---------- starting state for Motion reveals ----------
    <html> gets .motion from an inline script in the <head>; app.js removes
    it again if Motion fails to load, so content never stays hidden. */

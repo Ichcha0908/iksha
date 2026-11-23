@@ -283,3 +283,12 @@ Motion, exposed as `window.Motion`.
 - The हिन्दी / English button stays fixed at the top right, below the panel
   and its scrim. Test both languages at 1440×900 and 390×844.
 
+## Suggest an update (feedback)
+
+- The feedback button sits fixed at the bottom left (the chatbot is bottom
+  right); on phones both are icon-only. Leaf panels end with "Suggest an
+  update", which opens the form with the entry filled in (`data-feedback`).
+- Visitor submissions never change the site by themselves: an editor checks
+  each against its source, then updates the data with the usual sourcing and
+  contact rules.
+

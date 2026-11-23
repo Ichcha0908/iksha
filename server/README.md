@@ -89,6 +89,57 @@ your OpenRouter API key (`sk-or-v1-…`) and Node.js 18 or newer.
 
    Commit and publish the site. The chat window now says it answers with AI.
 
+## Feedback ("Suggest an update")
+
+The same Worker stores what visitors send with the site's **Suggest an
+update** button (bottom left, and in every leaf's panel): which entry, what
+kind of update, the details, a source link, and optionally their name and
+an e-mail or phone. Submissions are kept in a free Cloudflare **KV**
+store. To switch it on (once, after the deploy steps above), in this
+`server` folder:
+
+1. Create the store:
+
+   ```bash
+   npx wrangler kv namespace create FEEDBACK
+   ```
+
+   It prints an `id`. In `wrangler.toml`, remove the `#` signs from the
+   `[[kv_namespaces]]` lines at the bottom and paste that id.
+
+2. Choose a password for downloading the submissions (a long random phrase),
+   and store it as a secret:
+
+   ```bash
+   npx wrangler secret put ADMIN_KEY
+   ```
+
+3. Deploy again:
+
+   ```bash
+   npm run deploy
+   ```
+
+To read the submissions, open this address in your browser (your Worker's
+address and your password):
+
+`https://iks-chat.<your-account>.workers.dev/feedback.csv?key=<your password>`
+
+It downloads `iks-feedback.csv` (newest first), which opens in Excel or
+Google Sheets. You can also browse them in the Cloudflare dashboard →
+Storage & Databases → KV → FEEDBACK. Keep the password private; anyone with
+it can read the submissions, including visitors' contact details.
+
+Built in: only your site can submit (`ALLOWED_ORIGINS`), about 6 submissions
+per visitor per hour, length limits on every field, and a hidden field that
+quietly drops most spam bots. Nothing visitors send is published
+automatically: check each update against its source before changing the
+data. Cloudflare's free plan allows 1,000 new submissions and 100,000 reads a
+day.
+
+Until the Worker's address is in `js/chat-config.js`, the form opens but
+says it isn't connected yet.
+
 If the Worker is unreachable or returns an error, the chatbot shows its
 built-in answer instead, so the site keeps working.
 

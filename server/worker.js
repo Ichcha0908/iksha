@@ -12,6 +12,12 @@
                          e.g. "https://ichcha0908.github.io"
      MODEL               optional; defaults to anthropic/claude-sonnet-5.5
      WEB_SEARCH          optional; "off" turns off web search
+
+   Feedback (visitors' corrections and new information):
+     POST /feedback      stores one submission in the FEEDBACK KV namespace
+     GET  /feedback.csv?key=ADMIN_KEY   downloads every submission as CSV
+     FEEDBACK            KV namespace binding (see wrangler.toml)
+     ADMIN_KEY           (secret) password for the CSV download
    ============================================================= */
 const SYSTEM = `You are Jñāna Sahāyaka, the assistant on a website about Indian Knowledge Systems (IKS): its centres, oriental research institutes, manuscript libraries, gurukuls and heritage places. Visitors may ask anything; help them well.
 
@@ -83,8 +89,78 @@ function cleanHistory(history) {
   return out;
 }
 
+/* ---------------- feedback ---------------- */
+
+// best-effort per-isolate limit: 6 submissions per IP per hour
+const fbHits = new Map();
+function fbLimited(ip) {
+  const now = Date.now(), win = 60 * 60 * 1000;
+  const list = (fbHits.get(ip) || []).filter(t => now - t < win);
+  list.push(now);
+  fbHits.set(ip, list);
+  return list.length > 6;
+}
+const clip = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+
+async function saveFeedback(request, env, cors) {
+  if (!env.FEEDBACK) return json({ error: "Feedback storage is not set up yet." }, 503, cors);
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  if (fbLimited(ip)) return json({ error: "Too many submissions; please try again later." }, 429, cors);
+  let body;
+  try { body = await request.json(); } catch { return json({ error: "Invalid JSON." }, 400, cors); }
+  // a hidden field people never fill in: bots that fill it get a quiet "ok"
+  if (clip(body?.website, 200)) return json({ ok: true }, 200, cors);
+  const rec = {
+    at: new Date().toISOString(),
+    entry: clip(body?.entry, 200),
+    kind: clip(body?.kind, 80),
+    message: clip(body?.message, 3000),
+    source: clip(body?.source, 500),
+    name: clip(body?.name, 120),
+    contact: clip(body?.contact, 200),
+    page: clip(body?.page, 300),
+    lang: body?.lang === "hi" ? "hi" : "en"
+  };
+  if (rec.message.length < 10) return json({ error: "Please describe the update in a few words." }, 400, cors);
+  const key = `${rec.at}_${crypto.randomUUID().slice(0, 8)}`;
+  await env.FEEDBACK.put(key, JSON.stringify(rec), { metadata: { entry: rec.entry.slice(0, 100), kind: rec.kind } });
+  return json({ ok: true }, 200, cors);
+}
+
+/** every submission as CSV, newest first; needs ?key=ADMIN_KEY */
+async function exportFeedback(url, env) {
+  const key = url.searchParams.get("key") || "";
+  if (!env.ADMIN_KEY || !env.FEEDBACK || key !== env.ADMIN_KEY) return new Response("Not allowed.", { status: 403 });
+  const keys = [];
+  let cursor;
+  do {
+    const page = await env.FEEDBACK.list({ cursor });
+    keys.push(...page.keys.map(k => k.name));
+    cursor = page.list_complete ? null : page.cursor;
+  } while (cursor);
+  keys.sort().reverse();
+  const cols = ["at", "entry", "kind", "message", "source", "name", "contact", "lang", "page"];
+  // quote every cell; a leading = + - @ is neutralised so spreadsheets don't run it as a formula
+  const cell = v => `"${String(v ?? "").replace(/^([=+\-@])/, "'$1").replace(/"/g, '""')}"`;
+  const rows = [cols.join(",")];
+  for (const k of keys) {
+    const rec = await env.FEEDBACK.get(k, "json");
+    if (rec) rows.push(cols.map(c => cell(rec[c])).join(","));
+  }
+  return new Response("\ufeff" + rows.join("\r\n"), {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": 'attachment; filename="iks-feedback.csv"',
+      "Cache-Control": "no-store"
+    }
+  });
+}
+
 export default {
   async fetch(request, env) {
+    const url = new URL(request.url);
+    if (request.method === "GET" && url.pathname === "/feedback.csv") return exportFeedback(url, env);
+
     const origin = request.headers.get("Origin") || "";
     const allowed = (env.ALLOWED_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
     const allowOrigin = allowed.length === 0 ? "*" : allowed.includes(origin) ? origin : "";
@@ -93,6 +169,7 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     if (request.method !== "POST") return json({ error: "Use POST." }, 405, cors);
     if (!allowOrigin) return json({ error: "This site is not allowed to use the chatbot service." }, 403, cors);
+    if (url.pathname === "/feedback") return saveFeedback(request, env, cors);
     if (!env.OPENROUTER_API_KEY) return json({ error: "The chatbot service is not configured." }, 500, cors);
 
     const ip = request.headers.get("CF-Connecting-IP") || "unknown";
