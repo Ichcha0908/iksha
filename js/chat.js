@@ -194,7 +194,7 @@
   }
   function listAnswer(intro, docs, more = "") {
     return {
-      html: `<p>${intro}</p><ul class="cb-list">${docs.map(x => `<li>${itemLine(x.d || x, x.dist != null ? " · " + t("{n} km", { n: Math.round(x.dist) }) : "")}</li>`).join("")}</ul>${more}`,
+      html: `<p>${intro}</p><ul class="cb-list">${docs.map(x => `<li>${itemLine(x.d || x, x.dist != null && !(x.d.p.approx && (x.dist < 3 || (A.stateOnly && A.stateOnly(x.d.p)))) ? " · " + esc(A.distInfo ? A.distInfo(x.d.p, x.dist).main : t("{n} km", { n: Math.round(x.dist) })) : "")}</li>`).join("")}</ul>${more}`,
       picks: docs.map(x => x.d || x)
     };
   }
@@ -301,7 +301,8 @@
     if (city && (NEAR.test(f) || !state || fold(city.name) !== fold(state))) {
       const r = radius || 60;
       const hits = DOCS.filter(d => d.type === "place" && !d.p.noMap && matchesKind(d, kind))
-        .map(d => ({ d, dist: A.km(city, d.p) })).filter(x => x.dist <= r).sort((a, b) => a.dist - b.dist);
+        .map(d => ({ d, dist: A.km(city, d.p) })).filter(x => x.dist <= r)
+        .sort((a, b) => (A.stateOnly ? A.stateOnly(a.d.p) - A.stateOnly(b.d.p) : 0) || a.dist - b.dist);
       // leaves in that city too
       const leaves = DOCS.filter(d => d.type === "leaf" && matchesKind(d, kind) && fold(d.city).includes(fold(city.name)));
       const all = leaves.map(d => ({ d, dist: 0 })).concat(hits);

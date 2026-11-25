@@ -493,7 +493,8 @@ h1 {
   font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft);
 }
 .place-kind .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
-.place-dist { font-family: var(--serif); font-size: 1.05rem; color: var(--ink); white-space: nowrap; }
+.place-dist { font-family: var(--serif); font-size: 1.05rem; color: var(--ink); white-space: nowrap; text-align: right; }
+.place-dist small { display: block; font: .74rem var(--sans); color: var(--ink-faint); }
 .spot h3 { margin: 2px 0 0; font-family: var(--serif); font-weight: 400; font-size: 1.18rem; line-height: 1.25; }
 .place-host { margin: 0; color: var(--ink-soft); font-size: .9rem; line-height: 1.4; }
 .place-host .approx {

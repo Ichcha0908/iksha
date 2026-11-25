@@ -322,6 +322,14 @@ window.IKS_HI = {
     "Contact details as listed by {who}. Directory listings can be out of date, so confirm before visiting.": "संपर्क विवरण {who} में दिए अनुसार। निर्देशिका की जानकारी पुरानी हो सकती है, इसलिए जाने से पहले पुष्टि कर लें।",
     "A public place: no office contact is listed.": "यह एक सार्वजनिक स्थान है: कोई कार्यालय संपर्क सूचीबद्ध नहीं है।"
 ,
+    "< 0.1 km": "< 0.1 किमी",
+    "Its exact spot isn't listed, so it is placed at the centre of {town}.": "इसका सटीक स्थान सूचीबद्ध नहीं है, इसलिए इसे {town} के केंद्र में दिखाया गया है।",
+    "Somewhere in {state}": "{state} में कहीं",
+    "town not listed": "शहर सूचीबद्ध नहीं",
+    "The source names only the state, not the town.": "स्रोत में केवल राज्य का नाम है, शहर का नहीं।",
+    "In {town}": "{town} में",
+    "exact spot not listed": "सटीक स्थान सूचीबद्ध नहीं",
+    "to {town} centre": "{town} के केंद्र तक",
     // List your organisation (js/listing.js) and listed organisations
     "List your organisation": "अपनी संस्था जोड़ें",
     "Tell us about an IKS centre, gurukul, institute, museum, heritage site or living tradition that isn't on the site yet. An editor checks every request against its website before it is added, usually within a few days.": "किसी ऐसे IKS केंद्र, गुरुकुल, संस्थान, संग्रहालय, धरोहर स्थल या जीवंत परंपरा के बारे में बताएँ जो अभी साइट पर नहीं है। जोड़ने से पहले एक संपादक हर अनुरोध को उसकी वेबसाइट से जाँचते हैं, आम तौर पर कुछ दिनों में।",

@@ -1584,7 +1584,24 @@
       const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
       return 2 * 6371 * Math.asin(Math.sqrt(h));
     }
-    const fmtKm = d => t("{n} km", { n: d < 10 ? d.toFixed(1) : Math.round(d) });
+    const fmtKm = d => (d < 0.05 ? t("< 0.1 km") : t("{n} km", { n: d < 10 ? d.toFixed(1) : Math.round(d) }));
+    /* How far away a place is. Places marked "approx" are pinned at their town's
+       centre (the source gives no address), so their distance is really to that
+       centre: "0.0 km" would be misleading when the visitor searched that town. */
+    const CITY_STATES = ["Delhi", "Chandigarh", "Puducherry"];
+    const stateOnly = p => p.approx && (!p.city || (p.city === p.state && !CITY_STATES.includes(p.state)));
+    function distInfo(p, d) {
+      if (!p.approx) return { main: fmtKm(d), sub: "", title: "" };
+      // only the state is known: it is pinned somewhere inside it, so no distance is honest
+      if (stateOnly(p)) {
+        return { main: t("Somewhere in {state}", { state: stateName(p.state) }), sub: t("town not listed"),
+          title: t("The source names only the state, not the town.") };
+      }
+      const town = I18N.city(p.city);
+      const title = t("Its exact spot isn't listed, so it is placed at the centre of {town}.", { town });
+      if (d < 3) return { main: t("In {town}", { town }), sub: t("exact spot not listed"), title };
+      return { main: "≈ " + fmtKm(d), sub: t("to {town} centre", { town }), title };
+    }
 
     // Google Maps: with a typed city the route starts there; with "my location"
     // no origin is sent, so Google uses the device's own location.
@@ -1731,7 +1748,8 @@
         <li class="spot" style="--c:${k.color}">
           <div class="place-top">
             <span class="place-kind"><span class="dot"></span>${esc(k.one || k.label.replace(/s$/, ""))}</span>
-            <span class="place-dist">${fmtKm(p.d)}</span>
+            ${(() => { const di = distInfo(p, p.d);
+              return `<span class="place-dist"${di.title ? ` title="${esc(di.title)}"` : ""}>${esc(di.main)}${di.sub ? `<small>${esc(di.sub)}</small>` : ""}</span>`; })()}
           </div>
           <h3>${esc(p.name)}</h3>
           <p class="place-host">${where}${p.approx ? `<span class="approx" title="${t("Shown at the city centre: the source gives no street address")}">${t("approx.")}</span>` : ""}</p>
@@ -1780,7 +1798,8 @@
       const pool = PLACES
         .filter(p => !p.noMap && near.kinds.has(kindOf(p.kind).id))
         .map(p => ({ ...p, d: km(near.origin, p) }))
-        .sort((a, b) => a.d - b.d);
+        // places known only by state go after the rest: their pin is just a point in the state
+        .sort((a, b) => (stateOnly(a) - stateOnly(b)) || a.d - b.d);
       const inside = pool.filter(p => p.d <= near.radius);
       const where = `<strong>${esc(near.origin.label)}</strong>`;
       let items;
@@ -1883,6 +1902,7 @@
 
     // let other features (the chatbot) show "near me" results for a city
     return {
+      distInfo, stateOnly,
       nearCity(cityName) {
         const c = findCity(cityName);
         if (!c) return false;
@@ -1938,6 +1958,6 @@
     CENTRE_BY_NAME, STATE_NAMES,
     openCentre, focusBranch,
     nearCity: name => nearby.nearCity(name),
-    km: nearby.km, kindOf: nearby.kindOf, findCity: nearby.findCity, directionsUrl: nearby.directionsUrl
+    km: nearby.km, distInfo: nearby.distInfo, stateOnly: nearby.stateOnly, kindOf: nearby.kindOf, findCity: nearby.findCity, directionsUrl: nearby.directionsUrl
   };
 })();
