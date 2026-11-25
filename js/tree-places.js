@@ -98,7 +98,7 @@
     return "institutions";
   };
 
-  /* gurukuls are many: on the tree they sit on six regional twigs */
+  /* gurukuls are many: on the tree they grow on six regional sub-branches */
   const REGIONS = [
     ["North", ["Uttar Pradesh", "Uttarakhand"]],
     ["North-west", ["Haryana", "Delhi", "Punjab", "Himachal Pradesh", "Jammu and Kashmir", "Chandigarh"]],

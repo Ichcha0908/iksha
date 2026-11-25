@@ -152,9 +152,14 @@ Motion, exposed as `window.Motion`.
   click targets.
 - **Every other place is a small leaf** (`js/tree-places.js`): gurukuls,
   institutes, heritage sites, traditions and Āyurveda & Yoga institutes,
-  clustered at the end of twigs, one twig per kind (`IKS.leafGroups`), with
-  gurukuls on regional twigs. They use one `InstancedMesh` per branch around a
-  foliage core, a tint of the branch colour mixed with the kind colour, and
+  on sub-branches, one per kind (`IKS.leafGroups`), with gurukuls on regional
+  sub-branches. Never pile them into balls: a big group forks into limbs
+  (at most six sprigs each); sprigs alternate along each limb and carry five
+  leaves (two pairs and a tip) lying flat in the spray, facing outward, and
+  leaves shrink a little on crowded sub-branches. Focusing a branch with
+  hundreds of small leaves zooms closer (`zoomFor`). They use one
+  `InstancedMesh` per branch for leaves and one for sprigs, a tint of the
+  branch colour mixed with the kind colour, and
   screen-distance picking (front-facing leaves first, larger radius for touch).
   Never give hundreds of leaves their own meshes, halos or raycast targets.
   Hover, selection and list previews enlarge the instance and add a glow sprite.

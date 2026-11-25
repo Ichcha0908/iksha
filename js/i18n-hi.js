@@ -79,8 +79,8 @@ window.IKS_HI = {
     "Show {n} more": "{n} और दिखाएँ",
     "Choose a branch to see its leaves, or click any leaf on the tree. Every IKS place on this site is a leaf: search them all here.":
       "कोई शाखा चुनिए और उसके पत्ते देखिए, या वृक्ष के किसी भी पत्ते पर क्लिक कीजिए। इस साइट का हर IKS स्थान एक पत्ता है: यहाँ सबको खोजिए।",
-    "{a} IKS centres and {b} more places (gurukuls, institutes, heritage sites, traditions) grow on this branch. Large glowing leaves are IKS centres; the small leaves cluster on twigs by kind.":
-      "इस शाखा पर {a} IKS केंद्र और {b} अन्य स्थान (गुरुकुल, संस्थान, धरोहर स्थल, परंपराएँ) उगते हैं। बड़े चमकते पत्ते IKS केंद्र हैं; छोटे पत्ते अपने प्रकार के अनुसार टहनियों पर गुच्छों में हैं।",
+    "{a} IKS centres and {b} more places (gurukuls, institutes, heritage sites, traditions) grow on this branch. Large glowing leaves are IKS centres; the small leaves grow on sub-branches by kind.":
+      "इस शाखा पर {a} IKS केंद्र और {b} अन्य स्थान (गुरुकुल, संस्थान, धरोहर स्थल, परंपराएँ) उगते हैं। बड़े चमकते पत्ते IKS केंद्र हैं; छोटे पत्ते अपने प्रकार के अनुसार उप-शाखाओं पर उगते हैं।",
     "{a} IKS centres grow on this branch.": "इस शाखा पर {a} IKS केंद्र उगते हैं।",
 
     /* centre panel */
@@ -105,7 +105,7 @@ window.IKS_HI = {
     "Checked November 2026. Office-holders change, so confirm with the institution before visiting.": "नवंबर 2026 में जाँचा गया। पदाधिकारी बदलते रहते हैं, इसलिए जाने से पहले संस्थान से पुष्टि कर लें।",
     "Founded {year}.": "स्थापना: {year}।",
     "{name} is in {place}.": "{name} यहाँ स्थित है: {place}।",
-    "More {kind} ({region} twig)": "और {kind} ({region} टहनी)",
+    "More {kind} ({region} sub-branch)": "और {kind} ({region} उप-शाखा)",
     "More {kind}": "और {kind}",
     "Other IKS centres on this branch": "इस शाखा के अन्य IKS केंद्र",
     "Show {n} more of {total}": "{total} में से {n} और दिखाएँ",

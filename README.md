@@ -7,8 +7,9 @@ An interactive 3D "Tree of Knowledge" for Indian Knowledge Systems (IKS).
 - **Every IKS place on the site is a leaf (728 leaves).** The large glowing
   leaves are IKS centres; gurukuls, oriental institutes and libraries,
   heritage sites, living traditions and Āyurveda & Yoga institutes are
-  smaller leaves clustered on twigs by kind (the 555 gurukuls on six regional
-  twigs). Clicking any leaf opens a panel with its details, contacts, sources
+  smaller leaves on sub-branches by kind (the 555 gurukuls on six regional
+  sub-branches), spread along forking limbs and sprigs so each leaf can be
+  told apart; focusing a crowded branch zooms in closer. Clicking any leaf opens a panel with its details, contacts, sources
   and a map of India with its state highlighted and pinned.
 - Drag to turn the tree. The branch buttons under the tree also turn it,
   zoom in on that branch, and open its **leaf finder**: search by name, town
