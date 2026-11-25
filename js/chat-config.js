@@ -13,5 +13,6 @@
    Never put an API key in this file: it is public.
 ------------------------------------------------------------------- */
 window.IKS_CHAT = {
-  endpoint: ""
+  endpoint: "https://iks-chat.iksha.workers.dev",
+  ai: false
 };
