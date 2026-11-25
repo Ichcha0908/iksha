@@ -11,15 +11,15 @@ export const ADMIN_HTML = `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Listings · editors</title>
+<title>Editors · Jñāna Vṛkṣa</title>
 <link rel="stylesheet" href="/admin.css">
 </head>
 <body>
 <main>
   <header>
     <p class="kicker">Jñāna Vṛkṣa · editors</p>
-    <h1>Organisation listings</h1>
-    <p class="lede">Organisations that asked to be listed. Nothing appears on the site until you approve it; approved listings show up within about five minutes.</p>
+    <h1>Listings and feedback</h1>
+    <p class="lede">Organisations that asked to be listed, and visitors' suggested updates. Nothing appears on the site until you approve it; approved listings show up within about five minutes.</p>
   </header>
 
   <form id="signin" class="card signin" autocomplete="on">
@@ -36,10 +36,11 @@ export const ADMIN_HTML = `<!doctype html>
       <button type="button" role="tab" data-status="pending" aria-selected="true">Pending <span></span></button>
       <button type="button" role="tab" data-status="approved" aria-selected="false">Approved <span></span></button>
       <button type="button" role="tab" data-status="rejected" aria-selected="false">Rejected <span></span></button>
+      <button type="button" role="tab" data-status="feedback" aria-selected="false">Feedback <span></span></button>
       <button type="button" class="link" id="refresh">Refresh</button>
       <button type="button" class="link" id="signout">Sign out</button>
     </nav>
-    <details class="card checklist">
+    <details class="card checklist" id="checklist">
       <summary>How to check a listing</summary>
       <ol>
         <li>Open its website and the pages it gives: is it a real organisation working in Indian Knowledge Systems?</li>
@@ -104,6 +105,9 @@ button:disabled { opacity: .5; cursor: progress; }
 .fields .check input { width: auto; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
 .empty { color: var(--ink-faint); }
+.item a { color: var(--ink); overflow-wrap: anywhere; }
+.fb-msg { white-space: pre-wrap; margin: 6px 0 10px; overflow-wrap: anywhere; }
+.item.done { opacity: .7; }
 @media (max-width: 720px) { .cols, .fields { grid-template-columns: 1fr; } }
 `;
 
@@ -113,7 +117,7 @@ export const ADMIN_JS = `(function () {
   var KEY = "iks-admin-key";
   var key = "";
   try { key = sessionStorage.getItem(KEY) || ""; } catch (e) {}
-  var all = [], tab = "pending";
+  var all = [], feedback = [], tab = "pending";
 
   var BRANCHES = [["veda","Veda & Darśana"],["language","Language & Literature"],["arts","Arts & Aesthetics"],["health","Health & Wellbeing"],["science","Science & Technology"],["heritage","Heritage & Manuscripts"]];
   var KINDS = [["institution","IKS centre / institution"],["ori","Oriental institute / manuscript library"],["gurukul","Gurukul / Veda pāṭhaśālā"],["ayush","Āyurveda & Yoga institute"],["museum","Museum"],["archive","Archive"],["heritage","Heritage site"],["tradition","Living tradition"]];
@@ -173,8 +177,9 @@ export const ADMIN_JS = `(function () {
   });
 
   function load() {
-    return api("/admin/api/listings").then(function (d) {
-      all = d.listings || [];
+    return Promise.all([api("/admin/api/listings"), api("/admin/api/feedback")]).then(function (r) {
+      all = r[0].listings || [];
+      feedback = r[1].feedback || [];
       $("#signin").hidden = true; $("#board").hidden = false;
       $("#signin-status").textContent = "";
       render();
@@ -189,8 +194,18 @@ export const ADMIN_JS = `(function () {
       b.setAttribute("aria-selected", String(s === tab));
       $("span", b).textContent = "(" + all.filter(function (r) { return r.status === s; }).length + ")";
     });
+    var fbTab = $("[data-status=feedback]");
+    fbTab.setAttribute("aria-selected", String(tab === "feedback"));
+    $("span", fbTab).textContent = "(" + feedback.filter(function (r) { return r.status !== "done"; }).length + " new)";
+    $("#checklist").hidden = tab === "feedback";
     var list = $("#list");
     list.textContent = "";
+    if (tab === "feedback") {
+      var rows = feedback.filter(function (r) { return r.status !== "done"; }).concat(feedback.filter(function (r) { return r.status === "done"; }));
+      if (!rows.length) list.appendChild(el("p", { class: "empty", text: "No suggested updates yet." }));
+      rows.forEach(function (r) { list.appendChild(fbCard(r)); });
+      return;
+    }
     var rows = all.filter(function (r) { return r.status === tab; });
     if (!rows.length) list.appendChild(el("p", { class: "empty", text: tab === "pending" ? "Nothing waiting for a check." : "None yet." }));
     rows.forEach(function (r) { list.appendChild(card(r)); });
@@ -309,6 +324,53 @@ export const ADMIN_JS = `(function () {
       el("p", { class: "meta", text: kindLabel + " · " + p.city + ", " + p.state + " · sent " + new Date(r.at).toLocaleString() + (r.decidedAt ? " · decided " + new Date(r.decidedAt).toLocaleDateString() : "") }),
       el("div", { class: "badges" }, badges.map(function (b) { return el("span", { class: "badge " + b[0], text: b[1] }); })),
       el("div", { class: "cols" }, [el("div", {}, [el("h3", { text: "What will be published (edit before approving)" }), f]), who]),
+      actions, status
+    ]);
+  }
+
+  /* a visitor's suggested update: read it, fix the data if it checks out, mark it done */
+  function fbCard(r) {
+    var note = el("textarea", { maxlength: 1000, placeholder: "For the editors only: what you checked or changed" }); note.value = r.editorNote || "";
+    var status = el("p", { class: "status", role: "status" });
+    var actions = el("div", { class: "actions" });
+    function act(action, confirmText) {
+      if (confirmText && !confirm(confirmText)) return;
+      status.className = "status"; status.textContent = "Saving…";
+      api("/admin/api/feedback", { id: r.id, action: action, editorNote: note.value }).then(function (d) {
+        if (action === "delete") feedback = feedback.filter(function (o) { return o.id !== r.id; });
+        else feedback = feedback.map(function (o) { return o.id === r.id ? d.record : o; });
+        $("#board-status").className = "status ok";
+        $("#board-status").textContent = ({ done: "Marked as done.", open: "Marked as new again.", delete: "Deleted." })[action];
+        render();
+      }).catch(function (err) { status.textContent = err.message === "auth" ? "" : err.message; });
+    }
+    function btn(text, cls, fn) { var b = el("button", { type: "button", class: cls, text: text }); b.addEventListener("click", fn); actions.appendChild(b); }
+    if (r.status === "done") btn("Mark as new again", "", function () { act("open"); });
+    else btn("Mark as done", "primary", function () { act("done"); });
+    btn("Delete for good", "danger", function () { act("delete", "Delete this message permanently?"); });
+    var q = encodeURIComponent((r.entry || "") + " " + (r.message || "").slice(0, 80));
+    return el("article", { class: "card item" + (r.status === "done" ? " done" : "") }, [
+      el("h2", { text: r.entry || "(no entry named)" }),
+      el("p", { class: "meta", text: (r.kind || "") + " · sent " + new Date(r.at).toLocaleString() + (r.lang === "hi" ? " · in Hindi" : "") + (r.status === "done" ? " · done" : "") }),
+      el("div", { class: "cols" }, [
+        el("div", {}, [
+          el("h3", { text: "Suggested update" }),
+          el("p", { class: "fb-msg", text: r.message || "" }),
+          r.source ? el("p", {}, ["Source: ", link(r.source, r.source)]) : el("p", { class: "empty", text: "No source given." }),
+          el("label", { class: "fields" }, [el("span", { class: "wide", text: "Editors' note (private)" })]),
+          note
+        ]),
+        el("div", { class: "who" }, [
+          el("h3", { text: "Sent by (private)" }),
+          el("p", { text: r.name || "No name given" }),
+          r.contact ? el("p", { text: r.contact }) : null,
+          el("h3", { text: "Check it" }),
+          el("ul", {}, [
+            r.source ? el("li", {}, [link(r.source, "The source they gave")]) : null,
+            el("li", {}, [link("https://www.google.com/search?q=" + q, "Search the web")])
+          ])
+        ])
+      ]),
       actions, status
     ]);
   }

@@ -220,6 +220,35 @@ export async function adminApi(request, url, env) {
   const origin = request.headers.get("Origin");
   if (origin && origin !== url.origin) return adminJson({ error: "Not allowed." }, 403);
 
+  // visitors' "Suggest an update" messages (stored by worker.js)
+  const fbStore = env.FEEDBACK || env.LISTINGS;
+  if (request.method === "GET" && url.pathname === "/admin/api/feedback") {
+    const keys = [];
+    let cursor;
+    do {
+      const page = await fbStore.list({ prefix: "fb:", cursor });
+      keys.push(...page.keys.map(k => k.name));
+      cursor = page.list_complete ? null : page.cursor;
+    } while (cursor);
+    const recs = (await Promise.all(keys.map(k => fbStore.get(k, "json")))).filter(Boolean)
+      .map((r, i) => ({ ...r, id: keys[i].slice(3), status: r.status || "open" }))
+      .sort((a, b) => (a.at < b.at ? 1 : -1));
+    return adminJson({ feedback: recs });
+  }
+  if (request.method === "POST" && url.pathname === "/admin/api/feedback") {
+    let body;
+    try { body = await request.json(); } catch { return adminJson({ error: "Invalid JSON." }, 400); }
+    const key = `fb:${clip(body?.id, 60)}`;
+    const rec = await fbStore.get(key, "json");
+    if (!rec) return adminJson({ error: "No such message." }, 404);
+    if (body?.action === "delete") { await fbStore.delete(key); return adminJson({ ok: true }); }
+    if (!["done", "open"].includes(body?.action)) return adminJson({ error: "Unknown action." }, 400);
+    rec.status = body.action;
+    rec.editorNote = clip(body?.editorNote ?? rec.editorNote, 1000);
+    await fbStore.put(key, JSON.stringify(rec), { metadata: { entry: (rec.entry || "").slice(0, 100), kind: rec.kind } });
+    return adminJson({ ok: true, record: { ...rec, id: key.slice(3) } });
+  }
+
   if (request.method === "GET" && url.pathname === "/admin/api/listings") {
     return adminJson({ listings: await allListings(env) });
   }

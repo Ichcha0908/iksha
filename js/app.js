@@ -514,6 +514,10 @@
         <ol class="pd-sources">${c.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></li>`).join("")}</ol>
         <p class="pd-checked">${c.minor ? t("Fetched November 2026. Office-holders change, so confirm with the institution before visiting.") : t("Checked November 2026. Office-holders change, so confirm with the institution before visiting.")}</p></section>`);
     }
+    // corrections and new information from visitors (js/feedback.js)
+    out.push(`<p class="pd-feedback">${t("Something here out of date?")}
+      <button type="button" class="near-btn pd-suggest" data-feedback="${esc(c.name)}">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>${t("Suggest an update")}</button></p>`);
     return out.join("");
   }
 
@@ -1710,6 +1714,7 @@
         : p.source === "iish" ? `<a href="https://www.iish.org/contact/" target="_blank" rel="noopener">iish.org</a>`
         : `<a href="https://iksguru.in/" target="_blank" rel="noopener">iksguru.in</a>`;
       html += `<p class="sc-source">${t("Source: {src}.", { src: srcLine })}</p>`;
+      html += `<p class="sc-source"><button type="button" class="sc-suggest" data-feedback="${esc(p.name)}">${t("Suggest an update")}</button></p>`;
       return `<div class="spot-contact" id="${id}" hidden>${html}</div>`;
     }
 

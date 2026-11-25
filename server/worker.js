@@ -16,7 +16,8 @@
    Feedback (visitors' corrections and new information):
      POST /feedback      stores one submission in the FEEDBACK KV namespace
      GET  /feedback.csv?key=ADMIN_KEY   downloads every submission as CSV
-     FEEDBACK            KV namespace binding (see wrangler.toml)
+     FEEDBACK            optional KV namespace binding; without it, feedback
+                         is kept in the LISTINGS store (keys starting "fb:")
      ADMIN_KEY           (secret) password for the CSV download
 
    Listings ("List your organisation", see listings.js):
@@ -111,8 +112,10 @@ function fbLimited(ip) {
 }
 const clip = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
 
+const feedbackStore = env => env.FEEDBACK || env.LISTINGS;
+
 async function saveFeedback(request, env, cors) {
-  if (!env.FEEDBACK) return json({ error: "Feedback storage is not set up yet." }, 503, cors);
+  if (!feedbackStore(env)) return json({ error: "Feedback storage is not set up yet." }, 503, cors);
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
   if (fbLimited(ip)) return json({ error: "Too many submissions; please try again later." }, 429, cors);
   let body;
@@ -131,29 +134,30 @@ async function saveFeedback(request, env, cors) {
     lang: body?.lang === "hi" ? "hi" : "en"
   };
   if (rec.message.length < 10) return json({ error: "Please describe the update in a few words." }, 400, cors);
-  const key = `${rec.at}_${crypto.randomUUID().slice(0, 8)}`;
-  await env.FEEDBACK.put(key, JSON.stringify(rec), { metadata: { entry: rec.entry.slice(0, 100), kind: rec.kind } });
+  rec.id = `${rec.at.replace(/[-:.TZ]/g, "").slice(0, 14)}-${crypto.randomUUID().slice(0, 8)}`;
+  rec.status = "open";
+  await feedbackStore(env).put(`fb:${rec.id}`, JSON.stringify(rec), { metadata: { entry: rec.entry.slice(0, 100), kind: rec.kind } });
   return json({ ok: true }, 200, cors);
 }
 
 /** every submission as CSV, newest first; needs ?key=ADMIN_KEY */
 async function exportFeedback(url, env) {
   const key = url.searchParams.get("key") || "";
-  if (!env.ADMIN_KEY || !env.FEEDBACK || key !== env.ADMIN_KEY) return new Response("Not allowed.", { status: 403 });
+  if (!env.ADMIN_KEY || !feedbackStore(env) || key !== env.ADMIN_KEY) return new Response("Not allowed.", { status: 403 });
   const keys = [];
   let cursor;
   do {
-    const page = await env.FEEDBACK.list({ cursor });
+    const page = await feedbackStore(env).list({ prefix: "fb:", cursor });
     keys.push(...page.keys.map(k => k.name));
     cursor = page.list_complete ? null : page.cursor;
   } while (cursor);
   keys.sort().reverse();
-  const cols = ["at", "entry", "kind", "message", "source", "name", "contact", "lang", "page"];
+  const cols = ["at", "status", "entry", "kind", "message", "source", "name", "contact", "lang", "page"];
   // quote every cell; a leading = + - @ is neutralised so spreadsheets don't run it as a formula
   const cell = v => `"${String(v ?? "").replace(/^([=+\-@])/, "'$1").replace(/"/g, '""')}"`;
   const rows = [cols.join(",")];
   for (const k of keys) {
-    const rec = await env.FEEDBACK.get(k, "json");
+    const rec = await feedbackStore(env).get(k, "json");
     if (rec) rows.push(cols.map(c => cell(rec[c])).join(","));
   }
   return new Response("\ufeff" + rows.join("\r\n"), {

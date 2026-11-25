@@ -92,43 +92,28 @@ your OpenRouter API key (`sk-or-v1-…`) and Node.js 22.12 or newer.
 ## Feedback ("Suggest an update")
 
 The same Worker stores what visitors send with the site's **Suggest an
-update** button (bottom left, and in every leaf's panel): which entry, what
-kind of update, the details, a source link, and optionally their name and
-an e-mail or phone. Submissions are kept in a free Cloudflare **KV**
-store. To switch it on (once, after the deploy steps above), in this
-`server` folder:
+update** button (bottom left, and in every leaf's panel and "near me" card):
+which entry, what kind of update, the details, a source link, and optionally
+their name and an e-mail or phone.
 
-1. Create the store:
+It needs no setup of its own: messages are kept in the same `LISTINGS` store
+as the organisation listings (under keys starting `fb:`), so once the
+listings are switched on (below), feedback works too after a deploy. (If you
+prefer a separate store, create one with
+`npx wrangler kv namespace create FEEDBACK` and add it to `wrangler.toml` with
+binding `FEEDBACK`.)
 
-   ```bash
-   npx wrangler kv namespace create FEEDBACK
-   ```
-
-   It prints an `id`. In `wrangler.toml`, remove the `#` signs from the
-   `[[kv_namespaces]]` lines at the bottom and paste that id.
-
-2. Choose a password for downloading the submissions (a long random phrase),
-   and store it as a secret:
-
-   ```bash
-   npx wrangler secret put ADMIN_KEY
-   ```
-
-3. Deploy again:
-
-   ```bash
-   npm run deploy
-   ```
-
-To read the submissions, open this address in your browser (your Worker's
-address and your password):
+To read the messages, open the editors' page,
+`https://iks-chat.<your-account>.workers.dev/admin`, and choose the
+**Feedback** tab. Each message shows the suggested update, its source and,
+privately, who sent it. Check it against the source, update the site's data
+if it holds up, then press **Mark as done** (or **Delete for good**). You can
+also download everything as a spreadsheet:
 
 `https://iks-chat.<your-account>.workers.dev/feedback.csv?key=<your password>`
 
-It downloads `iks-feedback.csv` (newest first), which opens in Excel or
-Google Sheets. You can also browse them in the Cloudflare dashboard →
-Storage & Databases → KV → FEEDBACK. Keep the password private; anyone with
-it can read the submissions, including visitors' contact details.
+Keep the password private; anyone with it can read the submissions,
+including visitors' contact details.
 
 Built in: only your site can submit (`ALLOWED_ORIGINS`), about 6 submissions
 per visitor per hour, length limits on every field, and a hidden field that
