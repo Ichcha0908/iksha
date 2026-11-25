@@ -20,7 +20,8 @@
   const PLACES = window.IKS_PLACES || [];
   const CITIES = window.IKS_CITIES || [];
   const KINDS = window.IKS.placeKinds;
-  const ENDPOINT = ((window.IKS_CHAT || {}).endpoint || "").trim();
+  // ai: false uses the Worker only for listings and feedback, not for chat answers
+  const ENDPOINT = (window.IKS_CHAT || {}).ai === false ? "" : ((window.IKS_CHAT || {}).endpoint || "").trim();
   const $ = s => document.querySelector(s);
   // language (js/i18n.js): t() for messages; the data keeps English state names, shown via stateName()
   const I18N = window.IKS_I18N || { hi: false, t: (s, p) => (p ? s.replace(/\{(\w+)\}/g, (m, k) => p[k]) : s), state: n => n, city: n => n, HI: { states: {}, cities: {} } };
