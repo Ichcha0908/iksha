@@ -922,7 +922,8 @@
         const PER = 5;                               // leaves per sprig
         const nSprig = Math.ceil(m / PER);
         const F = Math.max(1, Math.ceil(nSprig / 6)); // limbs: at most six sprigs each
-        const stemLen = 0.22 + 0.09 * Math.min(F, 4);
+        // the stem carries the spray well clear of the main branch
+        const stemLen = 0.42 + 0.14 * Math.min(F, 4);
         const stemEnd = at.clone().addScaledVector(dir, stemLen).addScaledVector(UP, 0.03);
         const stem = taperedTube(new THREE.CatmullRomCurve3([at, at.clone().lerp(stemEnd, 0.5).addScaledVector(UP, 0.03), stemEnd]),
           8, 6, 0.04, 0.026, twigMat);
@@ -1043,23 +1044,37 @@
     const rand = mulberry32(7);
 
     const N = BRANCHES.length;
+    /* where each branch grows: heavy branches (many leaves) alternate with light
+       ones round the trunk and up it, so the full ones never sit side by side.
+       Slot 0 is lowest; even slots spread low and wide, odd slots reach up. */
+    const SLOT = (() => {
+      const byLoad = BRANCHES.map((b, bi) => ({ bi, n: b.centres.length })).sort((x, y) => y.n - x.n);
+      const heavy = byLoad.slice(0, Math.ceil(N / 2)), light = byLoad.slice(Math.ceil(N / 2));
+      const slot = [];
+      heavy.forEach((x, k) => { slot[x.bi] = 2 * k; });
+      light.forEach((x, k) => { slot[x.bi] = 2 * k + 1; });
+      return slot;
+    })();
     BRANCHES.forEach((b, bi) => {
-      const a = (bi / N) * Math.PI * 2;                  // azimuth
-      const h = 1.95 + bi * 0.42;                        // spiral up the trunk
-      const L = 3.25 - bi * 0.13;                        // upper branches are shorter
+      const sl = SLOT[bi];
+      const a = (sl / N) * Math.PI * 2;                  // azimuth
+      const h = 1.85 + sl * 0.46;                        // spiral up the trunk
+      const L = 3.3 - sl * 0.13;                         // upper branches are shorter
       const D = new THREE.Vector3(Math.sin(a), 0, Math.cos(a));
       const P = new THREE.Vector3(Math.cos(a), 0, -Math.sin(a));   // sideways
       const base = trunkCurve.getPointAt(Math.min(h / 5.2, 0.98));
-      const wob = (bi % 2 ? 1 : -1) * 0.25;
+      const wob = (sl % 2 ? 1 : -1) * 0.25;
+      // a few branches reach up, the full ones spread out lower
+      const rise = sl % 2 ? 1.55 : 0.85;
       const curve = new THREE.CatmullRomCurve3([
         base.clone(),
-        base.clone().addScaledVector(D, L * 0.32).addScaledVector(UP, 0.55),
-        base.clone().addScaledVector(D, L * 0.68).addScaledVector(UP, 1.0).addScaledVector(P, wob),
-        base.clone().addScaledVector(D, L).addScaledVector(UP, 1.25).addScaledVector(P, wob * 0.4)
+        base.clone().addScaledVector(D, L * 0.32).addScaledVector(UP, 0.45 * rise),
+        base.clone().addScaledVector(D, L * 0.68).addScaledVector(UP, 0.82 * rise).addScaledVector(P, wob),
+        base.clone().addScaledVector(D, L).addScaledVector(UP, 1.0 * rise).addScaledVector(P, wob * 0.4)
       ]);
-      const mesh = taperedTube(curve, 36, 10, 0.2 - bi * 0.012, 0.035, barkMat);
+      const mesh = taperedTube(curve, 36, 10, 0.2 - sl * 0.012, 0.035, barkMat);
       sway.add(mesh);
-      const start = 0.55 + bi * 0.12;
+      const start = 0.55 + sl * 0.12;
       growables.push({ mesh, start, dur: 0.8 });
 
       const color = new THREE.Color(b.color);
@@ -1140,6 +1155,17 @@
       });
 
       buildMinorTwigs(b, bi, curve, D, P, color, start);
+      // where the camera looks when this branch is focused: the middle of its foliage
+      {
+        const pts = leaves.filter(L => L.b === bi).map(L => L.group.position)
+          .concat(((minorBranches[bi] || {}).recs || []).map(r => r.mid || r.pos));
+        const focus = curve.getPointAt(0.66);
+        if (pts.length) {
+          const avg = pts.reduce((acc, v) => acc.add(v), new THREE.Vector3()).divideScalar(pts.length);
+          focus.lerp(avg, 0.7);
+        }
+        branchData[branchData.length - 1].focus = focus;
+      }
 
       // decorative foliage along the branch
       for (let k = 0, deco = Math.max(6, 16 - Math.round(n / 2)); k < deco; k++) {
@@ -1524,7 +1550,7 @@
       // zoom towards the focused branch so its leaves are large enough to pick
       if (view.zoom > 0.001 && state.focused !== null) {
         const bd = branchData[state.focused];
-        tmpV.copy(bd.curve.getPointAt(0.66)).applyMatrix4(sway.matrixWorld);
+        tmpV.copy(bd.focus || bd.curve.getPointAt(0.66)).applyMatrix4(sway.matrixWorld);
         zoomLook.copy(lookAt).lerp(tmpV, 0.5 * view.zoom);
         camera.position.copy(zoomLook).addScaledVector(camOffset, 1 - zoomFor(state.focused) * view.zoom);
         camera.lookAt(zoomLook);

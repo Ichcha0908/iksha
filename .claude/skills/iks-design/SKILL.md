@@ -138,7 +138,11 @@ Motion, exposed as `window.Motion`.
 ## 6. The 3D tree (three.js)
 
 - One trunk, roots into a rotating yantra, a glowing bindu at the crown, one
-  branch per entry in `IKS.branches`, spiralling up the trunk.
+  branch per entry in `IKS.branches`, spiralling up the trunk. Branches take
+  slots by load (`SLOT`): the fullest alternate with the lightest round and up
+  the trunk, even slots spread low and wide, odd slots reach up, so full
+  branches never sit side by side. A focused branch is framed on the middle
+  of its foliage (`branchData[i].focus`).
 - **One clickable peepal leaf per centre**, coloured with its branch colour,
   with a soft halo. Decorative foliage stays small and in muted sage/olive/gold
   (`decoPalette`). Never make decorative leaves look clickable.
