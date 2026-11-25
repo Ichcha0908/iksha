@@ -202,7 +202,9 @@ real IKS organisation, does the sender belong to it (an e-mail on its own
 domain, or confirm by writing to its listed office), is it already on the
 site, are the phone and e-mail office contacts rather than personal ones,
 and where exactly is it (paste a Google Maps link with coordinates, or tick
-"approximate" to place it at its town).
+"approximate" to place it at its town). Shared short links
+(`maps.app.goo.gl/…`) are followed once to the full link to read its
+coordinates; if that fails, the listing keeps its town's location.
 
 Cloudflare's free plan allows 1,000 KV writes and 100,000 reads a day, far
 more than the listings need.

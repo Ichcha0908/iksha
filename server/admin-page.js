@@ -275,7 +275,7 @@ export const ADMIN_JS = `(function () {
     var links = el("textarea", { maxlength: 2600 }); links.value = (p.links || []).join("\\n");
     add("links", "Pages that show it exists (one per line)", links, true);
     add("mapLink", "Map link (Google Maps / OpenStreetMap; sets the location)", el("input", { value: p.mapLink || "", maxlength: 500 }), true);
-    add("lat", "Latitude", el("input", { value: p.lat == null ? "" : p.lat, inputmode: "decimal" }));
+    add("lat", "Latitude (a map link with coordinates overrides it)", el("input", { value: p.lat == null ? "" : p.lat, inputmode: "decimal" }));
     add("lng", "Longitude", el("input", { value: p.lng == null ? "" : p.lng, inputmode: "decimal" }));
     var approx = el("input", { type: "checkbox" }); approx.checked = !!p.approx; inputs.approx = approx;
     f.appendChild(el("label", { class: "check wide" }, [approx, "Approximate: placed at its town, not its campus"]));
@@ -285,8 +285,6 @@ export const ADMIN_JS = `(function () {
     function edited() {
       var o = {};
       for (var k in inputs) o[k] = inputs[k].type === "checkbox" ? inputs[k].checked : inputs[k].value;
-      // a new map link replaces the old coordinates
-      if (o.mapLink !== (p.mapLink || "") && o.lat === String(p.lat == null ? "" : p.lat)) { o.lat = ""; o.lng = ""; }
       if (o.lat === "" || o.lng === "") { o.lat = null; o.lng = null; }
       return o;
     }

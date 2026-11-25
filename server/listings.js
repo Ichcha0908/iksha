@@ -39,6 +39,17 @@ function coordsFromMapLink(link) {
   return lat != null && lng != null ? { lat, lng } : null;
 }
 
+/** a shared Google Maps short link (maps.app.goo.gl/…) has no coordinates in it:
+    follow its redirect once to the full link, which usually has them */
+async function expandMapLink(link) {
+  if (!/^https:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps)\//i.test(link || "")) return link;
+  try {
+    const r = await fetch(link, { redirect: "manual", signal: AbortSignal.timeout(4000) });
+    const to = r.headers.get("Location");
+    return to && /^https:\/\/(www\.)?google\.[a-z.]+\/maps/i.test(to) ? to.slice(0, 500) : link;
+  } catch { return link; }
+}
+
 /** the public part of a listing: what the site shows once it is approved */
 function cleanPlace(b) {
   const p = {
@@ -66,11 +77,11 @@ function cleanPlace(b) {
   };
   const leadName = clip(b?.leadName, 120), leadRole = clip(b?.leadRole, 120);
   if (leadName) p.lead = { name: leadName, role: leadRole };
-  if (p.lat == null || p.lng == null) {
-    const c = p.mapLink && coordsFromMapLink(p.mapLink);
-    if (c) { p.lat = c.lat; p.lng = c.lng; p.approx = false; }
-    else { p.lat = p.lng = null; }
-  }
+  // a map link with coordinates sets the exact spot; otherwise the given
+  // coordinates (an editor's, or the town's from the form) stay
+  const c = p.mapLink && coordsFromMapLink(p.mapLink);
+  if (c) { p.lat = c.lat; p.lng = c.lng; p.approx = false; }
+  else if (p.lat == null || p.lng == null) { p.lat = p.lng = null; }
   return p;
 }
 function placeProblems(p) {
@@ -102,6 +113,7 @@ export async function saveListing(request, env, cors) {
   if (clip(body?.website, 200)) return json({ ok: true }, 200, cors);
   if (!(Number(body?.elapsed) >= 8000)) return json({ ok: true }, 200, cors);
 
+  if (body?.place) body.place.mapLink = await expandMapLink(clip(body.place.mapLink, 500));
   const place = cleanPlace(body?.place);
   const missing = placeProblems(place);
   const submitter = {
@@ -182,8 +194,14 @@ async function allListings(env) {
   const recs = await Promise.all(keys.map(k => env.LISTINGS.get(k, "json")));
   return recs.filter(Boolean).sort((a, b) => (a.at < b.at ? 1 : -1));
 }
-async function republish(env) {
-  const approved = (await allListings(env)).filter(r => r.status === "approved");
+/** rebuild the public list. KV doesn't promise that a write is visible to an
+    immediate re-read, so the record just changed (or removed) is applied on top. */
+async function republish(env, changed, removedId) {
+  const approved = (await allListings(env))
+    .filter(r => r.id !== removedId && (!changed || r.id !== changed.id))
+    .concat(changed ? [changed] : [])
+    .filter(r => r.status === "approved")
+    .sort((a, b) => (a.at < b.at ? 1 : -1));
   await env.LISTINGS.put("published", JSON.stringify(approved.map(publicPlace)));
   return approved.length;
 }
@@ -261,11 +279,12 @@ export async function adminApi(request, url, env) {
     const action = body?.action;
     if (action === "delete") {
       await env.LISTINGS.delete(`sub:${id}`);
-      return adminJson({ ok: true, published: await republish(env) });
+      return adminJson({ ok: true, published: await republish(env, null, id) });
     }
     if (!["approve", "reject", "pending", "save"].includes(action)) return adminJson({ error: "Unknown action." }, 400);
     if (body?.place) {
       // the editor's corrections
+      body.place.mapLink = await expandMapLink(clip(body.place.mapLink, 500));
       const p = cleanPlace(body.place);
       if (action === "approve") {
         const missing = placeProblems(p);
@@ -279,7 +298,7 @@ export async function adminApi(request, url, env) {
     }
     rec.editorNote = clip(body?.editorNote ?? rec.editorNote, 1000);
     await env.LISTINGS.put(`sub:${id}`, JSON.stringify(rec), { metadata: { status: rec.status, name: rec.place.name.slice(0, 100) } });
-    return adminJson({ ok: true, record: rec, published: await republish(env) });
+    return adminJson({ ok: true, record: rec, published: await republish(env, rec) });
   }
   return adminJson({ error: "Not found." }, 404);
 }

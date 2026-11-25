@@ -263,7 +263,7 @@
       address: v("address"), mapLink: v("mapLink"), phone: v("phone"), email: v("email"),
       leadName: v("leadName"), leadRole: v("leadRole")
     };
-    if (city && !place.mapLink) Object.assign(place, { lat: city.lat, lng: city.lng, approx: true });
+    if (city) Object.assign(place, { lat: city.lat, lng: city.lng, approx: true });
     send.disabled = true;
     status.textContent = t("Sending…");
     try {

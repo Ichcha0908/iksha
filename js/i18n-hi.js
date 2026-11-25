@@ -327,6 +327,7 @@ window.IKS_HI = {
     "Somewhere in {state}": "{state} में कहीं",
     "town not listed": "शहर सूचीबद्ध नहीं",
     "The source names only the state, not the town.": "स्रोत में केवल राज्य का नाम है, शहर का नहीं।",
+    "Sorry, something went wrong with that answer. Please try asking another way.": "माफ़ कीजिए, इस उत्तर में कुछ गड़बड़ हो गई। कृपया दूसरे तरीके से पूछकर देखें।",
     "In {town}": "{town} में",
     "to {town} centre": "{town} के केंद्र तक",
     // List your organisation (js/listing.js) and listed organisations
