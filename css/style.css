@@ -559,7 +559,7 @@ h1 {
 }
 .acks-thanks h3 { margin: 0 0 8px; font-family: var(--serif); font-weight: 400; font-size: 1.25rem; color: var(--accent); }
 .acks-thanks p { margin: 8px 0 0; color: var(--ink-soft); line-height: 1.55; }
-.acks-thanks a { color: var(--ink); font-weight: 500; text-decoration-color: var(--gold); white-space: nowrap; }
+.acks-thanks a { color: var(--ink); font-weight: 500; text-decoration-color: var(--gold); }
 .acks-sign { font-family: var(--serif); font-style: italic; }
 .motion .acks { opacity: 0; }
 
