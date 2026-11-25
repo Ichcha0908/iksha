@@ -21,3 +21,10 @@ ALLOWED_ORIGINS = "https://ichcha0908.github.io"
 # binding = "FEEDBACK"
 # id = "paste-the-id-here"
 
+
+# Organisation listings ("List your organisation"). Create it once with:
+#   npx wrangler kv namespace create LISTINGS
+# then paste the id it prints below and remove the # signs.
+# [[kv_namespaces]]
+# binding = "LISTINGS"
+# id = "paste-the-id-here"

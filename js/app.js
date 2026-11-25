@@ -1683,6 +1683,7 @@
           ? t("The IKS Division doesn't publish phone numbers or e-mails for its centres.")
           : p.source === "gurukul" ? t("The gurukul directories don't list a phone number for it.")
           : p.source === "atlas" ? t("The IKS Atlas doesn't list contact details.")
+          : p.source === "community" ? t("The organisation didn't give a phone number or e-mail.")
           : t("The source doesn't list a phone number or e-mail.")}
           <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">${lead ? t("Search for {name}'s contact", { name: esc(lead.name) }) : t("Search for their contact")}</a>.</p>`;
       }
@@ -1908,6 +1909,7 @@
     }, once);
     inView(".branch-info", el => { reveal([el], { y: 24, duration: 0.8 }); }, once);
     inView(".nearby", el => { reveal([el], { y: 24, duration: 0.8 }); }, { amount: 0.1 });
+    inView(".list-org", el => { reveal([el], { y: 24, duration: 0.8 }); }, { amount: 0.2 });
     inView(".acks", el => {
       reveal([el], { y: 24, duration: 0.8 });
       reveal(el.querySelectorAll(".ack"), { delay: 0.25, gap: 0.04, y: 12, duration: 0.5 });

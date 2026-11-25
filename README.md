@@ -41,6 +41,24 @@ each one against its source before changing the data. Setup:
 [`server/README.md`](server/README.md) → Feedback. The form is in
 `js/feedback.js`.
 
+## List your organisation
+
+The **Grow the tree with us** section (above the Acknowledgments) invites IKS
+centres, gurukuls, institutes, museums, heritage sites and living traditions
+that aren't on the site yet to ask to be listed. The form (`js/listing.js`)
+asks for the organisation's name, kind, branch, description, website or
+other pages that show it exists, town and state, an optional map link and
+public office contacts, and, privately, who is sending it.
+
+Requests go to the Cloudflare Worker in `server/` and wait there until an
+editor checks and approves them on the Worker's password-protected `/admin`
+page. Approved listings come back to every visitor through
+`js/listings-loader.js` and become leaves on the tree, "near me" results and
+chatbot answers, marked as listed at the organisation's request and checked
+by the editors. The section stays hidden until the Worker's address is in
+`js/chat-config.js`. Setup and the spam protections:
+[`server/README.md`](server/README.md) → Organisation listings.
+
 ## Hindi / English
 
 The **हिन्दी** button at the top right shows the whole site in Hindi (the

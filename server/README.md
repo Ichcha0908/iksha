@@ -140,6 +140,88 @@ day.
 Until the Worker's address is in `js/chat-config.js`, the form opens but
 says it isn't connected yet.
 
+## Organisation listings ("List your organisation")
+
+IKS organisations can ask to be listed on the site with the **List your
+organisation** button (the "Grow the tree with us" section near the bottom
+of the page). **Nothing is published until an editor approves it.** Approved
+listings appear on the site by themselves, within about five minutes, as
+leaves on the tree, in "Find IKS places near me" and in the chatbot's
+answers. No change to the site's files is needed.
+
+How it works:
+
+1. The form (`js/listing.js`) sends the request to `POST /listings`. The
+   Worker checks it and stores it in a Cloudflare **KV** store, marked
+   *pending*.
+2. You open the editors' page, **`https://iks-chat.<your-account>.workers.dev/admin`**,
+   and sign in with the same `ADMIN_KEY` password as for the feedback CSV.
+   Each request shows what would be published, in fields you can correct,
+   and, privately, who sent it, with links for checking it: its website,
+   the pages it gave, a web search and Google Maps. A badge says whether the
+   sender's e-mail is on the organisation's own domain or is a personal
+   address.
+3. **Approve and publish**, **Reject**, **Save changes**, **Move back to
+   pending** or **Delete for good**. An approved listing can later be edited
+   or unpublished in the same way.
+4. The site loads the approved listings from `GET /listings.js`
+   (`js/listings-loader.js`, cached for 5 minutes).
+
+To switch it on (once, after the deploy steps above), in this `server` folder:
+
+1. Create the store:
+
+   ```bash
+   npx wrangler kv namespace create LISTINGS
+   ```
+
+   In `wrangler.toml`, remove the `#` signs from the second
+   `[[kv_namespaces]]` block (binding `LISTINGS`) and paste the id it printed.
+
+2. If you haven't already for the feedback CSV, choose the editors'
+   password (a long random phrase) and store it:
+
+   ```bash
+   npx wrangler secret put ADMIN_KEY
+   ```
+
+3. Deploy again:
+
+   ```bash
+   npm run deploy
+   ```
+
+4. Make sure the Worker's address is in `js/chat-config.js`. The "Grow the
+   tree with us" section stays hidden until it is.
+
+Protection against spam and mistakes:
+
+- **The approval step**: every request waits for an editor; the site only
+  ever receives approved listings.
+- Only the site itself can send requests (`ALLOWED_ORIGINS`), at most 3
+  stored requests per visitor per hour, a hidden field that catches bots,
+  and requests sent faster than a person could fill in the form are quietly
+  dropped.
+- Every field has a length limit; links must be `http(s)://` web addresses;
+  a description stuffed with links is refused; the state must be a real
+  state or union territory.
+- The editors' page needs the password (sent in a header, never in the
+  address), allows 10 wrong attempts per 15 minutes, can't be framed by
+  other sites, shows everything visitors typed as plain text, and is hidden
+  from search engines.
+- The sender's name, e-mail, phone and note are kept for the editors only
+  and are never sent to the site.
+
+When checking a request, use the checklist on the editors' page: is it a
+real IKS organisation, does the sender belong to it (an e-mail on its own
+domain, or confirm by writing to its listed office), is it already on the
+site, are the phone and e-mail office contacts rather than personal ones,
+and where exactly is it (paste a Google Maps link with coordinates, or tick
+"approximate" to place it at its town).
+
+Cloudflare's free plan allows 1,000 KV writes and 100,000 reads a day, far
+more than the listings need.
+
 If the Worker is unreachable or returns an error, the chatbot shows its
 built-in answer instead, so the site keeps working.
 

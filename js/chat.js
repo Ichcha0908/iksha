@@ -365,7 +365,7 @@
   function recordOf(d) {
     const lead = leadOf(d), k = contactOf(d);
     const src = d.type === "leaf" ? (d.c.sources || []).map(s => s.url).slice(0, 2).join(" ")
-      : ({ iksindia: "iksindia.org", uem: "iks.uem.edu.in", iksguru: "iksguru.in", tree: "this site", gurukul: k.listedBy, hindupedia: "hindupedia.com", hmml: "hmml.org", iish: "iish.org", atlas: d.p.atlas ? `IKS Atlas ${d.p.atlas.id} (draft, unverified); its listed source: ${d.p.atlas.src}` : "" })[d.p.source] || "";
+      : ({ iksindia: "iksindia.org", uem: "iks.uem.edu.in", iksguru: "iksguru.in", tree: "this site", gurukul: k.listedBy, hindupedia: "hindupedia.com", hmml: "hmml.org", iish: "iish.org", community: "details given by the organisation itself, checked by the site's editors", atlas: d.p.atlas ? `IKS Atlas ${d.p.atlas.id} (draft, unverified); its listed source: ${d.p.atlas.src}` : "" })[d.p.source] || "";
     return {
       name: d.name, kind: d.type === "leaf" ? `${d.b.name} centre` : d.p.kind, location: loc(d),
       about: aboutOf(d), person_in_charge: lead ? `${lead.name}, ${lead.role}` : undefined,

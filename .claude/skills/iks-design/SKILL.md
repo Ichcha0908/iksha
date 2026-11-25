@@ -292,3 +292,14 @@ Motion, exposed as `window.Motion`.
   each against its source, then updates the data with the usual sourcing and
   contact rules.
 
+## List your organisation (listings)
+
+- Organisations ask to be listed with the form in `js/listing.js` (the
+  "Grow the tree with us" section, hidden until the Worker is configured).
+  Requests stay pending until an editor approves them on the Worker's
+  `/admin` page; only approved listings reach the site, through
+  `js/listings-loader.js`, which must load after `js/places-atlas.js` and
+  before `js/i18n-hi.js` / `js/tree-places.js`.
+- Listed places have `source: "community"`; their leaves say they were listed
+  at the organisation's request and checked by the editors, and their
+  sources are the organisation's website and the pages it gave.
