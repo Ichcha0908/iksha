@@ -46,7 +46,7 @@ goes back to its built-in answers. Cloudflare Workers' free plan covers
 ## Deploy (about 10 minutes)
 
 You need a free [Cloudflare account](https://dash.cloudflare.com/sign-up),
-your OpenRouter API key (`sk-or-v1-…`) and Node.js 18 or newer.
+your OpenRouter API key (`sk-or-v1-…`) and Node.js 22.12 or newer.
 
 1. Install the tools, in this `server` folder:
 
