@@ -551,6 +551,15 @@ h1 {
 .ack a, .ack b { color: var(--ink); font-weight: 500; text-decoration-color: var(--gold); }
 .ack span { color: var(--ink-faint); font-size: .86rem; line-height: 1.45; }
 .acks-note { margin: 16px 0 0; color: var(--ink-faint); font-size: .88rem; }
+.acks-thanks {
+  margin: 28px auto 0; max-width: 640px; padding: 18px 20px;
+  border: 1px solid rgba(176, 132, 70, 0.35); border-radius: 12px;
+  background: rgba(255, 247, 232, 0.7);
+}
+.acks-thanks h3 { margin: 0 0 8px; font-family: var(--serif); font-weight: 400; font-size: 1.25rem; color: var(--accent); }
+.acks-thanks p { margin: 8px 0 0; color: var(--ink-soft); line-height: 1.55; }
+.acks-thanks a { color: var(--ink); font-weight: 500; text-decoration-color: var(--gold); white-space: nowrap; }
+.acks-sign { font-family: var(--serif); font-style: italic; }
 .motion .acks { opacity: 0; }
 
 .foot { margin-top: 56px; text-align: center; }
