@@ -1599,7 +1599,7 @@
       }
       const town = I18N.city(p.city);
       const title = t("Its exact spot isn't listed, so it is placed at the centre of {town}.", { town });
-      if (d < 3) return { main: t("In {town}", { town }), sub: t("exact spot not listed"), title };
+      if (d < 3) return { main: t("In {town}", { town }), sub: "", title };
       return { main: "≈ " + fmtKm(d), sub: t("to {town} centre", { town }), title };
     }
 

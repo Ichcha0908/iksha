@@ -328,7 +328,6 @@ window.IKS_HI = {
     "town not listed": "शहर सूचीबद्ध नहीं",
     "The source names only the state, not the town.": "स्रोत में केवल राज्य का नाम है, शहर का नहीं।",
     "In {town}": "{town} में",
-    "exact spot not listed": "सटीक स्थान सूचीबद्ध नहीं",
     "to {town} centre": "{town} के केंद्र तक",
     // List your organisation (js/listing.js) and listed organisations
     "List your organisation": "अपनी संस्था जोड़ें",
