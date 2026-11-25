@@ -1044,16 +1044,17 @@
     const rand = mulberry32(7);
 
     const N = BRANCHES.length;
-    /* where each branch grows: heavy branches (many leaves) alternate with light
-       ones round the trunk and up it, so the full ones never sit side by side.
-       Slot 0 is lowest; even slots spread low and wide, odd slots reach up. */
+    /* where each branch grows, from the bottom of the trunk to the top (chosen by
+       hand so the full branches don't crowd each other): Veda & Darśana lowest
+       and spreading wide, Science reaching up, Arts, Heritage, Health near the
+       top, and Language reaching up highest. A branch not listed here goes on top. */
+    const BRANCH_ORDER = ["veda", "science", "arts", "heritage", "health", "language"];
+    const BRANCH_RISE = { veda: 0.85, science: 1.55, arts: 0.95, heritage: 0.9, health: 1.2, language: 1.55 };
     const SLOT = (() => {
-      const byLoad = BRANCHES.map((b, bi) => ({ bi, n: b.centres.length })).sort((x, y) => y.n - x.n);
-      const heavy = byLoad.slice(0, Math.ceil(N / 2)), light = byLoad.slice(Math.ceil(N / 2));
-      const slot = [];
-      heavy.forEach((x, k) => { slot[x.bi] = 2 * k; });
-      light.forEach((x, k) => { slot[x.bi] = 2 * k + 1; });
-      return slot;
+      const known = BRANCH_ORDER.filter(id => BRANCHES.some(b => b.id === id));
+      const rest = BRANCHES.map(b => b.id).filter(id => !known.includes(id));
+      const order = known.concat(rest);
+      return BRANCHES.map(b => order.indexOf(b.id));
     })();
     BRANCHES.forEach((b, bi) => {
       const sl = SLOT[bi];
@@ -1064,8 +1065,8 @@
       const P = new THREE.Vector3(Math.cos(a), 0, -Math.sin(a));   // sideways
       const base = trunkCurve.getPointAt(Math.min(h / 5.2, 0.98));
       const wob = (sl % 2 ? 1 : -1) * 0.25;
-      // a few branches reach up, the full ones spread out lower
-      const rise = sl % 2 ? 1.55 : 0.85;
+      // some branches reach up, the full ones spread out lower
+      const rise = BRANCH_RISE[b.id] || 1.2;
       const curve = new THREE.CatmullRomCurve3([
         base.clone(),
         base.clone().addScaledVector(D, L * 0.32).addScaledVector(UP, 0.45 * rise),
