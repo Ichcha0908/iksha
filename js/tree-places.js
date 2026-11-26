@@ -87,6 +87,7 @@
     return null;
   };
   const groupFor = p => {
+    if (p.group) return p.group;     // listings set it ("ori" for oriental institutes)
     if (p.kind === "gurukul") return "gurukuls";
     if (p.kind === "heritage") return "heritage";
     if (p.kind === "tradition") return "traditions";
@@ -97,7 +98,7 @@
     return "institutions";
   };
 
-  /* gurukuls are many: on the tree they sit on six regional twigs */
+  /* gurukuls are many: on the tree they grow on six regional sub-branches */
   const REGIONS = [
     ["North", ["Uttar Pradesh", "Uttarakhand"]],
     ["North-west", ["Haryana", "Delhi", "Punjab", "Himachal Pradesh", "Jammu and Kashmir", "Chandigarh"]],
@@ -171,9 +172,10 @@
     }
     if (p.peopleNote) leaf.peopleNote = t(p.peopleNote);
     if (p.source === "atlas") atlasLeaf(leaf, p);
+    if (p.source === "community") communityLeaf(leaf, p);
     if (p.kind === "gurukul") {
       leaf.region = regionOf(p.state);
-      leaf.activities.push(t("Listed in the gurukul directories as a gurukul or Veda pāṭhaśālā."));
+      if (p.source !== "community") leaf.activities.push(t("Listed in the gurukul directories as a gurukul or Veda pāṭhaśālā."));
       if (p.noMap) leaf.activities.push(t("The directories give no town for it, so it is shown by state."));
     }
     if (p.approx && !p.noMap && !contact.address) leaf.activities.push(t("The source gives no street address; the map and directions point to the town."));
@@ -184,6 +186,26 @@
       : p.kind === "heritage" || p.kind === "tradition" ? t("A public place: no office contact is listed.")
       : t("The source doesn't list a phone number or e-mail.");
     return leaf;
+  }
+
+  /* organisations listed through "List your organisation" (js/listing.js):
+     they gave the details themselves and an editor checked them */
+  const webLink = u => typeof u === "string" && /^https?:\/\//i.test(u);
+  function communityLeaf(leaf, p) {
+    const k = p.community || {};
+    leaf.type = p.group === "ori" ? t("Oriental research institute")
+      : p.kind === "museum" ? t("Museum") : p.kind === "archive" ? t("Archive")
+      : p.kind === "heritage" ? t("Heritage site") : leaf.type;
+    leaf.community = true;
+    leaf.activities.unshift(t("Listed at the organisation's request; its details were checked by the site's editors{when}.",
+      { when: k.approved ? t(" on {date}", { date: k.approved }) : "" }));
+    leaf.sources = [];
+    if (webLink(p.url)) leaf.sources.push({ label: t("{name}: official website", { name: p.name }), url: p.url });
+    (k.links || []).filter(webLink).forEach(u => {
+      if (u !== p.url) leaf.sources.push({ label: t("Page given by the organisation: {host}", { host: u.replace(/^https?:\/\/(www\.)?/i, "").split("/")[0] }), url: u });
+    });
+    if (leaf.contact.phone || leaf.contact.email) leaf.listedNote = t("Contact details as given by the organisation.");
+    leaf.contactNote = t("The organisation didn't give a phone number or e-mail.");
   }
 
   /* IKS Atlas entries: the Atlas's own text and links, marked as a draft */

@@ -138,7 +138,12 @@ Motion, exposed as `window.Motion`.
 ## 6. The 3D tree (three.js)
 
 - One trunk, roots into a rotating yantra, a glowing bindu at the crown, one
-  branch per entry in `IKS.branches`, spiralling up the trunk.
+  branch per entry in `IKS.branches`, spiralling up the trunk. Their order up
+  the trunk is set by hand in `BRANCH_ORDER` (bottom to top: Veda & Darśana
+  lowest and spreading wide, Science reaching up, Arts, Heritage, Health,
+  Language reaching up highest) and how steeply each rises in `BRANCH_RISE`;
+  keep it unless the user asks to change it. A focused branch is framed on the middle
+  of its foliage (`branchData[i].focus`).
 - **One clickable peepal leaf per centre**, coloured with its branch colour,
   with a soft halo. Decorative foliage stays small and in muted sage/olive/gold
   (`decoPalette`). Never make decorative leaves look clickable.
@@ -152,9 +157,14 @@ Motion, exposed as `window.Motion`.
   click targets.
 - **Every other place is a small leaf** (`js/tree-places.js`): gurukuls,
   institutes, heritage sites, traditions and Āyurveda & Yoga institutes,
-  clustered at the end of twigs, one twig per kind (`IKS.leafGroups`), with
-  gurukuls on regional twigs. They use one `InstancedMesh` per branch around a
-  foliage core, a tint of the branch colour mixed with the kind colour, and
+  on sub-branches, one per kind (`IKS.leafGroups`), with gurukuls on regional
+  sub-branches. Never pile them into balls: a big group forks into limbs
+  (at most six sprigs each); sprigs alternate along each limb and carry five
+  leaves (two pairs and a tip) lying flat in the spray, facing outward, and
+  leaves shrink a little on crowded sub-branches. Focusing a branch with
+  hundreds of small leaves zooms closer (`zoomFor`). They use one
+  `InstancedMesh` per branch for leaves and one for sprigs, a tint of the
+  branch colour mixed with the kind colour, and
   screen-distance picking (front-facing leaves first, larger radius for touch).
   Never give hundreds of leaves their own meshes, halos or raycast targets.
   Hover, selection and list previews enlarge the instance and add a glow sprite.
@@ -292,3 +302,14 @@ Motion, exposed as `window.Motion`.
   each against its source, then updates the data with the usual sourcing and
   contact rules.
 
+## List your organisation (listings)
+
+- Organisations ask to be listed with the form in `js/listing.js` (the
+  "Grow the tree with us" section, hidden until the Worker is configured).
+  Requests stay pending until an editor approves them on the Worker's
+  `/admin` page; only approved listings reach the site, through
+  `js/listings-loader.js`, which must load after `js/places-atlas.js` and
+  before `js/i18n-hi.js` / `js/tree-places.js`.
+- Listed places have `source: "community"`; their leaves say they were listed
+  at the organisation's request and checked by the editors, and their
+  sources are the organisation's website and the pages it gave.

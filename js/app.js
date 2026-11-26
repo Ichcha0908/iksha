@@ -320,7 +320,7 @@
         <h2>${b.name}</h2>
         <p class="blurb">${b.blurb}</p>
         <p class="bi-stats">${small
-          ? t("{a} IKS centres and {b} more places (gurukuls, institutes, heritage sites, traditions) grow on this branch. Large glowing leaves are IKS centres; the small leaves cluster on twigs by kind.", { a: pool.length - small, b: small })
+          ? t("{a} IKS centres and {b} more places (gurukuls, institutes, heritage sites, traditions) grow on this branch. Large glowing leaves are IKS centres; the small leaves grow on sub-branches by kind.", { a: pool.length - small, b: small })
           : t("{a} IKS centres grow on this branch.", { a: pool.length })}</p>
         ${finderHTML(pool, false)}
       </div>`;
@@ -514,6 +514,10 @@
         <ol class="pd-sources">${c.sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></li>`).join("")}</ol>
         <p class="pd-checked">${c.minor ? t("Fetched November 2026. Office-holders change, so confirm with the institution before visiting.") : t("Checked November 2026. Office-holders change, so confirm with the institution before visiting.")}</p></section>`);
     }
+    // corrections and new information from visitors (js/feedback.js)
+    out.push(`<p class="pd-feedback">${t("Something here out of date?")}
+      <button type="button" class="near-btn pd-suggest" data-feedback="${esc(c.name)}">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>${t("Suggest an update")}</button></p>`);
     return out.join("");
   }
 
@@ -539,14 +543,14 @@
     $("#panel-details").innerHTML = centreDetails(c);
 
     // siblings: the other leaves of the same kind on this branch (gurukuls: on the
-    // same regional twig), nearest first: same state, then the rest
+    // same regional sub-branch), nearest first: same state, then the rest
     const list = $("#panel-siblings");
     const twig = x => x.group + (x.region ? ":" + x.region : "");
     const same = b.centres.map((s2, k) => ({ s: s2, k }))
       .filter(x => twig(x.s) === twig(c))
       .sort((x, y) => (x.k === ci ? -1 : y.k === ci ? 1 : 0) || (y.s.state === c.state) - (x.s.state === c.state));
     $("#panel-sib-title").textContent = c.minor
-      ? (c.region ? t("More {kind} ({region} twig)", { kind: I18N.hi ? grp.label : grp.label.toLowerCase(), region: t(c.region) })
+      ? (c.region ? t("More {kind} ({region} sub-branch)", { kind: I18N.hi ? grp.label : grp.label.toLowerCase(), region: t(c.region) })
         : t("More {kind}", { kind: I18N.hi ? grp.label : grp.label.toLowerCase() }))
       : t("Other IKS centres on this branch");
     const SHOW = 6;
@@ -872,8 +876,16 @@
     const MINOR_SCALE = 0.15;
     const tmpM = new THREE.Matrix4(), tmpS = new THREE.Vector3();
 
+    // thin sprigs that carry the small leaves: one instanced cylinder per branch
+    const SPRIG_GEO = new THREE.CylinderGeometry(1, 0.55, 1, 5, 1, true).translate(0, 0.5, 0);
+    const Y_AXIS = new THREE.Vector3(0, 1, 0);
+
+    /* Each kind of place on a branch (and each region of gurukuls) grows on a
+       sub-branch of its own. A big group forks into several limbs; along every
+       limb short sprigs alternate left and right, and each sprig carries a few
+       leaves (two pairs and a tip) lying flat in the spray, facing outward, so
+       every leaf can be told apart instead of piling into a ball. */
     function buildMinorTwigs(b, bi, curve, D, P, color, start) {
-      const cores = [];
       const items = b.centres.map((c, ci) => ({ c, ci })).filter(x => x.c.minor);
       if (!items.length) return;
       const twigs = new Map();
@@ -883,64 +895,99 @@
         twigs.get(key).push(x);
       });
       const keys = [...twigs.keys()];
-      const recs = [];
+      const recs = [], sprigs = [];
+      const addSprig = (from, dir, len, r) => sprigs.push({
+        pos: from.clone(), quat: new THREE.Quaternion().setFromUnitVectors(Y_AXIS, dir.clone().normalize()), len, r
+      });
       keys.forEach((key, k) => {
         const list = twigs.get(key);
         const m = list.length;
-        const t = keys.length === 1 ? 0.6 : 0.32 + (0.62 * k) / (keys.length - 1);
+        const t = keys.length === 1 ? 0.6 : 0.3 + (0.66 * k) / (keys.length - 1);
         const at = curve.getPointAt(t);
         const T = curve.getTangentAt(t);
         const N2 = new THREE.Vector3().crossVectors(T, P).normalize();
         if (N2.y < 0) N2.negate();
-        // twigs fan round the branch (golden angle), leaning up and out
+        // sub-branches fan round the branch (golden angle), leaning up and out
         const th = 0.9 + k * 2.39996;
-        // (clusters rise above the branch so the big IKS-centre leaves stay in view)
-        const dir = P.clone().multiplyScalar(Math.cos(th) * 0.85).addScaledVector(N2, 1.05 + Math.sin(th) * 0.3)
-          .addScaledVector(D, 0.2).normalize();
-        // the leaves cover a sphere's surface around the twig's end: radius from leaf count
-        const R = Math.max(0.15, 0.175 * Math.sqrt(m / (4 * Math.PI)));
-        const twigLen = 0.42 + R * 1.15;
-        const end = at.clone().addScaledVector(dir, twigLen);
-        const tw = taperedTube(new THREE.CatmullRomCurve3([at, at.clone().lerp(end, 0.5).addScaledVector(UP, 0.06), end]),
-          10, 6, Math.min(0.06, 0.03 + R * 0.04), 0.016, twigMat);
-        sway.add(tw);
-        growables.push({ mesh: tw, start: start + 0.45, dur: 0.5 });
+        const dir = P.clone().multiplyScalar(Math.cos(th) * 1.05).addScaledVector(N2, 0.55 + Math.sin(th) * 0.4)
+          .addScaledVector(D, 0.4).normalize();
+        // the spray faces outward from the trunk
+        const out = at.clone().setY(0);
+        if (out.lengthSq() < 1e-4) out.copy(D);
+        out.normalize();
+        const face = out.clone().addScaledVector(dir, -out.dot(dir)).normalize();
+        // leaves shrink a little on crowded sub-branches so each stays visible
+        const s = MINOR_SCALE * (m > 60 ? 0.6 : m > 24 ? 0.78 : 1);
+        const len = 1.48 * s, wid = 1.04 * s;
+        const PER = 5;                               // leaves per sprig
+        const nSprig = Math.ceil(m / PER);
+        const F = Math.max(1, Math.ceil(nSprig / 6)); // limbs: at most six sprigs each
+        // the stem carries the spray well clear of the main branch
+        const stemLen = 0.42 + 0.14 * Math.min(F, 4);
+        const stemEnd = at.clone().addScaledVector(dir, stemLen).addScaledVector(UP, 0.03);
+        const stem = taperedTube(new THREE.CatmullRomCurve3([at, at.clone().lerp(stemEnd, 0.5).addScaledVector(UP, 0.03), stemEnd]),
+          8, 6, 0.04, 0.026, twigMat);
+        sway.add(stem);
+        growables.push({ mesh: stem, start: start + 0.45, dur: 0.45 });
         const tint = color.clone().lerp(groupColor[list[0].c.group] || color, 0.4);
-        // a soft foliage core, so a cluster reads as a crown of leaves, not a hollow shell
-        const coreCol = tint.clone().lerp(new THREE.Color(0x4a2f17), 0.45);
-        const core = new THREE.Mesh(new THREE.SphereGeometry(R * 0.9, 18, 12),
-          new THREE.MeshStandardMaterial({ color: coreCol.clone(), roughness: 1 }));
-        core.position.copy(end).addScaledVector(dir, R * 0.25);
-        core.scale.setScalar(0.001);
-        core.userData = { base: coreCol, dimColor: coreCol.clone().lerp(PALE, 0.72) };
-        sway.add(core);
-        cores.push(core);
-        list.forEach((x, j) => {
-          // Fibonacci sphere, squashed a little so clusters read as foliage
-          const yy = 1 - (2 * (j + 0.5)) / m;
-          const rr = Math.sqrt(1 - yy * yy);
-          const phi = j * 2.39996 + k;
-          const normal = new THREE.Vector3(Math.cos(phi) * rr, yy * 0.85 + 0.15, Math.sin(phi) * rr).normalize();
-          const pos = end.clone().addScaledVector(normal, R).addScaledVector(dir, R * 0.25);
-          // the leaf lies on the cluster's surface, its face looking outward, tip upward
-          const zAxis = normal.clone();
-          let yAxis = UP.clone().addScaledVector(zAxis, -UP.dot(zAxis));
-          if (yAxis.lengthSq() < 1e-4) yAxis = dir.clone().addScaledVector(zAxis, -dir.dot(zAxis));
-          yAxis.normalize().applyAxisAngle(zAxis, (rand() - 0.5) * 0.9);
-          const xAxis = new THREE.Vector3().crossVectors(yAxis, zAxis);
-          const quat = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis));
-          // lift the tip away from the surface a little, for a feathery crown
-          quat.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -0.45 - rand() * 0.25));
-          const shade = tint.clone().offsetHSL((rand() - 0.5) * 0.03, 0, (rand() - 0.5) * 0.12);
-          const rec = {
-            b: bi, c: x.ci, pos, center: end, normal, quat, idx: recs.length,
-            base: shade, dimColor: shade.clone().lerp(PALE, 0.72),
-            s: MINOR_SCALE * (0.9 + rand() * 0.2), emph: 1,
-            delay: (j / Math.max(m - 1, 1)) * 0.55 + k * 0.04
-          };
-          recs.push(rec);
-          minorRecs.push(rec);
-        });
+        let leafNo = 0;
+        for (let f = 0; f < F; f++) {
+          const perLimb = Math.ceil(nSprig / F);
+          const sprigsHere = Math.min(perLimb, nSprig - f * perLimb);
+          if (sprigsHere <= 0) break;
+          // limbs fan out in the spray's plane, with a little depth so they don't line up
+          const spread = Math.min(1.9, 0.62 * (F - 1));
+          const ang = F === 1 ? 0 : (f / (F - 1) - 0.5) * spread;
+          const fdir = dir.clone().applyAxisAngle(face, ang).addScaledVector(face, (f % 2 ? 0.16 : -0.06)).normalize();
+          const step = len * 1.0;
+          const limbLen = 0.06 + sprigsHere * step + len * 0.35;
+          const limbEnd = stemEnd.clone().addScaledVector(fdir, limbLen);
+          const bend = stemEnd.clone().lerp(limbEnd, 0.5).addScaledVector(UP, 0.05 + limbLen * 0.06);
+          const limbCurve = new THREE.CatmullRomCurve3([stemEnd, bend, limbEnd]);
+          const limb = taperedTube(limbCurve, 10, 5, 0.024, 0.008, twigMat);
+          sway.add(limb);
+          growables.push({ mesh: limb, start: start + 0.6, dur: 0.5 });
+          for (let i = 0; i < sprigsHere && leafNo < m; i++) {
+            const u = Math.min(0.97, (0.06 + (i + 0.6) * step) / limbLen);
+            const p0 = limbCurve.getPointAt(u);
+            const lt = limbCurve.getTangentAt(u);
+            const across = new THREE.Vector3().crossVectors(lt, face).normalize();
+            const sgn = i % 2 ? 1 : -1;
+            const taper = 1 - 0.3 * (i / Math.max(sprigsHere - 1, 1));
+            const sdir = across.clone().multiplyScalar(sgn * 0.8).addScaledVector(lt, 0.6).normalize();
+            const sprigLen = (wid * 1.9 + len * 0.2) * taper;
+            addSprig(p0, sdir, sprigLen, 0.0075);
+            const sAcross = new THREE.Vector3().crossVectors(sdir, face).normalize();
+            const slots = [
+              [0.3, 1], [0.3, -1], [0.72, 1], [0.72, -1], [1, 0]   // pairs along the sprig, then the tip
+            ];
+            for (const [frac, side] of slots) {
+              if (leafNo >= m) break;
+              const x = list[leafNo];
+              const base = p0.clone().addScaledVector(sdir, sprigLen * frac);
+              const ldir = side === 0 ? sdir.clone()
+                : sdir.clone().multiplyScalar(0.5).addScaledVector(sAcross, side * 0.87).normalize();
+              // leaf: tip along ldir, face toward the viewer side of the spray, a little feathered
+              const yAxis = ldir.clone();
+              const zAxis = face.clone().addScaledVector(yAxis, -face.dot(yAxis)).normalize();
+              const xAxis = new THREE.Vector3().crossVectors(yAxis, zAxis);
+              const quat = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis));
+              quat.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -0.25 - rand() * 0.2));
+              const leafS = s * (side === 0 ? 1.05 : 0.95) * (0.94 + rand() * 0.12) * (0.9 + 0.1 * taper);
+              const mid = base.clone().addScaledVector(ldir, len * 0.5);
+              const shade = tint.clone().offsetHSL((rand() - 0.5) * 0.03, 0, (rand() - 0.5) * 0.12);
+              const rec = {
+                b: bi, c: x.ci, pos: base, mid, center: mid.clone().addScaledVector(face, -0.3), normal: face.clone(), quat,
+                idx: recs.length, base: shade, dimColor: shade.clone().lerp(PALE, 0.72),
+                s: leafS, emph: 1,
+                delay: (leafNo / Math.max(m - 1, 1)) * 0.55 + k * 0.04
+              };
+              recs.push(rec);
+              minorRecs.push(rec);
+              leafNo++;
+            }
+          }
+        }
       });
       const mesh = new THREE.InstancedMesh(LEAF_GEO,
         new THREE.MeshStandardMaterial({ map: veinTex, side: THREE.DoubleSide, roughness: 0.6, metalness: 0.04 }), recs.length);
@@ -948,9 +995,22 @@
       recs.forEach(r => { mesh.setColorAt(r.idx, r.base); r.mesh = mesh; });
       mesh.frustumCulled = false;
       sway.add(mesh);
-      const info = { mesh, recs, cores, appear: 0, dim: 0, tDim: 0, appliedDim: -1, done: false };
+      const sprigMesh = new THREE.InstancedMesh(SPRIG_GEO, twigMat, sprigs.length);
+      sprigMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      sprigMesh.frustumCulled = false;
+      sway.add(sprigMesh);
+      const info = { mesh, recs, cores: [], sprigs, sprigMesh, appear: 0, dim: 0, tDim: 0, appliedDim: -1, done: false };
+      setSprigs(info, 0);
       minorBranches[bi] = info;
       animate(info, { appear: 1 }, tx({ duration: 1.3, delay: start + 0.9, ease: EASE }));
+    }
+    function setSprigs(info, k) {
+      info.sprigs.forEach((sp, i) => {
+        tmpS.set(sp.r, Math.max(sp.len * k, 1e-4), sp.r);
+        tmpM.compose(sp.pos, sp.quat, tmpS);
+        info.sprigMesh.setMatrixAt(i, tmpM);
+      });
+      info.sprigMesh.instanceMatrix.needsUpdate = true;
     }
 
     function setMinorMatrix(r, k) {
@@ -984,23 +1044,38 @@
     const rand = mulberry32(7);
 
     const N = BRANCHES.length;
+    /* where each branch grows, from the bottom of the trunk to the top (chosen by
+       hand so the full branches don't crowd each other): Veda & Darśana lowest
+       and spreading wide, Science reaching up, Arts, Heritage, Health near the
+       top, and Language reaching up highest. A branch not listed here goes on top. */
+    const BRANCH_ORDER = ["veda", "science", "arts", "heritage", "health", "language"];
+    const BRANCH_RISE = { veda: 0.85, science: 1.55, arts: 0.95, heritage: 0.9, health: 1.2, language: 1.55 };
+    const SLOT = (() => {
+      const known = BRANCH_ORDER.filter(id => BRANCHES.some(b => b.id === id));
+      const rest = BRANCHES.map(b => b.id).filter(id => !known.includes(id));
+      const order = known.concat(rest);
+      return BRANCHES.map(b => order.indexOf(b.id));
+    })();
     BRANCHES.forEach((b, bi) => {
-      const a = (bi / N) * Math.PI * 2;                  // azimuth
-      const h = 1.95 + bi * 0.42;                        // spiral up the trunk
-      const L = 3.25 - bi * 0.13;                        // upper branches are shorter
+      const sl = SLOT[bi];
+      const a = (sl / N) * Math.PI * 2;                  // azimuth
+      const h = 1.85 + sl * 0.46;                        // spiral up the trunk
+      const L = 3.3 - sl * 0.13;                         // upper branches are shorter
       const D = new THREE.Vector3(Math.sin(a), 0, Math.cos(a));
       const P = new THREE.Vector3(Math.cos(a), 0, -Math.sin(a));   // sideways
       const base = trunkCurve.getPointAt(Math.min(h / 5.2, 0.98));
-      const wob = (bi % 2 ? 1 : -1) * 0.25;
+      const wob = (sl % 2 ? 1 : -1) * 0.25;
+      // some branches reach up, the full ones spread out lower
+      const rise = BRANCH_RISE[b.id] || 1.2;
       const curve = new THREE.CatmullRomCurve3([
         base.clone(),
-        base.clone().addScaledVector(D, L * 0.32).addScaledVector(UP, 0.55),
-        base.clone().addScaledVector(D, L * 0.68).addScaledVector(UP, 1.0).addScaledVector(P, wob),
-        base.clone().addScaledVector(D, L).addScaledVector(UP, 1.25).addScaledVector(P, wob * 0.4)
+        base.clone().addScaledVector(D, L * 0.32).addScaledVector(UP, 0.45 * rise),
+        base.clone().addScaledVector(D, L * 0.68).addScaledVector(UP, 0.82 * rise).addScaledVector(P, wob),
+        base.clone().addScaledVector(D, L).addScaledVector(UP, 1.0 * rise).addScaledVector(P, wob * 0.4)
       ]);
-      const mesh = taperedTube(curve, 36, 10, 0.2 - bi * 0.012, 0.035, barkMat);
+      const mesh = taperedTube(curve, 36, 10, 0.2 - sl * 0.012, 0.035, barkMat);
       sway.add(mesh);
-      const start = 0.55 + bi * 0.12;
+      const start = 0.55 + sl * 0.12;
       growables.push({ mesh, start, dur: 0.8 });
 
       const color = new THREE.Color(b.color);
@@ -1081,6 +1156,17 @@
       });
 
       buildMinorTwigs(b, bi, curve, D, P, color, start);
+      // where the camera looks when this branch is focused: the middle of its foliage
+      {
+        const pts = leaves.filter(L => L.b === bi).map(L => L.group.position)
+          .concat(((minorBranches[bi] || {}).recs || []).map(r => r.mid || r.pos));
+        const focus = curve.getPointAt(0.66);
+        if (pts.length) {
+          const avg = pts.reduce((acc, v) => acc.add(v), new THREE.Vector3()).divideScalar(pts.length);
+          focus.lerp(avg, 0.7);
+        }
+        branchData[branchData.length - 1].focus = focus;
+      }
 
       // decorative foliage along the branch
       for (let k = 0, deco = Math.max(6, 16 - Math.round(n / 2)); k < deco; k++) {
@@ -1190,7 +1276,7 @@
       });
       const place = (glow, r) => {
         glow.visible = !!r;
-        if (r) { glow.position.copy(r.pos).addScaledVector(r.normal, 0.06); glow.userData.rec = r; }
+        if (r) { glow.position.copy(r.mid || r.pos).addScaledVector(r.normal, 0.06); glow.userData.rec = r; }
       };
       place(hoverGlow, hovRec || pv);
       place(selGlow, selRec);
@@ -1245,9 +1331,9 @@
       for (const rec of minorRecs) {
         const info = minorBranches[rec.b];
         if (!info || info.appear < 0.6) continue;
-        pv3.copy(rec.pos).applyMatrix4(sway.matrixWorld);
+        pv3.copy(rec.mid || rec.pos).applyMatrix4(sway.matrixWorld);
         pc3.copy(rec.center).applyMatrix4(sway.matrixWorld);
-        // skip leaves on the far side of their cluster
+        // skip leaves facing away (on the far side of their spray)
         const out = pv3.clone().sub(pc3), toCam = camW.clone().sub(pv3);
         if (out.dot(toCam) < -0.15 * out.length() * toCam.length()) continue;
         const dist = toCam.length();
@@ -1381,6 +1467,12 @@
     const XAXIS = new THREE.Vector3(1, 0, 0);
     const zoomLook = new THREE.Vector3().copy(lookAt);
     const ZOOM = 0.34;   // how far the camera moves in on a focused branch
+    // branches carrying hundreds of small leaves get a closer look, so each leaf can be picked out
+    const zoomFor = bi => {
+      const n = BRANCHES[bi].centres.filter(c => c.minor).length;
+      return n > 300 ? 0.5 : n > 150 ? 0.44 : ZOOM;
+    };
+    let lastZoom = ZOOM;
     const tmpC = new THREE.Color();
     let elapsed = 0;
 
@@ -1459,17 +1551,18 @@
       // zoom towards the focused branch so its leaves are large enough to pick
       if (view.zoom > 0.001 && state.focused !== null) {
         const bd = branchData[state.focused];
-        tmpV.copy(bd.curve.getPointAt(0.66)).applyMatrix4(sway.matrixWorld);
+        tmpV.copy(bd.focus || bd.curve.getPointAt(0.66)).applyMatrix4(sway.matrixWorld);
         zoomLook.copy(lookAt).lerp(tmpV, 0.5 * view.zoom);
-        camera.position.copy(zoomLook).addScaledVector(camOffset, 1 - ZOOM * view.zoom);
+        camera.position.copy(zoomLook).addScaledVector(camOffset, 1 - zoomFor(state.focused) * view.zoom);
         camera.lookAt(zoomLook);
+        lastZoom = zoomFor(state.focused);
       } else if (view.zoom <= 0.001) {
         camera.position.copy(lookAt).add(camOffset);
         camera.lookAt(lookAt);
       } else {
         // zooming back out after the branch was cleared: ease from the last zoomed view
         zoomLook.lerp(lookAt, 1 - view.zoom);
-        camera.position.copy(zoomLook).addScaledVector(camOffset, 1 - ZOOM * view.zoom);
+        camera.position.copy(zoomLook).addScaledVector(camOffset, 1 - lastZoom * view.zoom);
         camera.lookAt(zoomLook);
       }
 
@@ -1482,7 +1575,7 @@
             setMinorMatrix(r, 1 - Math.pow(1 - k, 3));
           });
           info.mesh.instanceMatrix.needsUpdate = true;
-          info.cores.forEach(c => c.scale.setScalar(Math.max(0.001, Math.min(1, info.appear * 1.4))));
+          if (info.sprigMesh) setSprigs(info, Math.min(1, info.appear * 1.5));
           if (info.appear >= 1) info.done = true;
         }
         if (Math.abs(info.dim - info.appliedDim) > 0.002) {
@@ -1580,7 +1673,24 @@
       const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
       return 2 * 6371 * Math.asin(Math.sqrt(h));
     }
-    const fmtKm = d => t("{n} km", { n: d < 10 ? d.toFixed(1) : Math.round(d) });
+    const fmtKm = d => (d < 0.05 ? t("< 0.1 km") : t("{n} km", { n: d < 10 ? d.toFixed(1) : Math.round(d) }));
+    /* How far away a place is. Places marked "approx" are pinned at their town's
+       centre (the source gives no address), so their distance is really to that
+       centre: "0.0 km" would be misleading when the visitor searched that town. */
+    const CITY_STATES = ["Delhi", "Chandigarh", "Puducherry"];
+    const stateOnly = p => p.approx && (!p.city || (p.city === p.state && !CITY_STATES.includes(p.state)));
+    function distInfo(p, d) {
+      if (!p.approx) return { main: fmtKm(d), sub: "", title: "" };
+      // only the state is known: it is pinned somewhere inside it, so no distance is honest
+      if (stateOnly(p)) {
+        return { main: t("Somewhere in {state}", { state: stateName(p.state) }), sub: t("town not listed"),
+          title: t("The source names only the state, not the town.") };
+      }
+      const town = I18N.city(p.city);
+      const title = t("Its exact spot isn't listed, so it is placed at the centre of {town}.", { town });
+      if (d < 3) return { main: t("In {town}", { town }), sub: "", title };
+      return { main: "≈ " + fmtKm(d), sub: t("to {town} centre", { town }), title };
+    }
 
     // Google Maps: with a typed city the route starts there; with "my location"
     // no origin is sent, so Google uses the device's own location.
@@ -1683,6 +1793,7 @@
           ? t("The IKS Division doesn't publish phone numbers or e-mails for its centres.")
           : p.source === "gurukul" ? t("The gurukul directories don't list a phone number for it.")
           : p.source === "atlas" ? t("The IKS Atlas doesn't list contact details.")
+          : p.source === "community" ? t("The organisation didn't give a phone number or e-mail.")
           : t("The source doesn't list a phone number or e-mail.")}
           <a href="https://www.google.com/search?${q}" target="_blank" rel="noopener">${lead ? t("Search for {name}'s contact", { name: esc(lead.name) }) : t("Search for their contact")}</a>.</p>`;
       }
@@ -1709,6 +1820,7 @@
         : p.source === "iish" ? `<a href="https://www.iish.org/contact/" target="_blank" rel="noopener">iish.org</a>`
         : `<a href="https://iksguru.in/" target="_blank" rel="noopener">iksguru.in</a>`;
       html += `<p class="sc-source">${t("Source: {src}.", { src: srcLine })}</p>`;
+      html += `<p class="sc-source"><button type="button" class="sc-suggest" data-feedback="${esc(p.name)}">${t("Suggest an update")}</button></p>`;
       return `<div class="spot-contact" id="${id}" hidden>${html}</div>`;
     }
 
@@ -1725,7 +1837,8 @@
         <li class="spot" style="--c:${k.color}">
           <div class="place-top">
             <span class="place-kind"><span class="dot"></span>${esc(k.one || k.label.replace(/s$/, ""))}</span>
-            <span class="place-dist">${fmtKm(p.d)}</span>
+            ${(() => { const di = distInfo(p, p.d);
+              return `<span class="place-dist"${di.title ? ` title="${esc(di.title)}"` : ""}>${esc(di.main)}${di.sub ? `<small>${esc(di.sub)}</small>` : ""}</span>`; })()}
           </div>
           <h3>${esc(p.name)}</h3>
           <p class="place-host">${where}${p.approx ? `<span class="approx" title="${t("Shown at the city centre: the source gives no street address")}">${t("approx.")}</span>` : ""}</p>
@@ -1774,7 +1887,8 @@
       const pool = PLACES
         .filter(p => !p.noMap && near.kinds.has(kindOf(p.kind).id))
         .map(p => ({ ...p, d: km(near.origin, p) }))
-        .sort((a, b) => a.d - b.d);
+        // places known only by state go after the rest: their pin is just a point in the state
+        .sort((a, b) => (stateOnly(a) - stateOnly(b)) || a.d - b.d);
       const inside = pool.filter(p => p.d <= near.radius);
       const where = `<strong>${esc(near.origin.label)}</strong>`;
       let items;
@@ -1877,6 +1991,7 @@
 
     // let other features (the chatbot) show "near me" results for a city
     return {
+      distInfo, stateOnly,
       nearCity(cityName) {
         const c = findCity(cityName);
         if (!c) return false;
@@ -1908,6 +2023,7 @@
     }, once);
     inView(".branch-info", el => { reveal([el], { y: 24, duration: 0.8 }); }, once);
     inView(".nearby", el => { reveal([el], { y: 24, duration: 0.8 }); }, { amount: 0.1 });
+    inView(".list-org", el => { reveal([el], { y: 24, duration: 0.8 }); }, { amount: 0.2 });
     inView(".acks", el => {
       reveal([el], { y: 24, duration: 0.8 });
       reveal(el.querySelectorAll(".ack"), { delay: 0.25, gap: 0.04, y: 12, duration: 0.5 });
@@ -1931,6 +2047,6 @@
     CENTRE_BY_NAME, STATE_NAMES,
     openCentre, focusBranch,
     nearCity: name => nearby.nearCity(name),
-    km: nearby.km, kindOf: nearby.kindOf, findCity: nearby.findCity, directionsUrl: nearby.directionsUrl
+    km: nearby.km, distInfo: nearby.distInfo, stateOnly: nearby.stateOnly, kindOf: nearby.kindOf, findCity: nearby.findCity, directionsUrl: nearby.directionsUrl
   };
 })();

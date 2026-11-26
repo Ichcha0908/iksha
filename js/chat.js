@@ -20,7 +20,8 @@
   const PLACES = window.IKS_PLACES || [];
   const CITIES = window.IKS_CITIES || [];
   const KINDS = window.IKS.placeKinds;
-  const ENDPOINT = ((window.IKS_CHAT || {}).endpoint || "").trim();
+  // ai: false uses the Worker only for listings and feedback, not for chat answers
+  const ENDPOINT = (window.IKS_CHAT || {}).ai === false ? "" : ((window.IKS_CHAT || {}).endpoint || "").trim();
   const $ = s => document.querySelector(s);
   // language (js/i18n.js): t() for messages; the data keeps English state names, shown via stateName()
   const I18N = window.IKS_I18N || { hi: false, t: (s, p) => (p ? s.replace(/\{(\w+)\}/g, (m, k) => p[k]) : s), state: n => n, city: n => n, HI: { states: {}, cities: {} } };
@@ -193,7 +194,7 @@
   }
   function listAnswer(intro, docs, more = "") {
     return {
-      html: `<p>${intro}</p><ul class="cb-list">${docs.map(x => `<li>${itemLine(x.d || x, x.dist != null ? " · " + t("{n} km", { n: Math.round(x.dist) }) : "")}</li>`).join("")}</ul>${more}`,
+      html: `<p>${intro}</p><ul class="cb-list">${docs.map(x => `<li>${itemLine(x.d || x, x.dist != null && x.d.p && !(x.d.p.approx && (x.dist < 3 || (A.stateOnly && A.stateOnly(x.d.p)))) ? " · " + esc(A.distInfo ? A.distInfo(x.d.p, x.dist).main : t("{n} km", { n: Math.round(x.dist) })) : "")}</li>`).join("")}</ul>${more}`,
       picks: docs.map(x => x.d || x)
     };
   }
@@ -300,10 +301,12 @@
     if (city && (NEAR.test(f) || !state || fold(city.name) !== fold(state))) {
       const r = radius || 60;
       const hits = DOCS.filter(d => d.type === "place" && !d.p.noMap && matchesKind(d, kind))
-        .map(d => ({ d, dist: A.km(city, d.p) })).filter(x => x.dist <= r).sort((a, b) => a.dist - b.dist);
+        .map(d => ({ d, dist: A.km(city, d.p) })).filter(x => x.dist <= r)
+        .sort((a, b) => (A.stateOnly ? A.stateOnly(a.d.p) - A.stateOnly(b.d.p) : 0) || a.dist - b.dist);
       // leaves in that city too
       const leaves = DOCS.filter(d => d.type === "leaf" && matchesKind(d, kind) && fold(d.city).includes(fold(city.name)));
-      const all = leaves.map(d => ({ d, dist: 0 })).concat(hits);
+      // leaves are matched by town name and have no map point, so they get no distance
+      const all = leaves.map(d => ({ d, dist: null })).concat(hits);
       if (!all.length) {
         return { html: `<p>${t("I don't have any {what} within {r} km of {city}.", { what: esc(t(kind ? kind.label : "IKS places")), r, city: esc(I18N.city(city.name)) })}</p>`,
           actions: [{ label: t("Show nearest to {city}", { city: I18N.city(city.name) }), run: () => A.nearCity(city.name) }] };
@@ -365,7 +368,7 @@
   function recordOf(d) {
     const lead = leadOf(d), k = contactOf(d);
     const src = d.type === "leaf" ? (d.c.sources || []).map(s => s.url).slice(0, 2).join(" ")
-      : ({ iksindia: "iksindia.org", uem: "iks.uem.edu.in", iksguru: "iksguru.in", tree: "this site", gurukul: k.listedBy, hindupedia: "hindupedia.com", hmml: "hmml.org", iish: "iish.org", atlas: d.p.atlas ? `IKS Atlas ${d.p.atlas.id} (draft, unverified); its listed source: ${d.p.atlas.src}` : "" })[d.p.source] || "";
+      : ({ iksindia: "iksindia.org", uem: "iks.uem.edu.in", iksguru: "iksguru.in", tree: "this site", gurukul: k.listedBy, hindupedia: "hindupedia.com", hmml: "hmml.org", iish: "iish.org", community: "details given by the organisation itself, checked by the site's editors", atlas: d.p.atlas ? `IKS Atlas ${d.p.atlas.id} (draft, unverified); its listed source: ${d.p.atlas.src}` : "" })[d.p.source] || "";
     return {
       name: d.name, kind: d.type === "leaf" ? `${d.b.name} centre` : d.p.kind, location: loc(d),
       about: aboutOf(d), person_in_charge: lead ? `${lead.name}, ${lead.role}` : undefined,
@@ -480,30 +483,37 @@
     const q = String(text || "").trim().slice(0, 400);
     if (!q || busy) return;
     busy = true;
-    input.value = "";
-    addMsg("me", esc(q));
-    const local = builtIn(q);
-    if (ENDPOINT) {
-      const wait = addMsg("bot", `<span class="cb-typing"><i></i><i></i><i></i></span>`);
-      const dots = A.reduceMotion ? null : animate(wait.querySelectorAll(".cb-typing i"), { opacity: [0.3, 1, 0.3], y: [0, -3, 0] },
-        { duration: 0.9, repeat: Infinity, delay: A.stagger(0.15) });
-      try {
-        const { answer, sources } = await askAI(q, local);
-        dots?.stop(); wait.remove();
-        const srcHtml = Array.isArray(sources) && sources.length
-          ? `<p class="cb-sources"><span class="cb-label">${t("Sources")}</span>${sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join("")}</p>` : "";
-        // site buttons only when the answer is about one record from the site
-        const acts = local.picks && local.picks.length === 1 ? actionsFor(local.picks[0]) : (local.actions || []).filter(a => !a.google);
-        addMsg("bot", renderAI(answer) + srcHtml, { actions: acts });
-        history.push({ role: "user", content: q }, { role: "assistant", content: answer });
-      } catch (err) {
-        dots?.stop(); wait.remove();
-        addMsg("bot", local.html + `<p class="cb-dim">${t("(The AI service didn't respond, so this is the built-in answer.)")}</p>`, local);
+    try {
+      input.value = "";
+      addMsg("me", esc(q));
+      const local = builtIn(q);
+      if (ENDPOINT) {
+        const wait = addMsg("bot", `<span class="cb-typing"><i></i><i></i><i></i></span>`);
+        const dots = A.reduceMotion ? null : animate(wait.querySelectorAll(".cb-typing i"), { opacity: [0.3, 1, 0.3], y: [0, -3, 0] },
+          { duration: 0.9, repeat: Infinity, delay: A.stagger(0.15) });
+        try {
+          const { answer, sources } = await askAI(q, local);
+          dots?.stop(); wait.remove();
+          const srcHtml = Array.isArray(sources) && sources.length
+            ? `<p class="cb-sources"><span class="cb-label">${t("Sources")}</span>${sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join("")}</p>` : "";
+          // site buttons only when the answer is about one record from the site
+          const acts = local.picks && local.picks.length === 1 ? actionsFor(local.picks[0]) : (local.actions || []).filter(a => !a.google);
+          addMsg("bot", renderAI(answer) + srcHtml, { actions: acts });
+          history.push({ role: "user", content: q }, { role: "assistant", content: answer });
+        } catch (err) {
+          dots?.stop(); wait.remove();
+          addMsg("bot", local.html + `<p class="cb-dim">${t("(The AI service didn't respond, so this is the built-in answer.)")}</p>`, local);
+        }
+      } else {
+        addMsg("bot", local.html, local);
       }
-    } else {
-      addMsg("bot", local.html, local);
+    } catch (err) {
+      // never leave the chat stuck: say so and let the visitor ask again
+      addMsg("bot", `<p>${t("Sorry, something went wrong with that answer. Please try asking another way.")}</p>`);
+      if (window.console) console.error(err);
+    } finally {
+      busy = false;
     }
-    busy = false;
   }
   form.addEventListener("submit", e => { e.preventDefault(); send(input.value); });
 

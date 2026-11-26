@@ -7,8 +7,9 @@ An interactive 3D "Tree of Knowledge" for Indian Knowledge Systems (IKS).
 - **Every IKS place on the site is a leaf (728 leaves).** The large glowing
   leaves are IKS centres; gurukuls, oriental institutes and libraries,
   heritage sites, living traditions and Āyurveda & Yoga institutes are
-  smaller leaves clustered on twigs by kind (the 555 gurukuls on six regional
-  twigs). Clicking any leaf opens a panel with its details, contacts, sources
+  smaller leaves on sub-branches by kind (the 555 gurukuls on six regional
+  sub-branches), spread along forking limbs and sprigs so each leaf can be
+  told apart; focusing a crowded branch zooms in closer. Clicking any leaf opens a panel with its details, contacts, sources
   and a map of India with its state highlighted and pinned.
 - Drag to turn the tree. The branch buttons under the tree also turn it,
   zoom in on that branch, and open its **leaf finder**: search by name, town
@@ -26,20 +27,33 @@ line on what was taken from it. Every leaf also lists its own sources.
 
 ## Suggest an update (feedback)
 
-*Switched off for now* (the button isn't shown; `js/feedback.js` is kept but
-not loaded). To turn it back on: deploy the Worker with its FEEDBACK store
-(see below), put its address in `js/chat-config.js`, add
-`<script src="js/feedback.js"></script>` after `chat.js` in `index.html`,
-and restore the "Suggest an update" buttons in `js/app.js` (git history).
-
 The **Suggest an update** button (bottom left, and in every leaf's panel and
 "near me" card) opens a short form for corrections and new information:
 which entry, what kind of update, the details, a source link, and an
 optional name and contact. Submissions go to the Cloudflare Worker in
-`server/` and are stored there; the editors download them as a CSV and check
-each one against its source before changing the data. Setup:
+`server/` and are stored there; the editors read them in the **Feedback** tab
+of the Worker's `/admin` page (or download them as a CSV) and check each one
+against its source before changing the data. Setup:
 [`server/README.md`](server/README.md) → Feedback. The form is in
 `js/feedback.js`.
+
+## List your organisation
+
+The **Grow the tree with us** section (above the Acknowledgments) invites IKS
+centres, gurukuls, institutes, museums, heritage sites and living traditions
+that aren't on the site yet to ask to be listed. The form (`js/listing.js`)
+asks for the organisation's name, kind, branch, description, website or
+other pages that show it exists, town and state, an optional map link and
+public office contacts, and, privately, who is sending it.
+
+Requests go to the Cloudflare Worker in `server/` and wait there until an
+editor checks and approves them on the Worker's password-protected `/admin`
+page. Approved listings come back to every visitor through
+`js/listings-loader.js` and become leaves on the tree, "near me" results and
+chatbot answers, marked as listed at the organisation's request and checked
+by the editors. The section stays hidden until the Worker's address is in
+`js/chat-config.js`. Setup and the spam protections:
+[`server/README.md`](server/README.md) → Organisation listings.
 
 ## Hindi / English
 
