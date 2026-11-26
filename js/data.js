@@ -109,6 +109,32 @@ window.IKS = {
             { label: "Gurukula Kangri: The Vice-Chancellor (official)", url: "https://www.gkv.ac.in/the-vice-chancellor/" },
             { label: "Gurukula Kangri: Admission queries (official)", url: "https://gkv.ac.in/?p=1997" }
           ]
+        },
+        {
+          name: "Centre for Human Sciences, Rishihood University",
+          type: "University research centre",
+          state: "hr", city: "Sonipat",
+          summary: "A research centre of Rishihood University that studies Indian Knowledge Systems alongside the humanities and social sciences: Sanskrit and classical studies, Indian philosophy and Integral Humanism, consciousness studies and the art of Avadhāna. It runs PhD programmes, online certificate courses, research internships and an IKS awareness programme for schools.",
+          activities: [
+            "PhD in Sanskrit and Classical Studies, and PhD in Indian Philosophy and Integral Humanism",
+            "Online certificate courses, for example on Pāṇini's Aṣṭādhyāyī, Chandas (Sanskrit metres), Mantra Yoga, the Bhagavad Gita and Sri Aurobindo",
+            "Avadhānakalā and Consciousness Studies, a project supported by the IKS Division, Ministry of Education, including the Bālāvadhānam programme for children",
+            "Integral Humanism Initiative (since 2023) on Pt. Deendayal Upadhyaya's Ekātma Mānava Darśana, with lectures and conferences",
+            "IKS Awareness Program for School Children: workshops, exhibitions and materials for schools, first piloted in government schools in Sonipat",
+            "Research internships of one to six months in IKS, the humanities and the social sciences"
+          ],
+          people: [
+            { name: "Prof. (Dr.) Sampadananda Mishra", role: "Director, Centre for Human Sciences", asOf: "CHS website (chs.rishihood.edu.in), Nov 2026" }
+          ],
+          contact: {
+            address: "Rishihood University, NH-44 (GT Road), near Bahalgarh Chowk, Delhi NCR, Sonipat, Haryana 131021",
+            email: "chs@rishihood.edu.in (Centre for Human Sciences)",
+            website: "https://chs.rishihood.edu.in/"
+          },
+          sources: [
+            { label: "Centre for Human Sciences, Rishihood University (official site)", url: "https://chs.rishihood.edu.in/" },
+            { label: "Rishihood University (official site, address)", url: "https://rishihood.edu.in/" }
+          ]
         }
       ]
     },

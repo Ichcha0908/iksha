@@ -198,13 +198,13 @@ How the many leaves stay easy to use:
 
 | Branch | IKS centres | Other leaves | All leaves |
 | --- | --- | --- | --- |
-| Veda & Darshana | 23 | 564 | 587 |
+| Veda & Darshana | 24 | 564 | 588 |
 | Language & Literature | 19 | 12 | 31 |
 | Arts & Aesthetics | 7 | 280 | 287 |
 | Health & Wellbeing | 19 | 9 | 28 |
 | Science & Technology | 25 | 39 | 64 |
 | Heritage & Manuscripts | 12 | 197 | 209 |
-| **Total** | **105** | **1,101** | **1,206** |
+| **Total** | **106** | **1,101** | **1,207** |
 
 The IKS Atlas added 477 leaves (temples, churches and other sacred sites and
 the performing arts and crafts mostly on Arts & Aesthetics; archaeological
@@ -215,7 +215,9 @@ of India sit on separate twigs.
 
 ## Every IKS centre is a leaf
 
-The tree has **105 IKS-centre leaves**: the 15 curated centres below, plus every IKS
+The tree has **106 IKS-centre leaves**: the 15 curated centres below and the
+Centre for Human Sciences, Rishihood University (added on request, from
+[chs.rishihood.edu.in](https://chs.rishihood.edu.in/)), plus every IKS
 centre in the database (`js/tree-centres.js`, generated with `js/places.js`):
 
 - all the IKS Division's centres from its official list

@@ -455,6 +455,18 @@ window.IKS_HI = {
     "Study of the śāstras and Vedas; Faculty of Ayurveda and Medical Sciences": "शास्त्रों और वेदों का अध्ययन; आयुर्वेद और चिकित्सा विज्ञान संकाय",
     "Kanya Gurukula campuses for women at Dehradun (1922) and Haridwar (1993)": "महिलाओं के लिए देहरादून (1922) और हरिद्वार (1993) में कन्या गुरुकुल परिसर",
     "Shraddhanand Repository: digitised books from its library on archive.org": "श्रद्धानंद रिपॉज़िटरी: इसके पुस्तकालय की डिजिटल पुस्तकें archive.org पर",
+    // Centre for Human Sciences, Rishihood University
+    "University research centre": "विश्वविद्यालय का शोध केंद्र",
+    "A research centre of Rishihood University that studies Indian Knowledge Systems alongside the humanities and social sciences: Sanskrit and classical studies, Indian philosophy and Integral Humanism, consciousness studies and the art of Avadhāna. It runs PhD programmes, online certificate courses, research internships and an IKS awareness programme for schools.":
+      "ऋषिहुड विश्वविद्यालय का शोध केंद्र, जो मानविकी और सामाजिक विज्ञानों के साथ भारतीय ज्ञान प्रणाली का अध्ययन करता है: संस्कृत और शास्त्रीय अध्ययन, भारतीय दर्शन और एकात्म मानववाद, चेतना-अध्ययन और अवधान कला। यह पीएचडी कार्यक्रम, ऑनलाइन प्रमाणपत्र पाठ्यक्रम, शोध इंटर्नशिप और विद्यालयों के लिए IKS जागरूकता कार्यक्रम चलाता है।",
+    "PhD in Sanskrit and Classical Studies, and PhD in Indian Philosophy and Integral Humanism": "संस्कृत और शास्त्रीय अध्ययन में पीएचडी, तथा भारतीय दर्शन और एकात्म मानववाद में पीएचडी",
+    "Online certificate courses, for example on Pāṇini's Aṣṭādhyāyī, Chandas (Sanskrit metres), Mantra Yoga, the Bhagavad Gita and Sri Aurobindo": "ऑनलाइन प्रमाणपत्र पाठ्यक्रम, जैसे पाणिनि की अष्टाध्यायी, छंद (संस्कृत छंद), मंत्र योग, भगवद्गीता और श्री अरविंद पर",
+    "Avadhānakalā and Consciousness Studies, a project supported by the IKS Division, Ministry of Education, including the Bālāvadhānam programme for children": "अवधानकला और चेतना-अध्ययन, शिक्षा मंत्रालय के IKS प्रभाग द्वारा समर्थित परियोजना, जिसमें बच्चों के लिए बालावधानम् कार्यक्रम शामिल है",
+    "Integral Humanism Initiative (since 2023) on Pt. Deendayal Upadhyaya's Ekātma Mānava Darśana, with lectures and conferences": "पं. दीनदयाल उपाध्याय के एकात्म मानव दर्शन पर एकात्म मानववाद पहल (2023 से), व्याख्यानों और सम्मेलनों के साथ",
+    "IKS Awareness Program for School Children: workshops, exhibitions and materials for schools, first piloted in government schools in Sonipat": "विद्यालयी बच्चों के लिए IKS जागरूकता कार्यक्रम: विद्यालयों के लिए कार्यशालाएँ, प्रदर्शनियाँ और सामग्री, जिसकी शुरुआत सोनीपत के सरकारी विद्यालयों में प्रायोगिक रूप से हुई",
+    "Research internships of one to six months in IKS, the humanities and the social sciences": "IKS, मानविकी और सामाजिक विज्ञानों में एक से छह महीने की शोध इंटर्नशिप",
+    "Director, Centre for Human Sciences": "निदेशक, सेंटर फ़ॉर ह्यूमन साइंसेज़",
+    "Rishihood University's research centre for IKS, Sanskrit, Indian philosophy and Integral Humanism.": "IKS, संस्कृत, भारतीय दर्शन और एकात्म मानववाद के लिए ऋषिहुड विश्वविद्यालय का शोध केंद्र।",
     // CICT
     "Research institute, Ministry of Education": "शोध संस्थान, शिक्षा मंत्रालय",
     "An autonomous institute of the Ministry of Education for research on classical Tamil, establishing the antiquity and uniqueness of the language. It moved to Chennai in 2008, and its own building at Perumbakkam was opened in 2022. It is translating the Tirukkuṟaḷ into many Indian and world languages.":
