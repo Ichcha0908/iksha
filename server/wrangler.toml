@@ -5,7 +5,7 @@ compatibility_date = "2026-10-01"
 [vars]
 # The website origins allowed to call this Worker (comma-separated).
 # Change this to where your site is published, e.g. GitHub Pages:
-ALLOWED_ORIGINS = "https://ichcha0908.github.io"
+ALLOWED_ORIGINS = "https://iks.theiksha.org,https://ichcha0908.github.io"
 # Optional: a different model on OpenRouter. The default is
 # "anthropic/claude-sonnet-5.5"; "anthropic/claude-haiku-5.5" costs about a
 # twentieth as much (answers are a little less polished).

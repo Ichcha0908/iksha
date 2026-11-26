@@ -146,6 +146,16 @@ There are two modes:
   for general questions; and with web search for current facts, listing its
   sources. See [`server/README.md`](server/README.md) for setup and costs.
 
+## Web address
+
+The site is published with GitHub Pages at **https://iks.theiksha.org**
+(the `CNAME` file in this folder; the DNS record points
+`iks.theiksha.org` to `ichcha0908.github.io`). In the repository's
+Settings → Pages, the custom domain is `iks.theiksha.org` with **Enforce
+HTTPS** on. The Worker in `server/` accepts requests from this address and
+from `https://ichcha0908.github.io` (`ALLOWED_ORIGINS` in
+`server/wrangler.toml`).
+
 ## Run it
 
 It is a static site with no build step. Open `index.html` in a browser, or

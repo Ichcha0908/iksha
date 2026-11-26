@@ -221,7 +221,7 @@ export default {
           "Authorization": `Bearer ${env.OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
           // app attribution on OpenRouter (optional)
-          "HTTP-Referer": allowOrigin !== "*" ? allowOrigin : "https://ichcha0908.github.io",
+          "HTTP-Referer": allowOrigin !== "*" ? allowOrigin : "https://iks.theiksha.org",
           "X-OpenRouter-Title": "IKS Tree of Knowledge"
         },
         body: JSON.stringify({
